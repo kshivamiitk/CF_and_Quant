@@ -84,7 +84,6 @@ The project is Vercel-friendly now:
 - Mutable state uses Upstash Redis over REST when these env vars are configured:
   - `UPSTASH_REDIS_REST_URL`
   - `UPSTASH_REDIS_REST_TOKEN`
-  - `TRACKER_PRIVATE_TOKEN`
   - `TRACKER_STORAGE_PREFIX`
 
 Without Upstash env vars, the API falls back to local JSON files. That is useful locally, but not reliable for production Vercel persistence.
@@ -102,11 +101,11 @@ In Vercel:
 ```text
 UPSTASH_REDIS_REST_URL
 UPSTASH_REDIS_REST_TOKEN
-TRACKER_PRIVATE_TOKEN
 TRACKER_STORAGE_PREFIX=kumar_quant
+REQUIRE_TRACKER_TOKEN=0
 ```
 
-Use a long random value for `TRACKER_PRIVATE_TOKEN`.
+Token auth is disabled by default for easier iPhone use. If you later want token auth, set `REQUIRE_TRACKER_TOKEN=1` and add `TRACKER_PRIVATE_TOKEN`.
 
 ### 2. Deploy
 
@@ -124,19 +123,19 @@ For production:
 vercel --prod
 ```
 
-### 3. Open privately
+### 3. Open the app
 
-Open the production URL once with your token:
+Open the production URL:
 
 ```text
-https://YOUR-PROJECT.vercel.app/?token=YOUR_TRACKER_PRIVATE_TOKEN
+https://YOUR-PROJECT.vercel.app/
 ```
 
-The browser stores the token locally and sends it as `X-Tracker-Token` on API requests.
+If you enabled token auth with `REQUIRE_TRACKER_TOKEN=1`, open it once as `https://YOUR-PROJECT.vercel.app/?token=YOUR_TRACKER_PRIVATE_TOKEN`.
 
 ### 4. Install on iPhone
 
-1. Open the token URL in Safari on iPhone.
+1. Open the Vercel URL in Safari on iPhone.
 2. Confirm the app loads.
 3. Tap Share.
 4. Tap Add to Home Screen.
