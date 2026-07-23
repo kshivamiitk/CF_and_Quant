@@ -74,6 +74,77 @@ This repo is now an installable private web app, not a submitted native iOS bina
 - Custom Apps with Apple Business/School Manager: https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/set-distribution-methods/
 - TestFlight for private beta installs: https://developer.apple.com/testflight/
 
+## Deploy on Vercel
+
+The project is Vercel-friendly now:
+
+- `public/` is served as the static PWA frontend.
+- `api/index.py` is the Vercel Python Function for all `/api/...` routes.
+- `vercel.json` rewrites `/api/*` to that function.
+- Mutable state uses Upstash Redis over REST when these env vars are configured:
+  - `UPSTASH_REDIS_REST_URL`
+  - `UPSTASH_REDIS_REST_TOKEN`
+  - `TRACKER_PRIVATE_TOKEN`
+  - `TRACKER_STORAGE_PREFIX`
+
+Without Upstash env vars, the API falls back to local JSON files. That is useful locally, but not reliable for production Vercel persistence.
+
+### 1. Create storage
+
+In Vercel:
+
+1. Open your Vercel dashboard.
+2. Create or open the project.
+3. Go to Storage/Marketplace.
+4. Add Upstash Redis.
+5. Copy the REST URL and REST token into project environment variables:
+
+```text
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
+TRACKER_PRIVATE_TOKEN
+TRACKER_STORAGE_PREFIX=kumar_quant
+```
+
+Use a long random value for `TRACKER_PRIVATE_TOKEN`.
+
+### 2. Deploy
+
+From this folder:
+
+```bash
+npm i -g vercel
+vercel login
+vercel
+```
+
+For production:
+
+```bash
+vercel --prod
+```
+
+### 3. Open privately
+
+Open the production URL once with your token:
+
+```text
+https://YOUR-PROJECT.vercel.app/?token=YOUR_TRACKER_PRIVATE_TOKEN
+```
+
+The browser stores the token locally and sends it as `X-Tracker-Token` on API requests.
+
+### 4. Install on iPhone
+
+1. Open the token URL in Safari on iPhone.
+2. Confirm the app loads.
+3. Tap Share.
+4. Tap Add to Home Screen.
+5. Name it `Kumar Quant`.
+6. Tap Add.
+
+After that it opens like an app from your Home Screen.
+
 The roadmap is stored in:
 
 ```text

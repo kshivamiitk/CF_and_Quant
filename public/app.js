@@ -5,7 +5,7 @@ const state = {
   byId: new Map(),
   selectedId: null,
   activeTopic: "all",
-  activeView: "tree",
+  activeView: "today",
   saveTimer: null,
   drawerOpen: false,
   contestPayload: null,
@@ -267,6 +267,8 @@ function visibleItems() {
 
 function setView(viewName) {
   state.activeView = viewName;
+  document.body.dataset.view = viewName;
+  document.body.classList.toggle("code-view", ["tree", "sheet", "stats"].includes(viewName));
   ["today", "quant", "planner", "notes", "tree", "contests", "sheet", "stats"].forEach((name) => {
     $(`${name}View`).classList.toggle("active", name === viewName);
     $(`${name}Tab`).classList.toggle("active", name === viewName);
@@ -992,6 +994,15 @@ function quantProgressText() {
   return `${stats.done}/${stats.total} solved | ${stats.remaining} remaining | ${stats.progressPercent}% complete`;
 }
 
+function sourceLabel(sourceId) {
+  return sourceId === "green-book" ? "Green Book" : "Quant Guide";
+}
+
+function difficultyLabel(value) {
+  const raw = String(value || "unknown");
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
 function currentQuantCard(compact = false) {
   const current = state.quantToday?.current;
   if (!current) {
@@ -1002,9 +1013,10 @@ function currentQuantCard(compact = false) {
       </div>
     `;
   }
+  const stats = state.quantToday?.stats || state.quant?.stats || {};
   const solution = current.solution
     ? `<div class="solution-panel"><h4>Solution</h4><pre>${escapeHtml(current.solution)}</pre></div>`
-    : `<div class="lock-banner">Solution unlocks after you mark this problem solved.</div>`;
+    : `<div class="solution-lock">Solution unlocks after you mark this problem solved.</div>`;
   const actions = current.status === "done"
     ? `<button id="quantNextButton" class="primary-link" type="button">Load Next Problem</button>`
     : `
@@ -1014,14 +1026,24 @@ function currentQuantCard(compact = false) {
   return `
     <article class="quant-current">
       <div class="quant-current-header">
-        <div>
-          <span class="status-badge">${escapeHtml(current.sourceId === "green-book" ? "Green Book" : "Quant Guide")}</span>
-          <span class="status-badge">${escapeHtml(current.topic || "general")}</span>
-          <span class="status-badge">${escapeHtml(current.difficulty || "unknown")}</span>
+        <div class="question-kicker">
+          <span>${escapeHtml(sourceLabel(current.sourceId))}</span>
+          <span>${escapeHtml(current.topic || "general")}</span>
+          <span>${escapeHtml(difficultyLabel(current.difficulty))}</span>
         </div>
-        <strong>${escapeHtml(current.status)}</strong>
+        <strong class="status-pill ${escapeHtml(current.status)}">${escapeHtml(current.status)}</strong>
       </div>
-      <h3>${escapeHtml(current.number)}. ${escapeHtml(current.title)}</h3>
+      <div class="question-title-row">
+        <span class="question-number">Q${escapeHtml(current.number)}</span>
+        <h3>${escapeHtml(current.title)}</h3>
+      </div>
+      ${compact ? `
+        <div class="daily-meter" aria-label="Quant progress">
+          <div><strong>${stats.done || 0}</strong><span>Solved</span></div>
+          <div><strong>${stats.remaining || 0}</strong><span>Remaining</span></div>
+          <div><strong>${stats.progressPercent || 0}%</strong><span>Complete</span></div>
+        </div>
+      ` : ""}
       <pre class="question-prompt">${escapeHtml(current.prompt || "")}</pre>
       ${compact ? "" : `
         <div class="quant-work-grid">
@@ -1045,6 +1067,9 @@ function renderToday() {
   const panel = $("todayPanel");
   if (!panel) return;
   const stats = state.quantToday?.stats || {};
+  const total = stats.total || 0;
+  const done = stats.done || 0;
+  const progressWidth = total ? Math.min(100, Math.max(0, (done / total) * 100)) : 0;
   const todaysEvents = (state.personal?.schedule || [])
     .filter((event) => String(event.start || "").slice(0, 10) === todayIsoDate())
     .sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")))
@@ -1055,16 +1080,27 @@ function renderToday() {
     <section class="today-main">
       <div class="today-header">
         <div>
-          <h2>Today for Kumar Shivam</h2>
+          <span class="section-eyebrow">Private desk</span>
+          <h2>Today</h2>
           <p>${escapeHtml(quantProgressText())}</p>
         </div>
         <button id="todayRefreshButton" class="secondary-button" type="button">Refresh</button>
+      </div>
+      <div class="focus-strip">
+        <div>
+          <span>Quant bank</span>
+          <strong>${done}/${total}</strong>
+        </div>
+        <div class="focus-progress"><span style="width:${progressWidth}%"></span></div>
       </div>
       ${currentQuantCard(true)}
     </section>
     <aside class="today-side">
       <div class="today-widget">
-        <h3>Schedule</h3>
+        <div class="widget-header">
+          <h3>Schedule</h3>
+          <button type="button" data-open-planner="1">Open</button>
+        </div>
         ${todaysEvents.length ? todaysEvents.map((event) => `
           <button class="today-event" type="button" data-open-planner="1">
             <strong>${escapeHtml(event.title || "Untitled event")}</strong>
@@ -1073,7 +1109,10 @@ function renderToday() {
         `).join("") : `<p class="muted-copy">No events scheduled today.</p>`}
       </div>
       <div class="today-widget">
-        <h3>Codeforces Next</h3>
+        <div class="widget-header">
+          <h3>Codeforces</h3>
+          <button type="button" data-open-cf-home="1">Tree</button>
+        </div>
         ${nextCf ? `
           <button class="today-event" type="button" data-open-cf="${escapeHtml(nextCf.id)}">
             <strong>${escapeHtml(nextCf.title)}</strong>
@@ -1099,6 +1138,7 @@ function renderToday() {
       selectProblem(button.dataset.openCf);
     });
   });
+  document.querySelectorAll("[data-open-cf-home]").forEach((button) => button.addEventListener("click", () => setView("tree")));
 }
 
 function visibleQuantQuestions() {
@@ -1127,12 +1167,12 @@ function renderQuant() {
   $("quantCurrentPanel").innerHTML = currentQuantCard(false);
   wireQuantCurrent();
   const rows = visibleQuantQuestions().slice(0, 400).map((question) => `
-    <tr>
-      <td>${escapeHtml(question.number)}. ${escapeHtml(question.title)}</td>
-      <td>${escapeHtml(question.sourceId === "green-book" ? "Green Book" : "Quant Guide")}</td>
+    <tr class="quant-row-${escapeHtml(question.status || "todo")}">
+      <td><strong>Q${escapeHtml(question.number)}</strong> ${escapeHtml(question.title)}</td>
+      <td>${escapeHtml(sourceLabel(question.sourceId))}</td>
       <td>${escapeHtml(question.topic || "")}</td>
-      <td>${escapeHtml(question.difficulty || "")}</td>
-      <td>${escapeHtml(question.status || "todo")}</td>
+      <td>${escapeHtml(difficultyLabel(question.difficulty))}</td>
+      <td><span class="table-status ${escapeHtml(question.status || "todo")}">${escapeHtml(question.status || "todo")}</span></td>
     </tr>
   `).join("");
   $("quantRows").innerHTML = rows || `<tr><td colspan="5">No matching quant questions.</td></tr>`;
@@ -1399,6 +1439,8 @@ function wireEvents() {
 async function init() {
   loadContestNoticeStore();
   wireEvents();
+  document.body.dataset.view = state.activeView;
+  document.body.classList.toggle("code-view", ["tree", "sheet", "stats"].includes(state.activeView));
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/service-worker.js").catch((error) => console.error(error));
   }
@@ -1416,5 +1458,16 @@ async function init() {
 
 init().catch((error) => {
   console.error(error);
-  $("problemDetail").innerHTML = `<div class="empty-state">Failed to load tracker data.</div>`;
+  const message = error.message === "Private token required"
+    ? "Private token required. Open the app once with ?token=YOUR_PRIVATE_TOKEN."
+    : "Failed to load tracker data.";
+  const todayPanel = $("todayPanel");
+  if (todayPanel) {
+    todayPanel.innerHTML = `
+      <section class="today-main">
+        <div class="empty-state">${escapeHtml(message)}</div>
+      </section>
+    `;
+  }
+  $("problemDetail").innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
 });
