@@ -1,0 +1,18 @@
+{
+  "name": "Kumar Quant Tracker",
+  "short_name": "Kumar Quant",
+  "description": "Private quant interview, Codeforces, schedule, and notes tracker for Kumar Shivam.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#25364d",
+  "icons": [
+    {
+      "src": "/cf2000_tracker_icon_1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

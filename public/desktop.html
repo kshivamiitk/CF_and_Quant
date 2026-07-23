@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CF 2000 Desktop Companion</title>
+    <link rel="icon" href="/alert-icon.svg">
+    <link rel="stylesheet" href="/desktop.css">
+  </head>
+  <body>
+    <main class="desktop-scene">
+      <section class="hero-copy" aria-label="CF 2000 mission">
+        <p class="eyebrow">Codeforces 2000 mission</p>
+        <h1 id="heroHeadline">Loading today's sprint...</h1>
+        <p id="heroMotivation">Preparing targets, contests, and reminders.</p>
+        <div class="hero-actions">
+          <a href="/" class="primary-link">Open full tracker</a>
+          <button id="notifyButton" type="button">Enable notifications</button>
+          <button id="refreshButton" type="button">Refresh</button>
+        </div>
+      </section>
+
+      <section class="desktop-zone" aria-label="Desktop hover widget">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <button id="missionIcon" class="mission-icon" type="button" aria-describedby="hoverPanel">
+          <span class="icon-glow"></span>
+          <img src="/alert-icon.svg" alt="CF target icon">
+          <span id="iconBadge" class="icon-badge">0</span>
+        </button>
+
+        <aside id="hoverPanel" class="hover-panel" role="status">
+          <div class="panel-header">
+            <div>
+              <span class="panel-kicker">Hover brief</span>
+              <h2 id="panelTitle">Today's targets</h2>
+            </div>
+            <span id="progressChip" class="progress-chip">0%</span>
+          </div>
+          <div id="targetList" class="target-list"></div>
+          <div class="panel-divider"></div>
+          <div id="contestList" class="contest-list"></div>
+        </aside>
+      </section>
+
+      <section class="dashboard-strip" aria-label="Progress summary">
+        <article class="metric-card">
+          <strong id="doneMetric">0</strong>
+          <span>done</span>
+        </article>
+        <article class="metric-card">
+          <strong id="dailyMetric">0</strong>
+          <span>daily target</span>
+        </article>
+        <article class="metric-card">
+          <strong id="daysMetric">0</strong>
+          <span>days left</span>
+        </article>
+        <article class="metric-card urgent-card">
+          <strong id="contestMetric">0</strong>
+          <span>contest alerts</span>
+        </article>
+      </section>
+
+      <section class="notification-wall" aria-label="Live notification cards">
+        <div class="wall-header">
+          <h2>Live desktop feed</h2>
+          <p id="lastUpdated">Not synced yet</p>
+        </div>
+        <div id="notificationCards" class="notification-cards"></div>
+      </section>
+    </main>
+
+    <script src="/desktop.js"></script>
+  </body>
+</html>

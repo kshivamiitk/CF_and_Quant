@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "goal": {
+    "currentRating": 1700,
+    "targetRating": 2000,
+    "deadline": "2026-12-31"
+  },
+  "profile": {
+    "codeforcesHandle": "shogun_katana"
+  },
+  "lastSyncAt": "2026-07-23T18:36:15+00:00",
+  "items": {
+    "combinatorics-2182D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "combinatorics-2143D1": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "combinatorics-2086D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "combinatorics-2128D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "combinatorics-2072F": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "combinatorics-2061C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "bitmasks-games-strings-2180C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "bitmasks-games-strings-2085C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "bitmasks-games-strings-2147D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "bitmasks-games-strings-2189C2": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "trees-2112D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "trees-2070D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "trees-2071C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "trees-2064D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "trees-2063C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "graphs-2004D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "data-structures-2182E": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "data-structures-2132E": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "dp-2132D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "dp-2129B": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "dp-2104E": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "binary-two-pointers-2103C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "binary-two-pointers-2031D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "binary-two-pointers-2084D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "constructive-2179E": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "constructive-2092D": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "constructive-2163B": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "constructive-2146D2": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T17:54:00+00:00"
+    },
+    "math-number-theory-2043C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "math-number-theory-2131F": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T17:54:00+00:00"
+    },
+    "math-number-theory-2018A": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "math-number-theory-2122C": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "greedy-sorting-2117E": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "greedy-sorting-2082B": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "greedy-sorting-2051E": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "greedy-sorting-2045A": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "bitmasks-games-strings-2146D2": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    },
+    "binary-two-pointers-2131F": {
+      "status": "todo",
+      "comments": "",
+      "learnings": "",
+      "mistakes": "",
+      "nextAction": "",
+      "attempts": 0,
+      "lastUpdated": "2026-07-03T18:20:43+00:00"
+    }
+  }
+}

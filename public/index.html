@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CF 2000 Tracker</title>
+    <link rel="icon" href="/alert-icon.svg">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#25364d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Kumar Quant">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="app-brand">
+          <span class="brand-mark">KQ</span>
+          <div>
+          <h1>Kumar Quant Tracker</h1>
+            <p id="goalText">1700 -> 2000 by 2026-12-31</p>
+          </div>
+        </div>
+        <div class="sync-bar" aria-label="Codeforces sync">
+          <input id="cfHandleInput" type="text" placeholder="Codeforces handle">
+          <button id="syncButton" type="button">Sync</button>
+          <span id="syncStatus"></span>
+        </div>
+        <nav class="top-actions" aria-label="App sections">
+          <button id="todayTab" class="tab-button active" type="button">Today</button>
+          <button id="quantTab" class="tab-button" type="button">Quant</button>
+          <button id="plannerTab" class="tab-button" type="button">Schedule</button>
+          <button id="notesTab" class="tab-button" type="button">Notes</button>
+          <button id="contestsTab" class="tab-button contest-tab" type="button">
+            <span>Contests</span>
+            <span id="contestAlertBadge" class="alert-badge hidden">0</span>
+          </button>
+          <button id="treeTab" class="tab-button" type="button">Tree</button>
+          <button id="sheetTab" class="tab-button" type="button">Sheet</button>
+          <button id="statsTab" class="tab-button" type="button">Stats</button>
+          <a class="tab-button desktop-link" href="/desktop.html" target="_blank" rel="noreferrer">Desktop</a>
+        </nav>
+      </header>
+
+      <main class="layout">
+        <aside class="sidebar">
+          <div class="search-row">
+            <input id="searchInput" type="search" placeholder="Search problems, topics, tags">
+          </div>
+          <div id="topicFilters" class="topic-filters"></div>
+          <div id="treePanel" class="topic-progress-panel"></div>
+        </aside>
+
+        <section class="content">
+          <div id="contestEmergencyBanner" class="contest-emergency-banner hidden">
+            <div class="emergency-mark">!</div>
+            <div class="emergency-copy">
+              <strong id="contestEmergencyTitle">Contest alert</strong>
+              <span id="contestEmergencyMeta"></span>
+            </div>
+            <div class="emergency-actions">
+              <button id="contestNotifyButton" class="secondary-button" type="button">Notify</button>
+              <button id="contestRefreshButton" class="secondary-button" type="button">Refresh</button>
+            </div>
+          </div>
+
+          <section id="todayView" class="view active">
+            <div id="todayPanel" class="today-grid"></div>
+          </section>
+
+          <section id="quantView" class="view">
+            <div class="quant-board">
+              <div class="quant-board-header">
+                <div>
+                  <h2>Daily Quant</h2>
+                  <p id="quantStatsText">Loading quant bank.</p>
+                </div>
+                <button id="quantRefreshButton" class="secondary-button" type="button">Refresh</button>
+              </div>
+              <div id="quantCurrentPanel"></div>
+              <div class="sheet-toolbar quant-toolbar">
+                <input id="quantSearchInput" type="search" placeholder="Search quant questions">
+                <select id="quantSourceFilter">
+                  <option value="all">All sources</option>
+                  <option value="quant-guide">Quant Guide</option>
+                  <option value="green-book">Green Book</option>
+                </select>
+                <select id="quantStatusFilter">
+                  <option value="all">All statuses</option>
+                  <option value="todo">Todo</option>
+                  <option value="doing">Doing</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+              <div class="table-wrap">
+                <table class="sheet-table">
+                  <thead>
+                    <tr>
+                      <th>Question</th>
+                      <th>Source</th>
+                      <th>Topic</th>
+                      <th>Difficulty</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="quantRows"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="plannerView" class="view">
+            <div class="personal-board">
+              <div class="personal-header">
+                <h2>Schedule</h2>
+                <span id="personalSaveState" class="save-state"></span>
+              </div>
+              <div class="personal-form">
+                <input id="scheduleTitleInput" type="text" placeholder="Event title">
+                <input id="scheduleStartInput" type="datetime-local">
+                <input id="scheduleEndInput" type="datetime-local">
+                <textarea id="scheduleNotesInput" placeholder="Notes"></textarea>
+                <button id="addScheduleButton" class="primary-link" type="button">Add Event</button>
+              </div>
+              <div id="scheduleList" class="personal-list"></div>
+            </div>
+          </section>
+
+          <section id="notesView" class="view">
+            <div class="personal-board">
+              <div class="personal-header">
+                <h2>Notes</h2>
+                <span id="notesSaveState" class="save-state"></span>
+              </div>
+              <div class="personal-form notes-form">
+                <input id="noteTitleInput" type="text" placeholder="Note title">
+                <textarea id="noteBodyInput" placeholder="Write quant interview notes, formulas, reminders"></textarea>
+                <button id="addNoteButton" class="primary-link" type="button">Add Note</button>
+              </div>
+              <div id="notesList" class="personal-list"></div>
+            </div>
+          </section>
+
+          <section id="treeView" class="view">
+            <div class="roadmap-card">
+              <div class="roadmap-header">
+                <div>
+                  <h2 id="roadmapTitle">Roadmap Tree</h2>
+                  <p id="roadmapSubtitle">Solve from top to bottom. Green means done, yellow means waiting.</p>
+                </div>
+                <button id="fitGraphButton" class="secondary-button" type="button">Top</button>
+              </div>
+              <div id="roadmapStage" class="roadmap-stage">
+                <div id="graphCanvas" class="graph-canvas">
+                  <svg id="edgeLayer" class="edge-layer"></svg>
+                  <div id="graphNodes" class="graph-nodes"></div>
+                </div>
+              </div>
+            </div>
+            <div id="problemDetail" class="detail-panel"></div>
+          </section>
+
+          <section id="contestsView" class="view">
+            <div class="contest-board">
+              <div class="contest-board-header">
+                <div>
+                  <h2>Contest Radar</h2>
+                  <p id="contestFeedStatus">Checking upcoming Codeforces and CodeChef contests.</p>
+                </div>
+                <div class="contest-board-actions">
+                  <button id="contestNotifyPanelButton" class="secondary-button" type="button">Notify</button>
+                  <button id="contestRefreshPanelButton" class="secondary-button" type="button">Refresh</button>
+                </div>
+              </div>
+              <div id="contestSummaryCards" class="contest-summary-grid"></div>
+              <div id="contestList" class="contest-list"></div>
+            </div>
+          </section>
+
+          <section id="sheetView" class="view">
+            <div class="sheet-toolbar">
+              <select id="statusFilter">
+                <option value="all">All statuses</option>
+                <option value="todo">Todo</option>
+                <option value="doing">Doing</option>
+                <option value="done">Done</option>
+                <option value="locked">Locked</option>
+              </select>
+              <select id="ratingFilter">
+                <option value="all">All ratings</option>
+                <option value="1600">1600</option>
+                <option value="1700">1700</option>
+                <option value="1800">1800</option>
+                <option value="1900">1900</option>
+                <option value="2000">2000</option>
+                <option value="2100">2100</option>
+                <option value="2200">2200</option>
+                <option value="2000plus">2000+</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table class="sheet-table">
+                <thead>
+                  <tr>
+                    <th>Problem</th>
+                    <th>Topic</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                    <th>Prerequisite</th>
+                  </tr>
+                </thead>
+                <tbody id="sheetRows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="statsView" class="view">
+            <div id="statsPanel" class="stats-grid"></div>
+            <div id="topicStats" class="topic-stats"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+    <aside id="problemDrawer" class="problem-drawer hidden" aria-hidden="true">
+      <div id="drawerContent"></div>
+    </aside>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

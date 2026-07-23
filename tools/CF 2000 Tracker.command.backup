@@ -1,0 +1,12 @@
+#!/bin/zsh
+APP_DIR="/Users/kumarshivam/Documents/Programming/cf2000_tracker"
+PORT=8765
+
+cd "$APP_DIR" || exit 1
+
+if ! lsof -nP -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then
+  nohup python3 server.py --port "$PORT" > "$APP_DIR/server.log" 2>&1 &
+  sleep 1
+fi
+
+open "http://127.0.0.1:$PORT"

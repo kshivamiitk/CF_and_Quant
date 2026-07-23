@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "owner": "Kumar Shivam",
+  "activeQuestionId": "quant-guide-q0001",
+  "items": {
+    "quant-guide-q0001": {
+      "status": "doing",
+      "assignedAt": "2026-07-23T17:46:34Z",
+      "lastUpdated": "2026-07-23T17:46:34Z"
+    }
+  },
+  "history": []
+}

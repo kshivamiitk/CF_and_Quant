@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="CF 2000 Tracker icon">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="96" x2="920" y2="940" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="0.33" stop-color="#14b8a6"/>
+      <stop offset="0.66" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="248" y1="245" x2="752" y2="780" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#243b65"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#0f172a" flood-opacity="0.28"/>
+    </filter>
+    <filter id="nodeShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="none"/>
+  <rect x="88" y="88" width="848" height="848" rx="196" fill="url(#bg)" filter="url(#softShadow)"/>
+
+  <path d="M134 284 C260 112 550 90 758 176 C876 225 928 316 936 426 L936 238 C936 155 869 88 786 88 L284 88 C214 88 153 137 134 204 Z" fill="#ffffff" opacity="0.2"/>
+  <path d="M88 685 C278 746 474 696 656 782 C740 821 826 868 936 852 L936 936 L88 936 Z" fill="#0f172a" opacity="0.14"/>
+
+  <g opacity="0.35" stroke="#ffffff" stroke-width="9" stroke-linecap="round">
+    <path d="M298 305 L430 432 L360 604"/>
+    <path d="M430 432 L606 350 L727 502"/>
+    <path d="M606 350 L646 674"/>
+    <path d="M360 604 L504 748 L646 674 L789 752"/>
+  </g>
+
+  <circle cx="512" cy="512" r="257" fill="url(#badge)" opacity="0.94"/>
+  <circle cx="512" cy="512" r="221" fill="none" stroke="#ffffff" stroke-width="10" opacity="0.1"/>
+
+  <g fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity="0.95">
+    <path d="M369 405 C390 352 458 332 515 359 C559 380 573 425 544 461 C510 503 437 505 392 552 C362 584 353 619 355 659 L560 659"/>
+    <path d="M640 360 L640 664"/>
+    <path d="M650 515 L761 390"/>
+    <path d="M652 518 L773 664"/>
+  </g>
+
+  <g font-family="Avenir Next, Arial, Helvetica, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="512" y="770" font-size="78" fill="#ffffff" opacity="0.92">CF</text>
+    <text x="512" y="832" font-size="44" fill="#ffffff" opacity="0.7">TRACKER</text>
+  </g>
+
+  <g filter="url(#nodeShadow)">
+    <circle cx="298" cy="305" r="54" fill="#facc15" stroke="#ffffff" stroke-width="12"/>
+    <circle cx="430" cy="432" r="48" fill="#22c55e" stroke="#ffffff" stroke-width="11"/>
+    <circle cx="606" cy="350" r="48" fill="#38bdf8" stroke="#ffffff" stroke-width="11"/>
+    <circle cx="360" cy="604" r="44" fill="#fb7185" stroke="#ffffff" stroke-width="10"/>
+    <circle cx="646" cy="674" r="44" fill="#a78bfa" stroke="#ffffff" stroke-width="10"/>
+    <circle cx="789" cy="752" r="38" fill="#f97316" stroke="#ffffff" stroke-width="9"/>
+  </g>
+</svg>
