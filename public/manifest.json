@@ -5,8 +5,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f6f7f9",
-  "theme_color": "#25364d",
+  "background_color": "#f3f4f6",
+  "theme_color": "#111827",
   "icons": [
     {
       "src": "/cf2000_tracker_icon_1024.png",

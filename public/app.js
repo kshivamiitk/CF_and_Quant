@@ -156,6 +156,20 @@ function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function todayHeading() {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  return `${greeting}, Kumar`;
+}
+
+function todayLabel() {
+  return new Date().toLocaleDateString([], {
+    weekday: "long",
+    month: "long",
+    day: "numeric"
+  });
+}
+
 function contestTiming(contest) {
   const now = Math.floor(Date.now() / 1000);
   const startsIn = contest.startTimeSeconds - now;
@@ -1080,9 +1094,9 @@ function renderToday() {
     <section class="today-main">
       <div class="today-header">
         <div>
-          <span class="section-eyebrow">Private desk</span>
-          <h2>Today</h2>
-          <p>${escapeHtml(quantProgressText())}</p>
+          <span class="section-eyebrow">${escapeHtml(todayLabel())}</span>
+          <h2>${escapeHtml(todayHeading())}</h2>
+          <p>Your focused practice desk. Finish the active problem before moving forward.</p>
         </div>
         <button id="todayRefreshButton" class="secondary-button" type="button">Refresh</button>
       </div>

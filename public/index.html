@@ -6,18 +6,20 @@
     <title>CF 2000 Tracker</title>
     <link rel="icon" href="/alert-icon.svg">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#25364d">
+    <meta name="theme-color" content="#111827">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kumar Quant">
+    <link rel="apple-touch-icon" href="/cf2000_tracker_icon_1024.png">
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
         <div class="app-brand">
-          <span class="brand-mark">KQ</span>
+          <span class="brand-mark" aria-hidden="true">KQ</span>
           <div>
-          <h1>Kumar Quant Tracker</h1>
+            <h1>Kumar Quant</h1>
             <p id="goalText">1700 -> 2000 by 2026-12-31</p>
           </div>
         </div>
@@ -27,17 +29,17 @@
           <span id="syncStatus"></span>
         </div>
         <nav class="top-actions" aria-label="App sections">
-          <button id="todayTab" class="tab-button active" type="button">Today</button>
-          <button id="quantTab" class="tab-button" type="button">Quant</button>
-          <button id="plannerTab" class="tab-button" type="button">Schedule</button>
-          <button id="notesTab" class="tab-button" type="button">Notes</button>
+          <button id="todayTab" class="tab-button active" type="button" data-icon="⌂">Today</button>
+          <button id="quantTab" class="tab-button" type="button" data-icon="Q">Quant</button>
+          <button id="plannerTab" class="tab-button" type="button" data-icon="□">Schedule</button>
+          <button id="notesTab" class="tab-button" type="button" data-icon="≡">Notes</button>
           <button id="contestsTab" class="tab-button contest-tab" type="button">
             <span>Contests</span>
             <span id="contestAlertBadge" class="alert-badge hidden">0</span>
           </button>
-          <button id="treeTab" class="tab-button" type="button">Tree</button>
-          <button id="sheetTab" class="tab-button" type="button">Sheet</button>
-          <button id="statsTab" class="tab-button" type="button">Stats</button>
+          <button id="treeTab" class="tab-button" type="button" data-icon="⌘">Tree</button>
+          <button id="sheetTab" class="tab-button" type="button" data-icon="▦">Sheet</button>
+          <button id="statsTab" class="tab-button" type="button" data-icon="↗">Stats</button>
           <a class="tab-button desktop-link" href="/desktop.html" target="_blank" rel="noreferrer">Desktop</a>
         </nav>
       </header>
