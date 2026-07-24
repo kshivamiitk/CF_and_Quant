@@ -629,7 +629,7 @@ def public_quant_question(question: dict, progress: dict | None = None, include_
         "solutionRevealed": bool(item.get("solutionRevealed")),
     }
     if include_solution:
-        payload["solution"] = question.get("solution") or ""
+        payload["solutionImages"] = question.get("solutionImages") or []
     return payload
 
 

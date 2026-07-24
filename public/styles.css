@@ -680,6 +680,22 @@ select:focus {
   color: var(--green);
 }
 
+.solution-panel.solution-images {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-color: var(--line);
+  background: #ffffff;
+}
+
+.solution-images img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0;
+}
+
 .quant-toolbar {
   padding: 16px 20px 0;
   margin-bottom: 12px;

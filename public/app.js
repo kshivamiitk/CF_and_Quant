@@ -1028,8 +1028,11 @@ function currentQuantCard(compact = false) {
     `;
   }
   const stats = state.quantToday?.stats || state.quant?.stats || {};
-  const solution = current.solution
-    ? `<div class="solution-panel"><h4>Solution</h4><pre>${escapeHtml(current.solution)}</pre></div>`
+  const solutionImages = current.solutionImages || [];
+  const solution = solutionImages.length
+    ? `<div class="solution-panel solution-images">${solutionImages.map((image, index) => `
+        <img src="${escapeHtml(image)}" alt="Solution to question ${escapeHtml(current.number)}, page ${index + 1}" loading="lazy">
+      `).join("")}</div>`
     : `<div class="solution-lock">Solution unlocks after you mark this problem solved.</div>`;
   const actions = current.status === "done"
     ? `<button id="quantNextButton" class="primary-link" type="button">Load Next Problem</button>`
