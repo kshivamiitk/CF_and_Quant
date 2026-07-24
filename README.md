@@ -144,6 +144,28 @@ If you enabled token auth with `REQUIRE_TRACKER_TOKEN=1`, open it once as `https
 
 After that it opens like an app from your Home Screen.
 
+### 5. Enable calendar reminders
+
+The Home Screen app supports Web Push on iOS 16.4 or later. Generate one VAPID
+key pair:
+
+```bash
+npx web-push generate-vapid-keys --json
+```
+
+Add these Production environment variables in Vercel:
+
+- `APP_BASE_URL=https://YOUR-PROJECT.vercel.app`
+- `VAPID_PUBLIC_KEY` from the generated public key
+- `VAPID_PRIVATE_KEY` from the generated private key
+- `VAPID_SUBJECT=mailto:YOUR_EMAIL`
+- `QSTASH_TOKEN` from the Upstash QStash dashboard
+- `REMINDER_DISPATCH_SECRET` set to a long random value
+
+Redeploy, launch the installed iPhone app, open Calendar, and tap **Enable
+reminders**. The app creates one QStash minute schedule and sends a test
+notification immediately.
+
 The roadmap is stored in:
 
 ```text

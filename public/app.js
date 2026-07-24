@@ -19,16 +19,28 @@ const state = {
   personalSaveTimer: null,
   quantSearch: "",
   quantSource: "all",
-  quantStatus: "all"
+  quantStatus: "all",
+  calendarMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  selectedScheduleDate: null,
+  editingEventId: null,
+  selectedNoteId: null,
+  reminderConfig: null
 };
 
 const $ = (id) => document.getElementById(id);
 
-const initialToken = new URLSearchParams(window.location.search).get("token");
+const initialParams = new URLSearchParams(window.location.search);
+const initialToken = initialParams.get("token");
+const initialView = initialParams.get("view");
+const initialDate = initialParams.get("date");
+if (["today", "quant", "planner", "notes", "tree", "contests", "sheet", "stats"].includes(initialView)) {
+  state.activeView = initialView;
+}
+if (/^\d{4}-\d{2}-\d{2}$/.test(initialDate || "")) state.selectedScheduleDate = initialDate;
 if (initialToken) {
   localStorage.setItem("kumarQuantToken", initialToken);
-  window.history.replaceState({}, document.title, window.location.pathname);
 }
+if (initialToken || initialView) window.history.replaceState({}, document.title, window.location.pathname);
 
 function authHeaders(extra = {}) {
   const token = localStorage.getItem("kumarQuantToken");
@@ -154,6 +166,24 @@ function formatLocalDateTime(value) {
 
 function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function localIsoDate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function dateFromIsoDate(value) {
+  const [year, month, day] = String(value).split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function dateTimeInputValue(date) {
+  const value = new Date(date);
+  const offset = value.getTimezoneOffset() * 60000;
+  return new Date(value.getTime() - offset).toISOString().slice(0, 16);
 }
 
 function todayHeading() {
@@ -1088,7 +1118,7 @@ function renderToday() {
   const done = stats.done || 0;
   const progressWidth = total ? Math.min(100, Math.max(0, (done / total) * 100)) : 0;
   const todaysEvents = (state.personal?.schedule || [])
-    .filter((event) => String(event.start || "").slice(0, 10) === todayIsoDate())
+    .filter((event) => String(event.start || "").slice(0, 10) === localIsoDate())
     .sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")))
     .slice(0, 4);
   const nextCf = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done");
@@ -1224,11 +1254,14 @@ async function updateQuantCurrent(fields, debounced = false) {
 
 async function loadPersonal() {
   state.personal = await getJson(`/api/personal?ts=${Date.now()}`);
+  state.selectedScheduleDate ||= localIsoDate();
+  state.selectedNoteId ||= state.personal.notes?.[0]?.id || null;
   renderSchedule();
   renderNotes();
+  await loadReminderStatus();
 }
 
-function savePersonal(debounced = true) {
+function savePersonal(debounced = true, rerender = true) {
   const saveState = $("personalSaveState");
   const notesState = $("notesSaveState");
   if (saveState) saveState.textContent = "Saving...";
@@ -1239,85 +1272,274 @@ function savePersonal(debounced = true) {
     if (result.personal) state.personal = result.personal;
     if (saveState) saveState.textContent = "Saved";
     if (notesState) notesState.textContent = "Saved";
-    renderToday();
-    renderSchedule();
-    renderNotes();
+    if (rerender) {
+      renderToday();
+      renderSchedule();
+      renderNotes();
+    }
   }, debounced ? 350 : 0);
 }
 
-function addScheduleEvent() {
+function eventDate(event) {
+  return String(event.start || "").slice(0, 10);
+}
+
+function openScheduleEditor(event = null) {
+  state.editingEventId = event?.id || null;
+  $("scheduleEditor").classList.remove("hidden");
+  $("scheduleEditorTitle").textContent = event ? "Edit event" : "New event";
+  $("deleteScheduleButton").classList.toggle("hidden", !event);
+  $("scheduleTitleInput").value = event?.title || "";
+  $("scheduleNotesInput").value = event?.notes || "";
+  $("scheduleReminderInput").value = String(event?.reminderMinutes ?? 15);
+  $("scheduleNotifyInput").checked = event?.notify !== false;
+
+  if (event) {
+    $("scheduleStartInput").value = event.start || "";
+    $("scheduleEndInput").value = event.end || "";
+  } else {
+    const selected = dateFromIsoDate(state.selectedScheduleDate || localIsoDate());
+    const now = new Date();
+    selected.setHours(
+      state.selectedScheduleDate === localIsoDate() ? Math.min(23, now.getHours() + 1) : 9,
+      0,
+      0,
+      0
+    );
+    const end = new Date(selected.getTime() + 60 * 60000);
+    $("scheduleStartInput").value = dateTimeInputValue(selected);
+    $("scheduleEndInput").value = dateTimeInputValue(end);
+  }
+  $("scheduleTitleInput").focus();
+}
+
+function closeScheduleEditor() {
+  state.editingEventId = null;
+  $("scheduleEditor").classList.add("hidden");
+}
+
+function saveScheduleEvent() {
   const title = $("scheduleTitleInput").value.trim();
   if (!title) return;
-  state.personal.schedule.push({
-    id: `event-${Date.now()}`,
+  const start = $("scheduleStartInput").value;
+  const existing = state.personal.schedule.find((event) => event.id === state.editingEventId);
+  const event = {
+    ...(existing || {}),
+    id: existing?.id || `event-${Date.now()}`,
     title,
-    start: $("scheduleStartInput").value,
+    start,
+    startUtc: start ? new Date(start).toISOString() : null,
     end: $("scheduleEndInput").value,
+    endUtc: $("scheduleEndInput").value ? new Date($("scheduleEndInput").value).toISOString() : null,
     notes: $("scheduleNotesInput").value.trim(),
-    createdAt: new Date().toISOString()
-  });
-  $("scheduleTitleInput").value = "";
-  $("scheduleStartInput").value = "";
-  $("scheduleEndInput").value = "";
-  $("scheduleNotesInput").value = "";
+    notify: $("scheduleNotifyInput").checked,
+    reminderMinutes: Number($("scheduleReminderInput").value || 0),
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  if (existing) {
+    state.personal.schedule = state.personal.schedule.map((item) => item.id === event.id ? event : item);
+  } else {
+    state.personal.schedule.push(event);
+  }
+  state.selectedScheduleDate = eventDate(event) || state.selectedScheduleDate;
+  closeScheduleEditor();
   savePersonal(false);
 }
 
 function renderSchedule() {
-  if (!$("scheduleList") || !state.personal) return;
+  if (!$("calendarGrid") || !state.personal) return;
+  state.selectedScheduleDate ||= localIsoDate();
+  const month = state.calendarMonth;
+  $("calendarMonthLabel").textContent = month.toLocaleDateString([], { month: "long", year: "numeric" });
+
+  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+  const gridStart = new Date(month.getFullYear(), month.getMonth(), 1 - firstDay.getDay());
+  const eventCounts = new Map();
+  (state.personal.schedule || []).forEach((event) => {
+    const date = eventDate(event);
+    eventCounts.set(date, (eventCounts.get(date) || 0) + 1);
+  });
+  $("calendarGrid").innerHTML = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(gridStart);
+    date.setDate(gridStart.getDate() + index);
+    const iso = localIsoDate(date);
+    const count = eventCounts.get(iso) || 0;
+    const classes = [
+      "calendar-day",
+      date.getMonth() !== month.getMonth() ? "outside-month" : "",
+      iso === localIsoDate() ? "today" : "",
+      iso === state.selectedScheduleDate ? "selected" : ""
+    ].filter(Boolean).join(" ");
+    return `
+      <button class="${classes}" type="button" data-calendar-date="${iso}">
+        <span>${date.getDate()}</span>
+        ${count ? `<i>${count}</i>` : ""}
+      </button>
+    `;
+  }).join("");
+
+  const selectedDate = dateFromIsoDate(state.selectedScheduleDate);
+  const weekday = selectedDate.toLocaleDateString([], { weekday: "long" });
+  const monthName = selectedDate.toLocaleDateString([], { month: "short" });
+  $("agendaDayName").textContent = `${weekday}, ${monthName}`;
+  $("agendaDateNumber").textContent = selectedDate.getDate();
   const events = [...(state.personal.schedule || [])]
+    .filter((event) => eventDate(event) === state.selectedScheduleDate)
     .sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
   $("scheduleList").innerHTML = events.length ? events.map((event) => `
-    <article class="personal-item">
-      <div>
+    <article class="agenda-event">
+      <div class="agenda-time">${event.start ? escapeHtml(new Date(event.start).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })) : "Any time"}</div>
+      <div class="agenda-event-copy">
         <h3>${escapeHtml(event.title || "Untitled event")}</h3>
-        <p>${escapeHtml(formatLocalDateTime(event.start))}${event.end ? ` to ${escapeHtml(formatLocalDateTime(event.end))}` : ""}</p>
-        ${event.notes ? `<pre>${escapeHtml(event.notes)}</pre>` : ""}
+        <p>${event.notify === false ? "No reminder" : `${escapeHtml(String(event.reminderMinutes || 0))} min reminder`}</p>
       </div>
-      <button class="secondary-button" type="button" data-delete-event="${escapeHtml(event.id)}">Delete</button>
+      <button class="icon-control" type="button" data-edit-event="${escapeHtml(event.id)}" aria-label="Edit event">›</button>
     </article>
-  `).join("") : `<div class="empty-state">No schedule events yet.</div>`;
-  document.querySelectorAll("[data-delete-event]").forEach((button) => {
+  `).join("") : `<div class="agenda-empty">Nothing planned for this day.</div>`;
+
+  document.querySelectorAll("[data-calendar-date]").forEach((button) => {
     button.addEventListener("click", () => {
-      state.personal.schedule = state.personal.schedule.filter((event) => event.id !== button.dataset.deleteEvent);
-      savePersonal(false);
+      state.selectedScheduleDate = button.dataset.calendarDate;
+      renderSchedule();
+    });
+  });
+  document.querySelectorAll("[data-edit-event]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const event = state.personal.schedule.find((item) => item.id === button.dataset.editEvent);
+      if (event) openScheduleEditor(event);
     });
   });
 }
 
-function addNote() {
-  const title = $("noteTitleInput").value.trim();
-  const body = $("noteBodyInput").value.trim();
-  if (!title && !body) return;
-  state.personal.notes.unshift({
+function deleteEditingEvent() {
+  if (!state.editingEventId) return;
+  state.personal.schedule = state.personal.schedule.filter((event) => event.id !== state.editingEventId);
+  closeScheduleEditor();
+  savePersonal(false);
+}
+
+function newNote() {
+  const note = {
     id: `note-${Date.now()}`,
-    title: title || "Untitled note",
-    body,
-    createdAt: new Date().toISOString()
-  });
-  $("noteTitleInput").value = "";
-  $("noteBodyInput").value = "";
+    title: "",
+    body: "",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  state.personal.notes.unshift(note);
+  state.selectedNoteId = note.id;
+  renderNotes();
+  $("noteTitleInput").focus();
+}
+
+function saveCurrentNote() {
+  const note = state.personal.notes.find((item) => item.id === state.selectedNoteId);
+  if (!note) return;
+  note.title = $("noteTitleInput").value.trim();
+  note.body = $("noteBodyInput").value;
+  note.updatedAt = new Date().toISOString();
+  savePersonal(false);
+}
+
+function updateCurrentNoteDraft() {
+  const note = state.personal.notes.find((item) => item.id === state.selectedNoteId);
+  if (!note) return;
+  note.title = $("noteTitleInput").value;
+  note.body = $("noteBodyInput").value;
+  note.updatedAt = new Date().toISOString();
+  savePersonal(true, false);
+}
+
+function deleteCurrentNote() {
+  if (!state.selectedNoteId) return;
+  state.personal.notes = state.personal.notes.filter((note) => note.id !== state.selectedNoteId);
+  state.selectedNoteId = state.personal.notes[0]?.id || null;
   savePersonal(false);
 }
 
 function renderNotes() {
   if (!$("notesList") || !state.personal) return;
-  $("notesList").innerHTML = (state.personal.notes || []).length ? state.personal.notes.map((note) => `
-    <article class="personal-item">
-      <div>
-        <h3>${escapeHtml(note.title || "Untitled note")}</h3>
-        <p>${escapeHtml(formatLocalDateTime(note.createdAt))}</p>
-        ${note.body ? `<pre>${escapeHtml(note.body)}</pre>` : ""}
-      </div>
-      <button class="secondary-button" type="button" data-delete-note="${escapeHtml(note.id)}">Delete</button>
-    </article>
-  `).join("") : `<div class="empty-state">No notes yet.</div>`;
-  document.querySelectorAll("[data-delete-note]").forEach((button) => {
+  const notes = state.personal.notes || [];
+  if (state.selectedNoteId && !notes.some((note) => note.id === state.selectedNoteId)) {
+    state.selectedNoteId = notes[0]?.id || null;
+  }
+  $("notesList").innerHTML = notes.length ? notes.map((note) => `
+    <button class="note-list-item ${note.id === state.selectedNoteId ? "active" : ""}" type="button" data-note-id="${escapeHtml(note.id)}">
+      <strong>${escapeHtml(note.title || "New Note")}</strong>
+      <span>${escapeHtml(formatLocalDateTime(note.updatedAt || note.createdAt))}</span>
+      <p>${escapeHtml((note.body || "No additional text").replace(/\s+/g, " ").slice(0, 90))}</p>
+    </button>
+  `).join("") : `<div class="notes-empty">No notes yet.</div>`;
+
+  const selected = notes.find((note) => note.id === state.selectedNoteId);
+  $("noteEmptyState").classList.toggle("hidden", Boolean(selected));
+  $("noteEditorFields").classList.toggle("hidden", !selected);
+  $("saveNoteButton").disabled = !selected;
+  $("deleteNoteButton").disabled = !selected;
+  if (selected) {
+    $("noteTitleInput").value = selected.title || "";
+    $("noteBodyInput").value = selected.body || "";
+  }
+  document.querySelectorAll("[data-note-id]").forEach((button) => {
     button.addEventListener("click", () => {
-      state.personal.notes = state.personal.notes.filter((note) => note.id !== button.dataset.deleteNote);
-      savePersonal(false);
+      state.selectedNoteId = button.dataset.noteId;
+      renderNotes();
     });
   });
+}
+
+function urlBase64ToUint8Array(value) {
+  const padding = "=".repeat((4 - value.length % 4) % 4);
+  const base64 = (value + padding).replaceAll("-", "+").replaceAll("_", "/");
+  return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+}
+
+async function loadReminderStatus() {
+  if (!$("reminderStatus")) return;
+  try {
+    state.reminderConfig = await getJson("/api/push/config");
+  } catch {
+    state.reminderConfig = { configured: false };
+  }
+  const installed = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const permission = "Notification" in window ? Notification.permission : "unsupported";
+  const ready = state.reminderConfig.configured && permission === "granted";
+  $("enableRemindersButton").textContent = ready ? "Send test" : "Enable reminders";
+  $("reminderStatus").className = `reminder-status ${ready ? "ready" : ""}`;
+  $("reminderStatus").innerHTML = ready
+    ? `<strong>Reminders are on</strong><span>Events will alert this iPhone even when the app is closed.</span>`
+    : `<strong>${installed ? "Turn on notifications" : "Install on your Home Screen first"}</strong><span>${escapeHtml(state.reminderConfig.message || "Tap Enable reminders after opening the installed app.")}</span>`;
+}
+
+async function enableReminders() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+    $("reminderStatus").innerHTML = `<strong>Notifications unavailable</strong><span>Use the Home Screen app on iOS 16.4 or later.</span>`;
+    return;
+  }
+  const config = state.reminderConfig || await getJson("/api/push/config");
+  if (!config.configured || !config.publicKey) {
+    $("reminderStatus").innerHTML = `<strong>Server setup needed</strong><span>${escapeHtml(config.message || "Push credentials are not configured.")}</span>`;
+    return;
+  }
+  const permission = Notification.permission === "granted"
+    ? "granted"
+    : await Notification.requestPermission();
+  if (permission !== "granted") {
+    await loadReminderStatus();
+    return;
+  }
+  const registration = await navigator.serviceWorker.ready;
+  let subscription = await registration.pushManager.getSubscription();
+  if (!subscription) {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(config.publicKey)
+    });
+    await postJson("/api/push/subscribe", { subscription: subscription.toJSON() });
+  }
+  await postJson("/api/push/test", {});
+  await loadReminderStatus();
 }
 
 function renderSheet() {
@@ -1449,8 +1671,30 @@ function wireEvents() {
     state.quantStatus = $("quantStatusFilter").value;
     renderQuant();
   });
-  $("addScheduleButton").addEventListener("click", addScheduleEvent);
-  $("addNoteButton").addEventListener("click", addNote);
+  $("addScheduleButton").addEventListener("click", saveScheduleEvent);
+  $("newScheduleButton").addEventListener("click", () => openScheduleEditor());
+  $("closeScheduleEditorButton").addEventListener("click", closeScheduleEditor);
+  $("cancelScheduleButton").addEventListener("click", closeScheduleEditor);
+  $("deleteScheduleButton").addEventListener("click", deleteEditingEvent);
+  $("previousMonthButton").addEventListener("click", () => {
+    state.calendarMonth = new Date(state.calendarMonth.getFullYear(), state.calendarMonth.getMonth() - 1, 1);
+    renderSchedule();
+  });
+  $("nextMonthButton").addEventListener("click", () => {
+    state.calendarMonth = new Date(state.calendarMonth.getFullYear(), state.calendarMonth.getMonth() + 1, 1);
+    renderSchedule();
+  });
+  $("calendarTodayButton").addEventListener("click", () => {
+    state.calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    state.selectedScheduleDate = localIsoDate();
+    renderSchedule();
+  });
+  $("enableRemindersButton").addEventListener("click", enableReminders);
+  $("newNoteButton").addEventListener("click", newNote);
+  $("saveNoteButton").addEventListener("click", saveCurrentNote);
+  $("deleteNoteButton").addEventListener("click", deleteCurrentNote);
+  $("noteTitleInput").addEventListener("input", updateCurrentNoteDraft);
+  $("noteBodyInput").addEventListener("input", updateCurrentNoteDraft);
 }
 
 async function init() {
@@ -1466,9 +1710,12 @@ async function init() {
   state.quantToday = await getJson("/api/quant/today");
   state.quant = await getJson("/api/quant");
   state.personal = await getJson("/api/personal");
+  state.selectedNoteId = state.personal.notes?.[0]?.id || null;
   flattenRoadmap(state.roadmap);
   state.selectedId = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done")?.id || state.flat[0]?.id || null;
   renderAll();
+  setView(state.activeView);
+  await loadReminderStatus();
   await loadContests(false);
   startContestTimers();
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = "kumar-quant-tracker-v4";
+const CACHE_NAME = "kumar-quant-tracker-v5";
 const ASSETS = [
   "/",
   "/index.html",
@@ -32,5 +32,38 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
     ))
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data?.text() || "You have a scheduled task." };
+  }
+  const title = payload.title || "Kumar Quant";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: payload.body || "It is time for your scheduled work.",
+    icon: "/cf2000_tracker_icon_1024.png",
+    badge: "/alert-icon.svg",
+    tag: payload.tag || "kumar-quant-reminder",
+    renotify: true,
+    data: { url: payload.url || "/?view=planner" }
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = new URL(event.notification.data?.url || "/?view=planner", self.location.origin).href;
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const existing = windows.find((client) => client.url.startsWith(self.location.origin));
+      if (existing) {
+        existing.navigate(targetUrl);
+        return existing.focus();
+      }
+      return clients.openWindow(targetUrl);
+    })
   );
 });

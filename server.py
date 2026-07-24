@@ -106,11 +106,22 @@ def default_quant_progress():
 
 def default_personal():
     return {
-        "version": 1,
+        "version": 2,
         "owner": OWNER_NAME,
         "schedule": [],
         "notes": [],
+        "pushSubscriptions": [],
         "updatedAt": None
+    }
+
+
+def public_personal(personal):
+    return {
+        "version": personal.get("version", 2),
+        "owner": personal.get("owner", OWNER_NAME),
+        "schedule": personal.get("schedule", []),
+        "notes": personal.get("notes", []),
+        "updatedAt": personal.get("updatedAt"),
     }
 
 
@@ -819,7 +830,13 @@ class TrackerHandler(BaseHTTPRequestHandler):
         if path == "/api/quant/today":
             return self.send_json(build_quant_today_payload())
         if path == "/api/personal":
-            return self.send_json(read_json(PERSONAL_PATH, default_personal()))
+            return self.send_json(public_personal(read_json(PERSONAL_PATH, default_personal())))
+        if path == "/api/push/config":
+            return self.send_json({
+                "configured": False,
+                "publicKey": "",
+                "message": "Push reminders are available after Vercel environment variables are configured.",
+            })
         if path == "/api/contests":
             query = urlparse(self.path).query
             force_refresh = "refresh=1" in query
@@ -886,9 +903,9 @@ class TrackerHandler(BaseHTTPRequestHandler):
             existing["schedule"] = payload.get("schedule", existing.get("schedule", []))
             existing["notes"] = payload.get("notes", existing.get("notes", []))
             existing["updatedAt"] = isoformat_utc(utc_now())
-            existing["version"] = 1
+            existing["version"] = 2
             write_json(PERSONAL_PATH, existing)
-            return self.send_json({"ok": True, "personal": existing})
+            return self.send_json({"ok": True, "personal": public_personal(existing)})
 
         if not isinstance(payload, dict) or "items" not in payload:
             return self.send_json({"error": "Progress payload must contain items"}, 400)

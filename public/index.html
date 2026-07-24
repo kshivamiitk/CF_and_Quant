@@ -112,34 +112,125 @@
           </section>
 
           <section id="plannerView" class="view">
-            <div class="personal-board">
-              <div class="personal-header">
-                <h2>Schedule</h2>
-                <span id="personalSaveState" class="save-state"></span>
+            <div class="calendar-board">
+              <div class="calendar-header">
+                <div>
+                  <span class="section-eyebrow">Personal planner</span>
+                  <h2>Calendar</h2>
+                  <p>Plan the work. Get reminded when it is time.</p>
+                </div>
+                <div class="calendar-header-actions">
+                  <span id="personalSaveState" class="save-state"></span>
+                  <button id="enableRemindersButton" class="primary-link" type="button">Enable reminders</button>
+                </div>
               </div>
-              <div class="personal-form">
-                <input id="scheduleTitleInput" type="text" placeholder="Event title">
-                <input id="scheduleStartInput" type="datetime-local">
-                <input id="scheduleEndInput" type="datetime-local">
-                <textarea id="scheduleNotesInput" placeholder="Notes"></textarea>
-                <button id="addScheduleButton" class="primary-link" type="button">Add Event</button>
+              <div id="reminderStatus" class="reminder-status"></div>
+              <div class="calendar-layout">
+                <section class="month-panel">
+                  <div class="month-toolbar">
+                    <div class="month-navigation">
+                      <button id="previousMonthButton" class="icon-control" type="button" aria-label="Previous month">‹</button>
+                      <button id="calendarTodayButton" class="secondary-button" type="button">Today</button>
+                      <button id="nextMonthButton" class="icon-control" type="button" aria-label="Next month">›</button>
+                    </div>
+                    <h3 id="calendarMonthLabel"></h3>
+                  </div>
+                  <div class="calendar-weekdays" aria-hidden="true">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                  </div>
+                  <div id="calendarGrid" class="calendar-grid"></div>
+                </section>
+                <aside class="agenda-panel">
+                  <div class="agenda-heading">
+                    <div>
+                      <span id="agendaDayName"></span>
+                      <strong id="agendaDateNumber"></strong>
+                    </div>
+                    <button id="newScheduleButton" class="primary-link" type="button">New event</button>
+                  </div>
+                  <div id="scheduleList" class="agenda-list"></div>
+                </aside>
               </div>
-              <div id="scheduleList" class="personal-list"></div>
+              <div id="scheduleEditor" class="schedule-editor hidden">
+                <div class="editor-heading">
+                  <div>
+                    <span class="section-eyebrow">Event details</span>
+                    <h3 id="scheduleEditorTitle">New event</h3>
+                  </div>
+                  <button id="closeScheduleEditorButton" class="icon-control" type="button" aria-label="Close event editor">×</button>
+                </div>
+                <div class="schedule-form">
+                  <label class="form-field wide-field">
+                    <span>Title</span>
+                    <input id="scheduleTitleInput" type="text" placeholder="What are you working on?">
+                  </label>
+                  <label class="form-field">
+                    <span>Starts</span>
+                    <input id="scheduleStartInput" type="datetime-local">
+                  </label>
+                  <label class="form-field">
+                    <span>Ends</span>
+                    <input id="scheduleEndInput" type="datetime-local">
+                  </label>
+                  <label class="form-field">
+                    <span>Reminder</span>
+                    <select id="scheduleReminderInput">
+                      <option value="0">At start time</option>
+                      <option value="5">5 minutes before</option>
+                      <option value="10">10 minutes before</option>
+                      <option value="15" selected>15 minutes before</option>
+                      <option value="30">30 minutes before</option>
+                      <option value="60">1 hour before</option>
+                      <option value="1440">1 day before</option>
+                    </select>
+                  </label>
+                  <label class="notification-toggle">
+                    <input id="scheduleNotifyInput" type="checkbox" checked>
+                    <span>Notify me</span>
+                  </label>
+                  <label class="form-field wide-field">
+                    <span>Notes</span>
+                    <textarea id="scheduleNotesInput" placeholder="Add preparation details or a link"></textarea>
+                  </label>
+                </div>
+                <div class="editor-actions">
+                  <button id="deleteScheduleButton" class="secondary-button danger-button hidden" type="button">Delete</button>
+                  <button id="cancelScheduleButton" class="secondary-button" type="button">Cancel</button>
+                  <button id="addScheduleButton" class="primary-link" type="button">Save event</button>
+                </div>
+              </div>
             </div>
           </section>
 
           <section id="notesView" class="view">
-            <div class="personal-board">
-              <div class="personal-header">
-                <h2>Notes</h2>
-                <span id="notesSaveState" class="save-state"></span>
-              </div>
-              <div class="personal-form notes-form">
-                <input id="noteTitleInput" type="text" placeholder="Note title">
-                <textarea id="noteBodyInput" placeholder="Write quant interview notes, formulas, reminders"></textarea>
-                <button id="addNoteButton" class="primary-link" type="button">Add Note</button>
-              </div>
-              <div id="notesList" class="personal-list"></div>
+            <div class="notes-board">
+              <aside class="notes-sidebar">
+                <div class="notes-sidebar-header">
+                  <div>
+                    <span class="section-eyebrow">Private notebook</span>
+                    <h2>Notes</h2>
+                  </div>
+                  <button id="newNoteButton" class="icon-control accent-control" type="button" aria-label="New note">+</button>
+                </div>
+                <div id="notesList" class="notes-list"></div>
+              </aside>
+              <section class="note-editor">
+                <div class="note-editor-toolbar">
+                  <span id="notesSaveState" class="save-state"></span>
+                  <div>
+                    <button id="deleteNoteButton" class="secondary-button danger-button" type="button">Delete</button>
+                    <button id="saveNoteButton" class="primary-link" type="button">Save</button>
+                  </div>
+                </div>
+                <div id="noteEmptyState" class="note-empty-state">
+                  <strong>Start a new note</strong>
+                  <span>Keep formulas, interview thoughts, and reminders in one place.</span>
+                </div>
+                <div id="noteEditorFields" class="note-editor-fields hidden">
+                  <input id="noteTitleInput" class="note-title-input" type="text" placeholder="Title">
+                  <textarea id="noteBodyInput" class="note-body-input" placeholder="Start writing..."></textarea>
+                </div>
+              </section>
             </div>
           </section>
 
