@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "generatedAt": "2026-07-23T19:11:01Z",
+  "generatedAt": "2026-07-25T07:42:17Z",
   "cacheTtlSeconds": 600,
   "lookaheadDays": 45,
   "cached": false,
@@ -8,22 +8,6 @@
   "sourceErrors": [],
   "contestCount": 8,
   "contests": [
-    {
-      "id": "codechef-1784917800-0",
-      "platform": "CodeChef",
-      "title": "Weekend Dev Challenge 60: LLD Projects",
-      "url": "https://www.codechef.com/DEVWEEKEND60",
-      "startTime": "2026-07-24T18:30:00Z",
-      "startTimeSeconds": 1784917800,
-      "endTime": "2026-07-26T18:30:00Z",
-      "endTimeSeconds": 1785090600,
-      "durationSeconds": 172800,
-      "status": "upcoming",
-      "urgency": "soon",
-      "startsInSeconds": 83938,
-      "endsInSeconds": 256738,
-      "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Weekend+Dev+Challenge+60%3A+LLD+Projects&dates=20260724T183000Z%2F20260726T183000Z&details=https%3A%2F%2Fwww.codechef.com%2FDEVWEEKEND60&location=https%3A%2F%2Fwww.codechef.com%2FDEVWEEKEND60"
-    },
     {
       "id": "codeforces-2249",
       "platform": "Codeforces",
@@ -36,8 +20,8 @@
       "durationSeconds": 9000,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 242638,
-      "endsInSeconds": 251638,
+      "startsInSeconds": 111162,
+      "endsInSeconds": 120162,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Codeforces%3A+Codeforces+Round+1112+%28Div.+1%29&dates=20260726T143500Z%2F20260726T170500Z&details=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2249&location=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2249"
     },
     {
@@ -52,12 +36,12 @@
       "durationSeconds": 9000,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 242638,
-      "endsInSeconds": 251638,
+      "startsInSeconds": 111162,
+      "endsInSeconds": 120162,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Codeforces%3A+Codeforces+Round+1112+%28Div.+2%29&dates=20260726T143500Z%2F20260726T170500Z&details=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2250&location=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2250"
     },
     {
-      "id": "codechef-1785159000-1",
+      "id": "codechef-1785159000-0",
       "platform": "CodeChef",
       "title": "Monday Munch - DSA Challenge 013 (Rated)",
       "url": "https://www.codechef.com/DSAMONDAY013",
@@ -68,12 +52,12 @@
       "durationSeconds": 10800,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 325138,
-      "endsInSeconds": 335938,
+      "startsInSeconds": 193662,
+      "endsInSeconds": 204462,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Monday+Munch+-+DSA+Challenge+013+%28Rated%29&dates=20260727T133000Z%2F20260727T163000Z&details=https%3A%2F%2Fwww.codechef.com%2FDSAMONDAY013&location=https%3A%2F%2Fwww.codechef.com%2FDSAMONDAY013"
     },
     {
-      "id": "codechef-1785335400-2",
+      "id": "codechef-1785335400-1",
       "platform": "CodeChef",
       "title": "Starters 249",
       "url": "https://www.codechef.com/START249",
@@ -84,12 +68,12 @@
       "durationSeconds": 7200,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 501538,
-      "endsInSeconds": 508738,
+      "startsInSeconds": 370062,
+      "endsInSeconds": 377262,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Starters+249&dates=20260729T143000Z%2F20260729T163000Z&details=https%3A%2F%2Fwww.codechef.com%2FSTART249&location=https%3A%2F%2Fwww.codechef.com%2FSTART249"
     },
     {
-      "id": "codechef-1785522600-3",
+      "id": "codechef-1785522600-2",
       "platform": "CodeChef",
       "title": "Placement Prep Weekends - 01",
       "url": "https://www.codechef.com/PLACEPREP01",
@@ -99,9 +83,9 @@
       "endTimeSeconds": 1785529800,
       "durationSeconds": 7200,
       "status": "upcoming",
-      "urgency": "later",
-      "startsInSeconds": 688738,
-      "endsInSeconds": 695938,
+      "urgency": "week",
+      "startsInSeconds": 557262,
+      "endsInSeconds": 564462,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Placement+Prep+Weekends+-+01&dates=20260731T183000Z%2F20260731T203000Z&details=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP01&location=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP01"
     },
     {
@@ -116,12 +100,12 @@
       "durationSeconds": 7200,
       "status": "upcoming",
       "urgency": "later",
-      "startsInSeconds": 750238,
-      "endsInSeconds": 757438,
+      "startsInSeconds": 618762,
+      "endsInSeconds": 625962,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Codeforces%3A+Codeforces+Round+%28Div.+2%29&dates=20260801T113500Z%2F20260801T133500Z&details=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2248&location=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2248"
     },
     {
-      "id": "codechef-1785940200-4",
+      "id": "codechef-1785940200-3",
       "platform": "CodeChef",
       "title": "Starters 250",
       "url": "https://www.codechef.com/START250",
@@ -132,9 +116,25 @@
       "durationSeconds": 7200,
       "status": "upcoming",
       "urgency": "later",
-      "startsInSeconds": 1106338,
-      "endsInSeconds": 1113538,
+      "startsInSeconds": 974862,
+      "endsInSeconds": 982062,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Starters+250&dates=20260805T143000Z%2F20260805T163000Z&details=https%3A%2F%2Fwww.codechef.com%2FSTART250&location=https%3A%2F%2Fwww.codechef.com%2FSTART250"
+    },
+    {
+      "id": "codechef-1786127400-4",
+      "platform": "CodeChef",
+      "title": "Placement Prep Weekends - 02",
+      "url": "https://www.codechef.com/PLACEPREP02",
+      "startTime": "2026-08-07T18:30:00Z",
+      "startTimeSeconds": 1786127400,
+      "endTime": "2026-08-07T20:30:00Z",
+      "endTimeSeconds": 1786134600,
+      "durationSeconds": 7200,
+      "status": "upcoming",
+      "urgency": "later",
+      "startsInSeconds": 1162062,
+      "endsInSeconds": 1169262,
+      "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Placement+Prep+Weekends+-+02&dates=20260807T183000Z%2F20260807T203000Z&details=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP02&location=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP02"
     }
   ]
 }

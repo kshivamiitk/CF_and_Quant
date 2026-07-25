@@ -1,4 +1,4 @@
-const CACHE_NAME = "kumar-quant-tracker-v5";
+const CACHE_NAME = "kumar-quant-tracker-v7";
 const ASSETS = [
   "/",
   "/index.html",
@@ -43,14 +43,20 @@ self.addEventListener("push", (event) => {
     payload = { body: event.data?.text() || "You have a scheduled task." };
   }
   const title = payload.title || "Kumar Quant";
-  event.waitUntil(self.registration.showNotification(title, {
-    body: payload.body || "It is time for your scheduled work.",
-    icon: "/cf2000_tracker_icon_1024.png",
-    badge: "/alert-icon.svg",
-    tag: payload.tag || "kumar-quant-reminder",
-    renotify: true,
-    data: { url: payload.url || "/?view=planner" }
-  }));
+  const work = [
+    self.registration.showNotification(title, {
+      body: payload.body || "It is time for your scheduled work.",
+      icon: "/cf2000_tracker_icon_1024.png",
+      badge: "/alert-icon.svg",
+      tag: payload.tag || "kumar-quant-reminder",
+      renotify: true,
+      data: { url: payload.url || "/?view=planner" }
+    })
+  ];
+  if (Number.isFinite(Number(payload.appBadge)) && "setAppBadge" in self.navigator) {
+    work.push(self.navigator.setAppBadge(Number(payload.appBadge)));
+  }
+  event.waitUntil(Promise.all(work));
 });
 
 self.addEventListener("notificationclick", (event) => {

@@ -24,7 +24,16 @@ const state = {
   selectedScheduleDate: null,
   editingEventId: null,
   selectedNoteId: null,
-  reminderConfig: null
+  reminderConfig: null,
+  notesSearch: "",
+  noteSelectionRange: null,
+  activeLifePanel: "tasks",
+  spendMonth: localStorage.getItem("kumarSpendMonth") || "",
+  focusMinutes: 25,
+  focusRemainingSeconds: 25 * 60,
+  focusRunning: false,
+  focusStartedAt: null,
+  focusTimer: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -33,14 +42,15 @@ const initialParams = new URLSearchParams(window.location.search);
 const initialToken = initialParams.get("token");
 const initialView = initialParams.get("view");
 const initialDate = initialParams.get("date");
-if (["today", "quant", "planner", "notes", "tree", "contests", "sheet", "stats"].includes(initialView)) {
+const initialNewNote = initialParams.get("new") === "1";
+if (["today", "quant", "planner", "notes", "life", "insights", "tree", "contests", "sheet", "stats"].includes(initialView)) {
   state.activeView = initialView;
 }
 if (/^\d{4}-\d{2}-\d{2}$/.test(initialDate || "")) state.selectedScheduleDate = initialDate;
 if (initialToken) {
   localStorage.setItem("kumarQuantToken", initialToken);
 }
-if (initialToken || initialView) window.history.replaceState({}, document.title, window.location.pathname);
+if (initialToken || initialView || initialNewNote) window.history.replaceState({}, document.title, window.location.pathname);
 
 function authHeaders(extra = {}) {
   const token = localStorage.getItem("kumarQuantToken");
@@ -168,11 +178,70 @@ function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function daysRemainingInYear(date = new Date()) {
+  const yearEnd = new Date(date.getFullYear() + 1, 0, 1);
+  return Math.max(0, Math.ceil((yearEnd.getTime() - date.getTime()) / 86400000));
+}
+
+function updateYearRunway() {
+  const days = daysRemainingInYear();
+  const mark = $("yearAppMark");
+  if (mark) mark.innerHTML = `<strong>${days}</strong><small>days</small>`;
+  document.title = `${days} days left · CF 2000`;
+  const card = $("yearCountdownCard");
+  if (card) {
+    const year = new Date().getFullYear();
+    const total = Math.round((new Date(year + 1, 0, 1) - new Date(year, 0, 1)) / 86400000);
+    const elapsed = Math.max(0, total - days);
+    const pct = Math.min(100, Math.round((elapsed / total) * 100));
+    card.innerHTML = `
+      <div><strong>${days}</strong><span>days left in ${year}</span></div>
+      <div class="year-progress"><span style="width:${pct}%"></span></div>
+      <small>${pct}% of the year complete · icon badge shows ${days}</small>
+    `;
+  }
+  if ("setAppBadge" in navigator) {
+    navigator.setAppBadge(days).catch(() => {});
+  }
+  const favicon = document.querySelector("link[rel='icon']");
+  if (favicon) {
+    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#f5b800"/><text x="32" y="38" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="25" font-weight="800" fill="#241a00">${days}</text><text x="32" y="51" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="7" font-weight="800" fill="#6b4d00">DAYS</text></svg>`;
+    favicon.href = `data:image/svg+xml,${encodeURIComponent(iconSvg)}`;
+  }
+}
+
 function localIsoDate(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+const personalCollectionFields = [
+  "schedule", "notes", "expenses", "incomes", "focusSessions", "tasks", "goals",
+  "habits", "weeklyReviews", "healthLogs", "careerItems", "documents", "accounts", "budgets",
+  "bills", "savingsGoals", "debts"
+];
+
+function ensurePersonalCollections() {
+  if (!state.personal) return;
+  personalCollectionFields.forEach((field) => {
+    if (!Array.isArray(state.personal[field])) state.personal[field] = [];
+  });
+}
+
+function daysBetweenDates(fromIso, toIso) {
+  if (!fromIso || !toIso) return null;
+  const from = dateFromIsoDate(fromIso);
+  const to = dateFromIsoDate(toIso);
+  return Math.round((to - from) / 86400000);
+}
+
+function formatShortDate(value) {
+  if (!value) return "No date";
+  const date = new Date(String(value).length === 10 ? `${value}T12:00:00` : value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString([], { month: "short", day: "numeric", year: date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined });
 }
 
 function dateFromIsoDate(value) {
@@ -313,7 +382,7 @@ function setView(viewName) {
   state.activeView = viewName;
   document.body.dataset.view = viewName;
   document.body.classList.toggle("code-view", ["tree", "sheet", "stats"].includes(viewName));
-  ["today", "quant", "planner", "notes", "tree", "contests", "sheet", "stats"].forEach((name) => {
+  ["today", "quant", "planner", "notes", "life", "insights", "tree", "contests", "sheet", "stats"].forEach((name) => {
     $(`${name}View`).classList.toggle("active", name === viewName);
     $(`${name}Tab`).classList.toggle("active", name === viewName);
   });
@@ -321,6 +390,8 @@ function setView(viewName) {
   if (viewName === "quant") renderQuant();
   if (viewName === "planner") renderSchedule();
   if (viewName === "notes") renderNotes();
+  if (viewName === "life") renderLife();
+  if (viewName === "insights") renderInsights();
   if (viewName === "contests") renderContestsView();
   if (viewName === "sheet") renderSheet();
   if (viewName === "stats") renderStats();
@@ -884,6 +955,13 @@ async function enableContestNotifications() {
     renderContestsView();
     return;
   }
+  if ("serviceWorker" in navigator && "PushManager" in window) {
+    try {
+      await enableReminders();
+    } catch (error) {
+      console.error(error);
+    }
+  }
   if (Notification.permission === "default") {
     await Notification.requestPermission();
   }
@@ -1122,6 +1200,24 @@ function renderToday() {
     .sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")))
     .slice(0, 4);
   const nextCf = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done");
+  const nextContest = visibleContests()[0];
+  const todayFocusMinutes = (state.personal?.focusSessions || [])
+    .filter((session) => sessionDate(session) === localIsoDate())
+    .reduce((sum, session) => sum + Number(session.minutes || 0), 0);
+  const urgentTasks = (state.personal?.tasks || [])
+    .filter((task) => !task.completed && (task.priority === "urgent" || (task.due && String(task.due).slice(0, 10) <= localIsoDate())))
+    .sort((a, b) => String(a.due || "9999").localeCompare(String(b.due || "9999")))
+    .slice(0, 3);
+  const habits = (state.personal?.habits || []).filter((habit) => habitScheduledToday(habit));
+  const habitsDone = habits.filter((habit) => (habit.completions || []).includes(localIsoDate())).length;
+  const currentMonth = localIsoDate().slice(0, 7);
+  const monthIncome = (state.personal?.incomes || []).filter((item) => String(item.date || "").startsWith(currentMonth)
+    || (item.recurring === "monthly" && String(item.date || "").slice(0, 7) < currentMonth)).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const monthSpend = (state.personal?.expenses || []).filter((item) => String(item.date || "").startsWith(currentMonth)).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const upcomingBills = (state.personal?.bills || []).filter((bill) => !bill.paid && bill.dueDate >= localIsoDate()).sort((a, b) => String(a.dueDate).localeCompare(String(b.dueDate)));
+  const monthBills = upcomingBills.filter((bill) => String(bill.dueDate || "").startsWith(currentMonth)).reduce((sum, bill) => sum + Number(bill.amount || 0), 0);
+  const availableCash = (state.personal?.accounts || []).reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const safeToSpend = monthIncome ? monthIncome - monthSpend - monthBills : availableCash - monthBills;
 
   panel.innerHTML = `
     <section class="today-main">
@@ -1168,10 +1264,47 @@ function renderToday() {
         ` : `<p class="muted-copy">No unlocked Codeforces problem left.</p>`}
       </div>
       <div class="today-widget">
-        <h3>Quant Pace</h3>
+        <div class="widget-header">
+          <h3>Next contest</h3>
+          <button type="button" data-open-contests="1">Radar</button>
+        </div>
+        ${nextContest ? `
+          <button class="today-event" type="button" data-open-contests="1">
+            <strong>${escapeHtml(nextContest.title)}</strong>
+            <span>${escapeHtml(contestStatusText(nextContest))} · ${escapeHtml(nextContest.platform)}</span>
+          </button>
+        ` : `<p class="muted-copy">No upcoming contest found.</p>`}
+      </div>
+      <div class="today-widget">
+        <div class="widget-header">
+          <h3>Urgent & due</h3>
+          <button type="button" data-open-life="tasks">Life</button>
+        </div>
+        ${urgentTasks.length ? urgentTasks.map((task) => `
+          <div class="today-task priority-${escapeHtml(task.priority || "normal")}">
+            <button type="button" data-today-toggle-task="${escapeHtml(task.id)}">${task.completed ? "✓" : ""}</button>
+            <div><strong>${escapeHtml(task.title)}</strong><span>${task.due ? escapeHtml(formatLocalDateTime(task.due)) : "Marked urgent"}</span></div>
+          </div>
+        `).join("") : `<p class="muted-copy">No urgent or overdue tasks.</p>`}
+      </div>
+      <div class="today-widget">
+        <div class="widget-header">
+          <h3>Money pulse</h3>
+          <button type="button" data-open-insights="1">Money</button>
+        </div>
+        <div class="money-pulse">
+          <div><strong>${escapeHtml(formatMoney(safeToSpend))}</strong><span>Safe to spend</span></div>
+          <div><strong>${upcomingBills[0] ? escapeHtml(formatMoney(upcomingBills[0].amount)) : "—"}</strong><span>${upcomingBills[0] ? `Next: ${escapeHtml(upcomingBills[0].title)}` : "No upcoming bill"}</span></div>
+        </div>
+      </div>
+      <div class="today-widget">
+        <div class="widget-header">
+          <h3>Today’s pace</h3>
+          <button type="button" data-open-life="goals">Habits</button>
+        </div>
         <div class="stats-grid compact-stats">
-          <div class="stat-box"><strong>${stats.done || 0}</strong><span>Solved</span></div>
-          <div class="stat-box"><strong>${stats.remaining || 0}</strong><span>Left</span></div>
+          <div class="stat-box"><strong>${todayFocusMinutes}</strong><span>Focus min</span></div>
+          <div class="stat-box"><strong>${habitsDone}/${habits.length}</strong><span>Habits done</span></div>
         </div>
       </div>
     </aside>
@@ -1186,6 +1319,13 @@ function renderToday() {
     });
   });
   document.querySelectorAll("[data-open-cf-home]").forEach((button) => button.addEventListener("click", () => setView("tree")));
+  document.querySelectorAll("[data-open-contests]").forEach((button) => button.addEventListener("click", () => setView("contests")));
+  document.querySelectorAll("[data-open-insights]").forEach((button) => button.addEventListener("click", () => setView("insights")));
+  document.querySelectorAll("[data-open-life]").forEach((button) => button.addEventListener("click", () => {
+    setView("life");
+    setLifePanel(button.dataset.openLife);
+  }));
+  document.querySelectorAll("[data-today-toggle-task]").forEach((button) => button.addEventListener("click", () => toggleTask(button.dataset.todayToggleTask)));
 }
 
 function visibleQuantQuestions() {
@@ -1254,10 +1394,13 @@ async function updateQuantCurrent(fields, debounced = false) {
 
 async function loadPersonal() {
   state.personal = await getJson(`/api/personal?ts=${Date.now()}`);
+  ensurePersonalCollections();
   state.selectedScheduleDate ||= localIsoDate();
   state.selectedNoteId ||= state.personal.notes?.[0]?.id || null;
   renderSchedule();
   renderNotes();
+  renderInsights();
+  renderLife();
   await loadReminderStatus();
 }
 
@@ -1268,14 +1411,26 @@ function savePersonal(debounced = true, rerender = true) {
   if (notesState) notesState.textContent = "Saving...";
   clearTimeout(state.personalSaveTimer);
   state.personalSaveTimer = setTimeout(async () => {
-    const result = await postJson("/api/personal", state.personal);
-    if (result.personal) state.personal = result.personal;
-    if (saveState) saveState.textContent = "Saved";
-    if (notesState) notesState.textContent = "Saved";
-    if (rerender) {
-      renderToday();
-      renderSchedule();
-      renderNotes();
+    try {
+      const result = await postJson("/api/personal", state.personal);
+      if (result.personal) state.personal = result.personal;
+      if (saveState) saveState.textContent = "Saved";
+      if (notesState) notesState.textContent = "Saved";
+      const insightsState = $("insightsSaveState");
+      if (insightsState) insightsState.textContent = "Saved";
+      if (rerender) {
+        renderToday();
+        renderSchedule();
+        renderNotes();
+        renderInsights();
+        renderLife();
+      }
+    } catch (error) {
+      if (saveState) saveState.textContent = "Save failed";
+      if (notesState) notesState.textContent = "Save failed";
+      const insightsState = $("insightsSaveState");
+      if (insightsState) insightsState.textContent = "Save failed";
+      console.error(error);
     }
   }, debounced ? 350 : 0);
 }
@@ -1424,12 +1579,16 @@ function newNote() {
     id: `note-${Date.now()}`,
     title: "",
     body: "",
+    contentHtml: "",
+    pinned: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
   state.personal.notes.unshift(note);
   state.selectedNoteId = note.id;
+  state.noteSelectionRange = null;
   renderNotes();
+  $("notesBoard").classList.add("editing-note");
   $("noteTitleInput").focus();
 }
 
@@ -1437,17 +1596,21 @@ function saveCurrentNote() {
   const note = state.personal.notes.find((item) => item.id === state.selectedNoteId);
   if (!note) return;
   note.title = $("noteTitleInput").value.trim();
-  note.body = $("noteBodyInput").value;
+  note.body = $("noteBodyInput").innerText;
+  note.contentHtml = sanitizeNoteHtml($("noteBodyInput").innerHTML);
   note.updatedAt = new Date().toISOString();
   savePersonal(false);
+  $("notesBoard").classList.remove("editing-note");
 }
 
 function updateCurrentNoteDraft() {
   const note = state.personal.notes.find((item) => item.id === state.selectedNoteId);
   if (!note) return;
   note.title = $("noteTitleInput").value;
-  note.body = $("noteBodyInput").value;
+  note.body = $("noteBodyInput").innerText;
+  note.contentHtml = sanitizeNoteHtml($("noteBodyInput").innerHTML);
   note.updatedAt = new Date().toISOString();
+  $("noteEditedMeta").textContent = `Edited ${formatNoteDate(note.updatedAt)}`;
   savePersonal(true, false);
 }
 
@@ -1455,38 +1618,504 @@ function deleteCurrentNote() {
   if (!state.selectedNoteId) return;
   state.personal.notes = state.personal.notes.filter((note) => note.id !== state.selectedNoteId);
   state.selectedNoteId = state.personal.notes[0]?.id || null;
+  $("notesBoard").classList.remove("editing-note");
   savePersonal(false);
+}
+
+function formatNoteDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString([], {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function sanitizeNoteHtml(value) {
+  const container = document.createElement("div");
+  container.innerHTML = String(value || "");
+  container.querySelectorAll("script, style, iframe, object, embed, form").forEach((element) => element.remove());
+  container.querySelectorAll("*").forEach((element) => {
+    [...element.attributes].forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      const unsafeLink = ["href", "src"].includes(name) && /^\s*javascript:/i.test(attribute.value);
+      if (name.startsWith("on") || unsafeLink) element.removeAttribute(attribute.name);
+    });
+  });
+  return container.innerHTML;
+}
+
+function toggleCurrentNotePin() {
+  const note = state.personal.notes.find((item) => item.id === state.selectedNoteId);
+  if (!note) return;
+  note.pinned = !note.pinned;
+  note.updatedAt = new Date().toISOString();
+  savePersonal(false);
+}
+
+function rememberNoteSelection() {
+  const selection = window.getSelection();
+  const editor = $("noteBodyInput");
+  if (!selection?.rangeCount || !editor.contains(selection.anchorNode)) return;
+  state.noteSelectionRange = selection.getRangeAt(0).cloneRange();
+}
+
+function restoreNoteSelection() {
+  if (!state.noteSelectionRange) return;
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(state.noteSelectionRange);
+}
+
+function runNoteCommand(command, value = null) {
+  $("noteBodyInput").focus();
+  restoreNoteSelection();
+  document.execCommand(command, false, value);
+  updateCurrentNoteDraft();
+  rememberNoteSelection();
+}
+
+function insertNoteChecklist() {
+  $("noteBodyInput").focus();
+  document.execCommand(
+    "insertHTML",
+    false,
+    `<div class="note-check-item"><span class="note-check-circle" contenteditable="false">○</span><span>&nbsp;</span></div>`
+  );
+  updateCurrentNoteDraft();
+}
+
+function addNoteLink() {
+  rememberNoteSelection();
+  const url = window.prompt("Enter a link");
+  if (!url) return;
+  const safeUrl = /^(https?:|mailto:)/i.test(url) ? url : `https://${url}`;
+  runNoteCommand("createLink", safeUrl);
 }
 
 function renderNotes() {
   if (!$("notesList") || !state.personal) return;
-  const notes = state.personal.notes || [];
+  const allNotes = state.personal.notes || [];
+  const query = state.notesSearch.trim().toLowerCase();
+  const notes = [...allNotes]
+    .filter((note) => !query || `${note.title || ""} ${note.body || ""}`.toLowerCase().includes(query))
+    .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned))
+      || String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
   if (state.selectedNoteId && !notes.some((note) => note.id === state.selectedNoteId)) {
     state.selectedNoteId = notes[0]?.id || null;
   }
   $("notesList").innerHTML = notes.length ? notes.map((note) => `
     <button class="note-list-item ${note.id === state.selectedNoteId ? "active" : ""}" type="button" data-note-id="${escapeHtml(note.id)}">
-      <strong>${escapeHtml(note.title || "New Note")}</strong>
-      <span>${escapeHtml(formatLocalDateTime(note.updatedAt || note.createdAt))}</span>
-      <p>${escapeHtml((note.body || "No additional text").replace(/\s+/g, " ").slice(0, 90))}</p>
+      <strong>${note.pinned ? `<span class="note-pin" aria-label="Pinned">●</span>` : ""}${escapeHtml(note.title || "New Note")}</strong>
+      <span>${escapeHtml(new Date(note.updatedAt || note.createdAt).toLocaleDateString([], { month: "short", day: "numeric" }))}</span>
+      <p>${escapeHtml((note.body || "No additional text").replace(/\s+/g, " ").slice(0, 110))}</p>
     </button>
-  `).join("") : `<div class="notes-empty">No notes yet.</div>`;
+  `).join("") : `<div class="notes-empty">${query ? "No matching notes." : "No notes yet."}</div>`;
 
-  const selected = notes.find((note) => note.id === state.selectedNoteId);
+  const selected = allNotes.find((note) => note.id === state.selectedNoteId);
   $("noteEmptyState").classList.toggle("hidden", Boolean(selected));
   $("noteEditorFields").classList.toggle("hidden", !selected);
   $("saveNoteButton").disabled = !selected;
   $("deleteNoteButton").disabled = !selected;
+  $("pinNoteButton").disabled = !selected;
+  $("pinNoteButton").classList.toggle("active", Boolean(selected?.pinned));
+  $("pinNoteButton").title = selected?.pinned ? "Unpin note" : "Pin note";
   if (selected) {
     $("noteTitleInput").value = selected.title || "";
-    $("noteBodyInput").value = selected.body || "";
+    $("noteEditedMeta").textContent = `Edited ${formatNoteDate(selected.updatedAt || selected.createdAt)}`;
+    const fallbackHtml = escapeHtml(selected.body || "").replaceAll("\n", "<br>");
+    $("noteBodyInput").innerHTML = sanitizeNoteHtml(selected.contentHtml || fallbackHtml);
   }
   document.querySelectorAll("[data-note-id]").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedNoteId = button.dataset.noteId;
+      state.noteSelectionRange = null;
       renderNotes();
+      $("notesBoard").classList.add("editing-note");
     });
   });
+}
+
+function nextRecurringValue(value, recurrence) {
+  if (!value || recurrence === "none") return value;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  if (recurrence === "daily") date.setDate(date.getDate() + 1);
+  if (recurrence === "weekly") date.setDate(date.getDate() + 7);
+  if (recurrence === "monthly") date.setMonth(date.getMonth() + 1);
+  if (recurrence === "yearly") date.setFullYear(date.getFullYear() + 1);
+  return String(value).length === 10 ? localIsoDate(date) : dateTimeInputValue(date);
+}
+
+function removePersonalItem(collection, id) {
+  state.personal[collection] = (state.personal[collection] || []).filter((item) => item.id !== id);
+  savePersonal(false);
+}
+
+function addTask(event) {
+  event.preventDefault();
+  const title = $("taskTitleInput").value.trim();
+  if (!title) return;
+  state.personal.tasks.unshift({
+    id: `task-${Date.now()}`,
+    title,
+    due: $("taskDueInput").value,
+    dueUtc: $("taskDueInput").value ? new Date($("taskDueInput").value).toISOString() : null,
+    priority: $("taskPriorityInput").value,
+    recurrence: $("taskRecurrenceInput").value,
+    reminderMinutes: Number($("taskReminderInput").value || 0),
+    project: $("taskProjectInput").value.trim(),
+    notes: $("taskNotesInput").value.trim(),
+    completed: false,
+    createdAt: new Date().toISOString()
+  });
+  $("taskForm").reset();
+  $("taskPriorityInput").value = "normal";
+  $("taskRecurrenceInput").value = "none";
+  savePersonal(false);
+}
+
+function toggleTask(id) {
+  const task = state.personal.tasks.find((item) => item.id === id);
+  if (!task) return;
+  task.completed = !task.completed;
+  task.completedAt = task.completed ? new Date().toISOString() : null;
+  if (task.completed && task.recurrence && task.recurrence !== "none" && task.due) {
+    const nextDue = nextRecurringValue(task.due, task.recurrence);
+    state.personal.tasks.unshift({
+      ...task,
+      id: `task-${Date.now()}`,
+      due: nextDue,
+      dueUtc: nextDue ? new Date(nextDue).toISOString() : null,
+      completed: false,
+      completedAt: null,
+      lastNotifiedFor: null,
+      createdAt: new Date().toISOString()
+    });
+  }
+  savePersonal(false);
+}
+
+function updateTaskPriority(id, priority) {
+  const task = state.personal.tasks.find((item) => item.id === id);
+  if (!task) return;
+  task.priority = priority;
+  task.updatedAt = new Date().toISOString();
+  savePersonal(false);
+}
+
+function addGoal(event) {
+  event.preventDefault();
+  const title = $("goalTitleInput").value.trim();
+  if (!title) return;
+  state.personal.goals.unshift({
+    id: `goal-${Date.now()}`,
+    title,
+    horizon: $("goalHorizonInput").value,
+    targetDate: $("goalTargetDateInput").value,
+    why: $("goalWhyInput").value.trim(),
+    progress: 0,
+    createdAt: new Date().toISOString()
+  });
+  $("goalForm").reset();
+  savePersonal(false);
+}
+
+function updateGoalProgress(id, value) {
+  const goal = state.personal.goals.find((item) => item.id === id);
+  if (!goal) return;
+  goal.progress = Math.min(100, Math.max(0, Number(value || 0)));
+  goal.completedAt = goal.progress >= 100 ? (goal.completedAt || new Date().toISOString()) : null;
+  savePersonal(true, false);
+  renderLife();
+}
+
+function addHabit(event) {
+  event.preventDefault();
+  const title = $("habitTitleInput").value.trim();
+  if (!title) return;
+  state.personal.habits.unshift({
+    id: `habit-${Date.now()}`,
+    title,
+    frequency: $("habitFrequencyInput").value,
+    reminderTime: $("habitReminderTimeInput").value,
+    completions: [],
+    createdAt: new Date().toISOString()
+  });
+  $("habitForm").reset();
+  savePersonal(false);
+}
+
+function toggleHabit(id, date = localIsoDate()) {
+  const habit = state.personal.habits.find((item) => item.id === id);
+  if (!habit) return;
+  habit.completions ||= [];
+  habit.completions = habit.completions.includes(date)
+    ? habit.completions.filter((item) => item !== date)
+    : [...habit.completions, date].slice(-730);
+  savePersonal(false);
+}
+
+function saveWeeklyReview(event) {
+  event.preventDefault();
+  const end = localIsoDate();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 6);
+  const start = localIsoDate(startDate);
+  const review = {
+    id: `review-${Date.now()}`,
+    weekStart: start,
+    weekEnd: end,
+    text: $("weeklyReviewTextInput").value.trim(),
+    rating: Number($("weeklyReviewRatingInput").value || 3),
+    createdAt: new Date().toISOString()
+  };
+  state.personal.weeklyReviews.unshift(review);
+  $("weeklyReviewForm").reset();
+  $("weeklyReviewRatingInput").value = "3";
+  savePersonal(false);
+}
+
+function habitStreak(habit) {
+  const completed = new Set(habit.completions || []);
+  let cursor = new Date();
+  if (!completed.has(localIsoDate(cursor))) cursor.setDate(cursor.getDate() - 1);
+  let streak = 0;
+  while (completed.has(localIsoDate(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function habitScheduledToday(habit, date = new Date()) {
+  if (habit.frequency === "weekdays" && [0, 6].includes(date.getDay())) return false;
+  if (habit.frequency === "weekly3") {
+    const weekStart = new Date(date);
+    const dayOffset = (weekStart.getDay() + 6) % 7;
+    weekStart.setDate(weekStart.getDate() - dayOffset);
+    const completionsThisWeek = (habit.completions || []).filter((value) => value >= localIsoDate(weekStart) && value <= localIsoDate(date)).length;
+    return completionsThisWeek < 3;
+  }
+  return true;
+}
+
+function saveHealthLog(event) {
+  event.preventDefault();
+  const date = $("healthDateInput").value || localIsoDate();
+  const existing = state.personal.healthLogs.find((item) => item.date === date);
+  const log = {
+    ...(existing || {}),
+    id: existing?.id || `health-${Date.now()}`,
+    date,
+    sleep: Number($("healthSleepInput").value || 0),
+    steps: Number($("healthStepsInput").value || 0),
+    water: Number($("healthWaterInput").value || 0),
+    weight: Number($("healthWeightInput").value || 0),
+    mood: Number($("healthMoodInput").value || 0),
+    energy: Number($("healthEnergyInput").value || 0),
+    workout: $("healthWorkoutInput").value.trim(),
+    meals: $("healthMealsInput").value.trim(),
+    screenTime: Number($("healthScreenTimeInput").value || 0),
+    medication: $("healthMedicationInput").value.trim(),
+    updatedAt: new Date().toISOString()
+  };
+  state.personal.healthLogs = existing
+    ? state.personal.healthLogs.map((item) => item.id === existing.id ? log : item)
+    : [log, ...state.personal.healthLogs];
+  $("healthForm").reset();
+  $("healthDateInput").value = localIsoDate();
+  savePersonal(false);
+}
+
+function addCareerItem(event) {
+  event.preventDefault();
+  const title = $("careerTitleInput").value.trim();
+  if (!title) return;
+  state.personal.careerItems.unshift({
+    id: `career-${Date.now()}`,
+    type: $("careerTypeInput").value,
+    title,
+    status: $("careerStatusInput").value,
+    dueDate: $("careerDueInput").value,
+    link: $("careerLinkInput").value.trim(),
+    notes: $("careerNotesInput").value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  $("careerForm").reset();
+  savePersonal(false);
+}
+
+function updateCareerStatus(id, status) {
+  const item = state.personal.careerItems.find((entry) => entry.id === id);
+  if (!item) return;
+  item.status = status;
+  item.updatedAt = new Date().toISOString();
+  savePersonal(false);
+}
+
+function addDocumentRecord(event) {
+  event.preventDefault();
+  const title = $("documentTitleInput").value.trim();
+  if (!title) return;
+  state.personal.documents.unshift({
+    id: `document-${Date.now()}`,
+    type: $("documentTypeInput").value,
+    title,
+    expiryDate: $("documentExpiryInput").value,
+    link: $("documentLinkInput").value.trim(),
+    notes: $("documentNotesInput").value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  $("documentForm").reset();
+  savePersonal(false);
+}
+
+function setLifePanel(panel) {
+  state.activeLifePanel = panel;
+  document.querySelectorAll("[data-life-panel]").forEach((button) => button.classList.toggle("active", button.dataset.lifePanel === panel));
+  ["tasks", "goals", "health", "career", "vault"].forEach((name) => {
+    $(`life${name.charAt(0).toUpperCase()}${name.slice(1)}Panel`).classList.toggle("active", name === panel);
+  });
+}
+
+function renderLife() {
+  if (!$("lifeSummary") || !state.personal) return;
+  ensurePersonalCollections();
+  const today = localIsoDate();
+  const openTasks = state.personal.tasks.filter((task) => !task.completed);
+  const urgentTasks = openTasks.filter((task) => task.priority === "urgent");
+  const overdueTasks = openTasks.filter((task) => task.due && String(task.due).slice(0, 10) < today);
+  const habitsDueToday = state.personal.habits.filter((habit) => habitScheduledToday(habit));
+  const habitsDone = habitsDueToday.filter((habit) => (habit.completions || []).includes(today)).length;
+  const expiringDocuments = state.personal.documents.filter((document) => {
+    const days = daysBetweenDates(today, document.expiryDate);
+    return days !== null && days >= 0 && days <= 30;
+  });
+  $("lifeSummary").innerHTML = `
+    <button type="button" data-summary-panel="tasks"><strong>${openTasks.length}</strong><span>Open tasks</span></button>
+    <button type="button" data-summary-panel="tasks" class="${urgentTasks.length ? "urgent" : ""}"><strong>${urgentTasks.length}</strong><span>Urgent</span></button>
+    <button type="button" data-summary-panel="tasks" class="${overdueTasks.length ? "warning" : ""}"><strong>${overdueTasks.length}</strong><span>Overdue</span></button>
+    <button type="button" data-summary-panel="goals"><strong>${habitsDone}/${habitsDueToday.length}</strong><span>Habits today</span></button>
+    <button type="button" data-summary-panel="vault"><strong>${expiringDocuments.length}</strong><span>Expiring soon</span></button>
+  `;
+  document.querySelectorAll("[data-summary-panel]").forEach((button) => button.addEventListener("click", () => setLifePanel(button.dataset.summaryPanel)));
+
+  const filter = $("taskFilterInput").value;
+  const filteredTasks = openTasks.concat(filter === "all" ? state.personal.tasks.filter((task) => task.completed) : [])
+    .filter((task) => filter !== "today" || String(task.due || "").slice(0, 10) === today)
+    .filter((task) => filter !== "urgent" || task.priority === "urgent")
+    .sort((a, b) => Number(a.completed) - Number(b.completed)
+      || ({ urgent: 0, high: 1, normal: 2 }[a.priority] ?? 2) - ({ urgent: 0, high: 1, normal: 2 }[b.priority] ?? 2)
+      || String(a.due || "9999").localeCompare(String(b.due || "9999")));
+  $("taskList").innerHTML = filteredTasks.length ? filteredTasks.map((task) => {
+    const overdue = !task.completed && task.due && String(task.due).slice(0, 10) < today;
+    return `
+      <article class="task-row priority-${escapeHtml(task.priority || "normal")} ${task.completed ? "completed" : ""} ${overdue ? "overdue" : ""}">
+        <button type="button" class="task-check" data-toggle-task="${escapeHtml(task.id)}">${task.completed ? "✓" : ""}</button>
+        <div>
+          <strong>${escapeHtml(task.title)}</strong>
+          <span>${task.due ? escapeHtml(formatLocalDateTime(task.due)) : "No due date"}${task.project ? ` · ${escapeHtml(task.project)}` : ""}</span>
+          ${task.notes ? `<p>${escapeHtml(task.notes)}</p>` : ""}
+        </div>
+        <select class="task-priority-select" data-task-priority="${escapeHtml(task.id)}">
+          ${["normal", "high", "urgent"].map((priority) => `<option value="${priority}" ${task.priority === priority ? "selected" : ""}>${priority}</option>`).join("")}
+        </select>
+        <button type="button" class="record-delete" data-remove-task="${escapeHtml(task.id)}">×</button>
+      </article>
+    `;
+  }).join("") : `<p class="muted-copy">Nothing here. Your attention is clear.</p>`;
+
+  $("goalList").innerHTML = state.personal.goals.length ? state.personal.goals.map((goal) => `
+    <div class="progress-record">
+      <div><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(goal.horizon)} · ${escapeHtml(formatShortDate(goal.targetDate))}</span></div>
+      <b>${Number(goal.progress || 0)}%</b>
+      <input type="range" min="0" max="100" value="${Number(goal.progress || 0)}" data-goal-progress="${escapeHtml(goal.id)}">
+      <button type="button" class="record-delete" data-remove-goal="${escapeHtml(goal.id)}">×</button>
+    </div>
+  `).join("") : `<p class="muted-copy">Add the outcomes you are working toward.</p>`;
+  $("habitList").innerHTML = state.personal.habits.length ? state.personal.habits.map((habit) => {
+    const done = (habit.completions || []).includes(today);
+    return `
+      <div class="habit-row ${done ? "done" : ""}">
+        <button type="button" data-toggle-habit="${escapeHtml(habit.id)}">${done ? "✓" : ""}</button>
+        <div><strong>${escapeHtml(habit.title)}</strong><span>${escapeHtml(habit.frequency)}${habit.reminderTime ? ` · ${escapeHtml(habit.reminderTime)}` : ""}</span></div>
+        <b>${habitStreak(habit)} day streak</b>
+        <button type="button" class="record-delete" data-remove-habit="${escapeHtml(habit.id)}">×</button>
+      </div>
+    `;
+  }).join("") : `<p class="muted-copy">Add a small behavior worth repeating.</p>`;
+
+  const weekStartDate = new Date();
+  weekStartDate.setDate(weekStartDate.getDate() - 6);
+  const weekStart = localIsoDate(weekStartDate);
+  const completedThisWeek = state.personal.tasks.filter((task) => task.completedAt && localIsoDate(new Date(task.completedAt)) >= weekStart).length;
+  const focusThisWeek = focusMinutesBetween(weekStart, today);
+  const spendThisWeek = state.personal.expenses.filter((expense) => expense.date >= weekStart && expense.date <= today).reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
+  const habitChecksThisWeek = state.personal.habits.reduce((sum, habit) => sum + (habit.completions || []).filter((date) => date >= weekStart && date <= today).length, 0);
+  $("weeklyReviewSummary").innerHTML = `
+    <span><strong>${completedThisWeek}</strong> tasks completed</span>
+    <span><strong>${focusThisWeek}</strong> focus min</span>
+    <span><strong>${habitChecksThisWeek}</strong> habit checks</span>
+    <span><strong>${escapeHtml(formatMoney(spendThisWeek))}</strong> spent</span>
+  `;
+  $("weeklyReviewList").innerHTML = state.personal.weeklyReviews.slice(0, 4).map((review) => `
+    <div class="compact-record"><div><strong>${review.rating}/5 · ${escapeHtml(formatShortDate(review.weekEnd))}</strong><span>${escapeHtml(review.text || "No written reflection")}</span></div><button class="record-delete" type="button" data-remove-review="${escapeHtml(review.id)}">×</button></div>
+  `).join("");
+
+  const healthLogs = [...state.personal.healthLogs].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const latestHealth = healthLogs[0];
+  const lastSevenHealth = healthLogs.filter((log) => daysBetweenDates(log.date, today) >= 0 && daysBetweenDates(log.date, today) <= 6);
+  const avgSleep = lastSevenHealth.length ? lastSevenHealth.reduce((sum, log) => sum + Number(log.sleep || 0), 0) / lastSevenHealth.length : 0;
+  const avgSteps = lastSevenHealth.length ? Math.round(lastSevenHealth.reduce((sum, log) => sum + Number(log.steps || 0), 0) / lastSevenHealth.length) : 0;
+  $("healthSummary").innerHTML = `
+    <div><strong>${avgSleep.toFixed(1)}</strong><span>Avg sleep · 7 logs</span></div>
+    <div><strong>${avgSteps.toLocaleString("en-IN")}</strong><span>Avg steps</span></div>
+    <div><strong>${latestHealth?.water || 0}L</strong><span>Latest water</span></div>
+    <div><strong>${latestHealth?.mood || "—"}/5</strong><span>Latest mood</span></div>
+  `;
+  $("healthLogList").innerHTML = healthLogs.slice(0, 10).map((log) => `
+    <div class="compact-record">
+      <div><strong>${escapeHtml(formatShortDate(log.date))}</strong><span>${log.sleep || 0}h sleep · ${Number(log.steps || 0).toLocaleString("en-IN")} steps${log.screenTime ? ` · ${log.screenTime}h screen` : ""}${log.workout ? ` · ${escapeHtml(log.workout)}` : ""}${log.meals ? ` · ${escapeHtml(log.meals)}` : ""}</span></div>
+      <button type="button" class="record-delete" data-remove-health="${escapeHtml(log.id)}">×</button>
+    </div>
+  `).join("") || `<p class="muted-copy">Your check-ins will appear here.</p>`;
+
+  const careerItems = [...state.personal.careerItems].sort((a, b) => String(a.dueDate || "9999").localeCompare(String(b.dueDate || "9999")));
+  $("careerList").innerHTML = careerItems.length ? careerItems.map((item) => `
+    <article class="career-row">
+      <span>${escapeHtml(item.type)}</span>
+      <div><strong>${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a>` : escapeHtml(item.title)}</strong><p>${escapeHtml(item.notes || formatShortDate(item.dueDate))}</p></div>
+      <select data-career-status="${escapeHtml(item.id)}">${["Planned", "In progress", "Waiting", "Done"].map((status) => `<option ${item.status === status ? "selected" : ""}>${status}</option>`).join("")}</select>
+      <button type="button" class="record-delete" data-remove-career="${escapeHtml(item.id)}">×</button>
+    </article>
+  `).join("") : `<p class="muted-copy">Track applications, interviews, courses and reading here.</p>`;
+
+  const documents = [...state.personal.documents].sort((a, b) => String(a.expiryDate || "9999").localeCompare(String(b.expiryDate || "9999")));
+  $("documentList").innerHTML = documents.length ? documents.map((document) => {
+    const days = daysBetweenDates(today, document.expiryDate);
+    const urgent = days !== null && days <= 30;
+    return `
+      <article class="document-row ${urgent ? "expiring" : ""}">
+        <span>${escapeHtml(document.type)}</span>
+        <div><strong>${document.link ? `<a href="${escapeHtml(document.link)}" target="_blank" rel="noreferrer">${escapeHtml(document.title)}</a>` : escapeHtml(document.title)}</strong><p>${document.expiryDate ? `${days < 0 ? "Expired" : `Expires in ${days} days`} · ${escapeHtml(formatShortDate(document.expiryDate))}` : escapeHtml(document.notes || "No expiry")}</p></div>
+        <button type="button" class="record-delete" data-remove-document="${escapeHtml(document.id)}">×</button>
+      </article>
+    `;
+  }).join("") : `<p class="muted-copy">Store safe references and expiry dates here.</p>`;
+
+  document.querySelectorAll("[data-toggle-task]").forEach((button) => button.addEventListener("click", () => toggleTask(button.dataset.toggleTask)));
+  document.querySelectorAll("[data-task-priority]").forEach((select) => select.addEventListener("change", () => updateTaskPriority(select.dataset.taskPriority, select.value)));
+  document.querySelectorAll("[data-toggle-habit]").forEach((button) => button.addEventListener("click", () => toggleHabit(button.dataset.toggleHabit)));
+  document.querySelectorAll("[data-goal-progress]").forEach((input) => input.addEventListener("change", () => updateGoalProgress(input.dataset.goalProgress, input.value)));
+  document.querySelectorAll("[data-career-status]").forEach((select) => select.addEventListener("change", () => updateCareerStatus(select.dataset.careerStatus, select.value)));
+  [["task", "tasks"], ["goal", "goals"], ["habit", "habits"], ["review", "weeklyReviews"], ["health", "healthLogs"], ["career", "careerItems"], ["document", "documents"]].forEach(([name, collection]) => {
+    document.querySelectorAll(`[data-remove-${name}]`).forEach((button) => button.addEventListener("click", () => removePersonalItem(collection, button.dataset[`remove${name.charAt(0).toUpperCase()}${name.slice(1)}`])));
+  });
+  setLifePanel(state.activeLifePanel);
 }
 
 function urlBase64ToUint8Array(value) {
@@ -1508,7 +2137,7 @@ async function loadReminderStatus() {
   $("enableRemindersButton").textContent = ready ? "Send test" : "Enable reminders";
   $("reminderStatus").className = `reminder-status ${ready ? "ready" : ""}`;
   $("reminderStatus").innerHTML = ready
-    ? `<strong>Reminders are on</strong><span>Events will alert this iPhone even when the app is closed.</span>`
+    ? `<strong>Reminders are on</strong><span>Calendar events, urgent tasks, habits, bills, expiries, goals and contests can reach this iPhone while the app is closed.</span>`
     : `<strong>${installed ? "Turn on notifications" : "Install on your Home Screen first"}</strong><span>${escapeHtml(state.reminderConfig.message || "Tap Enable reminders after opening the installed app.")}</span>`;
 }
 
@@ -1540,6 +2169,555 @@ async function enableReminders() {
   }
   await postJson("/api/push/test", {});
   await loadReminderStatus();
+}
+
+function formatFocusClock(seconds) {
+  const safe = Math.max(0, Math.ceil(seconds));
+  return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+}
+
+function selectedSpendMonth() {
+  return state.spendMonth || localIsoDate().slice(0, 7);
+}
+
+function formatMoney(value) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: Number(value) % 1 ? 2 : 0
+  }).format(Number(value || 0));
+}
+
+function sessionDate(session) {
+  const value = session.completedAt || session.startedAt;
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value).slice(0, 10) : localIsoDate(date);
+}
+
+function focusMinutesBetween(startDate, endDate) {
+  return (state.personal?.focusSessions || [])
+    .filter((session) => {
+      const date = sessionDate(session);
+      return date >= startDate && date <= endDate;
+    })
+    .reduce((sum, session) => sum + Number(session.minutes || 0), 0);
+}
+
+function renderFocusTimer() {
+  const display = $("focusTimerDisplay");
+  if (!display) return;
+  display.textContent = formatFocusClock(state.focusRemainingSeconds);
+  display.classList.toggle("running", state.focusRunning);
+  $("focusStartButton").textContent = state.focusRunning ? "Pause" : (state.focusRemainingSeconds < state.focusMinutes * 60 ? "Resume" : "Start focus");
+  document.querySelectorAll("[data-focus-minutes]").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.focusMinutes) === state.focusMinutes);
+    button.disabled = state.focusRunning;
+  });
+}
+
+function saveFocusTimerState() {
+  localStorage.setItem("kumarFocusTimer", JSON.stringify({
+    minutes: state.focusMinutes,
+    remainingSeconds: state.focusRemainingSeconds,
+    running: state.focusRunning,
+    startedAt: state.focusStartedAt,
+    label: $("focusLabelInput")?.value || ""
+  }));
+}
+
+function restoreFocusTimerState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("kumarFocusTimer") || "null");
+    if (!saved) return;
+    state.focusMinutes = Number(saved.minutes || 25);
+    state.focusRemainingSeconds = Number(saved.remainingSeconds || state.focusMinutes * 60);
+    state.focusRunning = Boolean(saved.running);
+    state.focusStartedAt = Number(saved.startedAt) || null;
+    $("focusLabelInput").value = saved.label || "";
+    if (state.focusRunning) {
+      tickFocusTimer();
+      if (state.focusRunning) state.focusTimer = setInterval(tickFocusTimer, 1000);
+    }
+  } catch {
+    localStorage.removeItem("kumarFocusTimer");
+  }
+}
+
+function tickFocusTimer() {
+  if (!state.focusRunning || !state.focusStartedAt) return;
+  const elapsed = Math.floor((Date.now() - state.focusStartedAt) / 1000);
+  state.focusRemainingSeconds = Math.max(0, state.focusRemainingSeconds - elapsed);
+  state.focusStartedAt = Date.now();
+  if (state.focusRemainingSeconds <= 0) completeFocusSession();
+  renderFocusTimer();
+}
+
+function toggleFocusTimer() {
+  if (state.focusRunning) {
+    tickFocusTimer();
+    state.focusRunning = false;
+    clearInterval(state.focusTimer);
+    state.focusTimer = null;
+    saveFocusTimerState();
+  } else {
+    state.focusRunning = true;
+    state.focusStartedAt = Date.now();
+    clearInterval(state.focusTimer);
+    state.focusTimer = setInterval(tickFocusTimer, 1000);
+    saveFocusTimerState();
+  }
+  renderFocusTimer();
+}
+
+function resetFocusTimer() {
+  state.focusRunning = false;
+  clearInterval(state.focusTimer);
+  state.focusTimer = null;
+  state.focusStartedAt = null;
+  state.focusRemainingSeconds = state.focusMinutes * 60;
+  localStorage.removeItem("kumarFocusTimer");
+  renderFocusTimer();
+}
+
+function completeFocusSession() {
+  state.focusRunning = false;
+  clearInterval(state.focusTimer);
+  state.focusTimer = null;
+  const completedAt = new Date().toISOString();
+  state.personal.focusSessions ||= [];
+  state.personal.focusSessions.push({
+    id: `focus-${Date.now()}`,
+    label: $("focusLabelInput")?.value.trim() || "Focus session",
+    minutes: state.focusMinutes,
+    startedAt: new Date(Date.now() - state.focusMinutes * 60000).toISOString(),
+    completedAt
+  });
+  state.focusRemainingSeconds = state.focusMinutes * 60;
+  state.focusStartedAt = null;
+  localStorage.removeItem("kumarFocusTimer");
+  savePersonal(false);
+  if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
+    navigator.serviceWorker.ready.then((registration) => registration.showNotification("Focus session complete", {
+      body: `${state.focusMinutes} focused minutes logged.`,
+      icon: "/cf2000_tracker_icon_1024.png",
+      badge: "/alert-icon.svg",
+      tag: "focus-complete",
+      data: { url: "/?view=insights" }
+    })).catch(() => {});
+  }
+}
+
+function addExpense(event) {
+  event.preventDefault();
+  const amount = Number($("expenseAmountInput").value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    $("expenseAmountInput").focus();
+    return;
+  }
+  state.personal.expenses ||= [];
+  const accountId = $("expenseAccountInput").value;
+  state.personal.expenses.unshift({
+    id: `expense-${Date.now()}`,
+    amount,
+    category: $("expenseCategoryInput").value,
+    date: $("expenseDateInput").value || localIsoDate(),
+    note: $("expenseNoteInput").value.trim(),
+    accountId,
+    createdAt: new Date().toISOString()
+  });
+  const account = state.personal.accounts.find((item) => item.id === accountId);
+  if (account) account.balance = Number(account.balance || 0) - amount;
+  $("expenseAmountInput").value = "";
+  $("expenseNoteInput").value = "";
+  savePersonal(false);
+}
+
+function deleteExpense(id) {
+  const expense = state.personal.expenses.find((item) => item.id === id);
+  if (expense?.accountId) {
+    const account = state.personal.accounts.find((item) => item.id === expense.accountId);
+    if (account) account.balance = Number(account.balance || 0) + Number(expense.amount || 0);
+  }
+  state.personal.expenses = (state.personal.expenses || []).filter((item) => item.id !== id);
+  savePersonal(false);
+}
+
+function addAccount(event) {
+  event.preventDefault();
+  state.personal.accounts.unshift({
+    id: `account-${Date.now()}`,
+    name: $("accountNameInput").value.trim(),
+    type: $("accountTypeInput").value,
+    balance: Number($("accountBalanceInput").value || 0),
+    updatedAt: new Date().toISOString()
+  });
+  $("accountForm").reset();
+  savePersonal(false);
+}
+
+function addIncome(event) {
+  event.preventDefault();
+  const accountId = $("incomeAccountInput").value;
+  const amount = Number($("incomeAmountInput").value || 0);
+  state.personal.incomes.unshift({
+    id: `income-${Date.now()}`,
+    source: $("incomeSourceInput").value.trim(),
+    amount,
+    date: $("incomeDateInput").value || localIsoDate(),
+    recurring: $("incomeRecurringInput").value,
+    accountId,
+    createdAt: new Date().toISOString()
+  });
+  const account = state.personal.accounts.find((item) => item.id === accountId);
+  if (account) account.balance = Number(account.balance || 0) + amount;
+  $("incomeForm").reset();
+  $("incomeDateInput").value = localIsoDate();
+  savePersonal(false);
+}
+
+function deleteIncome(id) {
+  const income = state.personal.incomes.find((item) => item.id === id);
+  if (income?.accountId) {
+    const account = state.personal.accounts.find((item) => item.id === income.accountId);
+    if (account) account.balance = Number(account.balance || 0) - Number(income.amount || 0);
+  }
+  state.personal.incomes = state.personal.incomes.filter((item) => item.id !== id);
+  savePersonal(false);
+}
+
+function setBudget(event) {
+  event.preventDefault();
+  const category = $("budgetCategoryInput").value;
+  const limit = Number($("budgetLimitInput").value || 0);
+  const existing = state.personal.budgets.find((budget) => budget.category === category);
+  if (existing) existing.limit = limit;
+  else state.personal.budgets.push({ id: `budget-${Date.now()}`, category, limit });
+  $("budgetLimitInput").value = "";
+  savePersonal(false);
+}
+
+function addBill(event) {
+  event.preventDefault();
+  state.personal.bills.unshift({
+    id: `bill-${Date.now()}`,
+    title: $("billTitleInput").value.trim(),
+    amount: Number($("billAmountInput").value || 0),
+    dueDate: $("billDueInput").value,
+    recurrence: $("billRecurrenceInput").value,
+    kind: $("billKindInput").value,
+    autopay: $("billAutopayInput").checked,
+    paid: false,
+    createdAt: new Date().toISOString()
+  });
+  $("billForm").reset();
+  savePersonal(false);
+}
+
+function markBillPaid(id) {
+  const bill = state.personal.bills.find((item) => item.id === id);
+  if (!bill) return;
+  const paidDate = localIsoDate();
+  bill.lastPaidDate = paidDate;
+  const paymentKey = `${bill.id}:${bill.dueDate || paidDate}`;
+  if (!state.personal.expenses.some((expense) => expense.billPaymentKey === paymentKey)) {
+    state.personal.expenses.unshift({
+      id: `expense-bill-${Date.now()}`,
+      amount: Number(bill.amount || 0),
+      category: "Bills",
+      date: paidDate,
+      note: bill.title,
+      billPaymentKey: paymentKey,
+      createdAt: new Date().toISOString()
+    });
+  }
+  if (bill.recurrence && bill.recurrence !== "none") {
+    bill.dueDate = nextRecurringValue(bill.dueDate, bill.recurrence);
+    bill.paid = false;
+    bill.lastNotifiedFor = null;
+  } else {
+    bill.paid = true;
+  }
+  savePersonal(false);
+}
+
+function addSavingsGoal(event) {
+  event.preventDefault();
+  state.personal.savingsGoals.unshift({
+    id: `saving-${Date.now()}`,
+    title: $("savingsTitleInput").value.trim(),
+    target: Number($("savingsTargetInput").value || 0),
+    current: Number($("savingsCurrentInput").value || 0),
+    targetDate: $("savingsDateInput").value,
+    createdAt: new Date().toISOString()
+  });
+  $("savingsGoalForm").reset();
+  savePersonal(false);
+}
+
+function contributeSavings(id) {
+  const goal = state.personal.savingsGoals.find((item) => item.id === id);
+  if (!goal) return;
+  const amount = Number(window.prompt(`Add to ${goal.title}`, "0"));
+  if (!Number.isFinite(amount) || amount === 0) return;
+  goal.current = Math.max(0, Number(goal.current || 0) + amount);
+  savePersonal(false);
+}
+
+function addDebt(event) {
+  event.preventDefault();
+  state.personal.debts.unshift({
+    id: `debt-${Date.now()}`,
+    name: $("debtNameInput").value.trim(),
+    balance: Number($("debtBalanceInput").value || 0),
+    apr: Number($("debtAprInput").value || 0),
+    emi: Number($("debtEmiInput").value || 0),
+    createdAt: new Date().toISOString()
+  });
+  $("debtForm").reset();
+  savePersonal(false);
+}
+
+function payDebt(id) {
+  const debt = state.personal.debts.find((item) => item.id === id);
+  if (!debt) return;
+  const amount = Number(window.prompt(`Payment toward ${debt.name}`, String(debt.emi || 0)));
+  if (!Number.isFinite(amount) || amount <= 0) return;
+  debt.balance = Math.max(0, Number(debt.balance || 0) - amount);
+  savePersonal(false);
+}
+
+function parseCsvRow(line) {
+  const values = [];
+  let current = "";
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    if (character === '"' && quoted && line[index + 1] === '"') {
+      current += '"';
+      index += 1;
+    } else if (character === '"') {
+      quoted = !quoted;
+    } else if (character === "," && !quoted) {
+      values.push(current.trim());
+      current = "";
+    } else {
+      current += character;
+    }
+  }
+  values.push(current.trim());
+  return values;
+}
+
+async function importStatementCsv(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter((line) => line.trim());
+    const headers = parseCsvRow(lines.shift() || "").map((header) => header.toLowerCase().replace(/\s+/g, ""));
+    const column = (names) => names.map((name) => headers.indexOf(name)).find((index) => index >= 0);
+    const dateIndex = column(["date", "transactiondate", "valuedate"]);
+    const descriptionIndex = column(["description", "narration", "details", "merchant"]);
+    const amountIndex = column(["amount", "transactionamount", "debit", "withdrawal"]);
+    const categoryIndex = column(["category"]);
+    const typeIndex = column(["type", "transactiontype"]);
+    if (dateIndex === undefined || amountIndex === undefined) throw new Error("Date and Amount columns are required");
+    let imported = 0;
+    lines.forEach((line, lineIndex) => {
+      const values = parseCsvRow(line);
+      const rawAmount = String(values[amountIndex] || "").replace(/[₹,\s]/g, "");
+      const negativeParentheses = /^\(.*\)$/.test(rawAmount);
+      const amount = Number(rawAmount.replace(/[()]/g, ""));
+      if (!Number.isFinite(amount) || amount === 0) return;
+      const rawDate = values[dateIndex] || localIsoDate();
+      const parsedDate = new Date(rawDate);
+      const date = Number.isNaN(parsedDate.getTime()) ? String(rawDate).slice(0, 10) : localIsoDate(parsedDate);
+      const description = values[descriptionIndex] || `Imported row ${lineIndex + 2}`;
+      const type = String(values[typeIndex] || "").toLowerCase();
+      const importedKey = `${date}|${description}|${amount}`;
+      const isIncome = type.includes("income") || type.includes("credit") || (!negativeParentheses && amount > 0 && type && !type.includes("debit"));
+      if (isIncome) {
+        if (state.personal.incomes.some((item) => item.importedKey === importedKey)) return;
+        state.personal.incomes.unshift({ id: `income-import-${Date.now()}-${lineIndex}`, source: description, amount: Math.abs(amount), date, recurring: "none", importedKey });
+      } else {
+        if (state.personal.expenses.some((item) => item.importedKey === importedKey)) return;
+        state.personal.expenses.unshift({ id: `expense-import-${Date.now()}-${lineIndex}`, note: description, amount: Math.abs(amount), date, category: values[categoryIndex] || "Other", importedKey });
+      }
+      imported += 1;
+    });
+    $("csvImportStatus").textContent = `Imported ${imported} new transaction${imported === 1 ? "" : "s"} from ${file.name}.`;
+    savePersonal(false);
+  } catch (error) {
+    $("csvImportStatus").textContent = `Import failed: ${error.message}`;
+  } finally {
+    event.target.value = "";
+  }
+}
+
+function renderFinancialPlanning(month, expenses, expenseTotal) {
+  const accountOptions = `<option value="">Unassigned account</option>${state.personal.accounts.map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`).join("")}`;
+  $("expenseAccountInput").innerHTML = accountOptions;
+  $("incomeAccountInput").innerHTML = accountOptions;
+  const incomes = state.personal.incomes.filter((income) => String(income.date || "").startsWith(month)
+    || (income.recurring === "monthly" && String(income.date || "").slice(0, 7) < month));
+  const incomeTotal = incomes.reduce((sum, income) => sum + Number(income.amount || 0), 0);
+  const accountTotal = state.personal.accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const debtTotal = state.personal.debts.reduce((sum, debt) => sum + Number(debt.balance || 0), 0);
+  const dueBills = state.personal.bills.filter((bill) => !bill.paid && String(bill.dueDate || "").startsWith(month));
+  const billTotal = dueBills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0);
+  const safeToSpend = incomeTotal ? incomeTotal - expenseTotal - billTotal : accountTotal - billTotal;
+  $("financialSummary").innerHTML = `
+    <div class="insight-summary-card money"><span>Net worth</span><strong>${escapeHtml(formatMoney(accountTotal - debtTotal))}</strong><p>Accounts minus debt</p></div>
+    <div class="insight-summary-card money"><span>Income this month</span><strong>${escapeHtml(formatMoney(incomeTotal))}</strong><p>${incomes.length} entries</p></div>
+    <div class="insight-summary-card money ${safeToSpend < 0 ? "negative" : ""}"><span>Safe to spend</span><strong>${escapeHtml(formatMoney(safeToSpend))}</strong><p>After spending and due bills</p></div>
+    <div class="insight-summary-card money"><span>Upcoming commitments</span><strong>${escapeHtml(formatMoney(billTotal))}</strong><p>${dueBills.length} bills/subscriptions</p></div>
+  `;
+  $("accountList").innerHTML = state.personal.accounts.map((account) => `
+    <div class="compact-record"><div><strong>${escapeHtml(account.name)}</strong><span>${escapeHtml(account.type)}</span></div><b>${escapeHtml(formatMoney(account.balance))}</b><button class="record-delete" type="button" data-remove-account="${escapeHtml(account.id)}">×</button></div>
+  `).join("") || `<p class="muted-copy">Add cash, bank and investment balances.</p>`;
+  $("incomeList").innerHTML = [...state.personal.incomes].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 8).map((income) => `
+    <div class="compact-record"><div><strong>${escapeHtml(income.source)}</strong><span>${escapeHtml(formatShortDate(income.date))}${income.recurring === "monthly" ? " · monthly" : ""}</span></div><b class="positive-money">+${escapeHtml(formatMoney(income.amount))}</b><button class="record-delete" type="button" data-remove-income="${escapeHtml(income.id)}">×</button></div>
+  `).join("") || `<p class="muted-copy">Record salary and other inflows.</p>`;
+  const categorySpent = expenses.reduce((map, expense) => {
+    map[expense.category || "Other"] = (map[expense.category || "Other"] || 0) + Number(expense.amount || 0);
+    return map;
+  }, {});
+  $("budgetList").innerHTML = state.personal.budgets.map((budget) => {
+    const spent = categorySpent[budget.category] || 0;
+    const pct = budget.limit ? Math.min(100, (spent / budget.limit) * 100) : 0;
+    return `
+      <div class="budget-record ${spent > budget.limit ? "over" : ""}">
+        <div><strong>${escapeHtml(budget.category)}</strong><span>${escapeHtml(formatMoney(spent))} of ${escapeHtml(formatMoney(budget.limit))}</span></div>
+        <div><i style="width:${pct}%"></i></div>
+        <button class="record-delete" type="button" data-remove-budget="${escapeHtml(budget.id)}">×</button>
+      </div>
+    `;
+  }).join("") || `<p class="muted-copy">Set limits for the categories that matter.</p>`;
+  $("billList").innerHTML = [...state.personal.bills].sort((a, b) => String(a.dueDate || "9999").localeCompare(String(b.dueDate || "9999"))).map((bill) => {
+    const days = daysBetweenDates(localIsoDate(), bill.dueDate);
+    return `
+      <div class="compact-record ${days !== null && days <= 3 && !bill.paid ? "due-soon" : ""}">
+        <div><strong>${escapeHtml(bill.title)}</strong><span>${escapeHtml(bill.kind)} · ${escapeHtml(formatShortDate(bill.dueDate))}${bill.autopay ? " · autopay" : ""}</span></div>
+        <b>${escapeHtml(formatMoney(bill.amount))}</b>
+        ${!bill.paid ? `<button type="button" class="record-action" data-pay-bill="${escapeHtml(bill.id)}">Paid</button>` : `<span class="paid-label">Paid</span>`}
+        <button class="record-delete" type="button" data-remove-bill="${escapeHtml(bill.id)}">×</button>
+      </div>
+    `;
+  }).join("") || `<p class="muted-copy">Add recurring bills and renewals.</p>`;
+  $("savingsGoalList").innerHTML = state.personal.savingsGoals.map((goal) => {
+    const pct = goal.target ? Math.min(100, (Number(goal.current || 0) / goal.target) * 100) : 0;
+    return `
+      <div class="progress-record">
+        <div><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(formatMoney(goal.current))} of ${escapeHtml(formatMoney(goal.target))}</span></div>
+        <b>${Math.round(pct)}%</b><div class="record-progress"><i style="width:${pct}%"></i></div>
+        <button type="button" class="record-action" data-contribute-saving="${escapeHtml(goal.id)}">Add</button>
+        <button class="record-delete" type="button" data-remove-saving="${escapeHtml(goal.id)}">×</button>
+      </div>
+    `;
+  }).join("") || `<p class="muted-copy">Turn large goals into visible progress.</p>`;
+  $("debtList").innerHTML = state.personal.debts.map((debt) => {
+    const months = debt.emi ? Math.ceil(Number(debt.balance || 0) / debt.emi) : null;
+    return `
+      <div class="compact-record">
+        <div><strong>${escapeHtml(debt.name)}</strong><span>${debt.apr || 0}% APR${months ? ` · ~${months} payments` : ""}</span></div>
+        <b>${escapeHtml(formatMoney(debt.balance))}</b>
+        <button type="button" class="record-action" data-pay-debt="${escapeHtml(debt.id)}">Pay</button>
+        <button class="record-delete" type="button" data-remove-debt="${escapeHtml(debt.id)}">×</button>
+      </div>
+    `;
+  }).join("") || `<p class="muted-copy">Track balances without connecting credentials.</p>`;
+
+  [["account", "accounts"], ["budget", "budgets"], ["bill", "bills"], ["saving", "savingsGoals"], ["debt", "debts"]].forEach(([name, collection]) => {
+    document.querySelectorAll(`[data-remove-${name}]`).forEach((button) => {
+      const dataKey = `remove${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+      button.addEventListener("click", () => removePersonalItem(collection, button.dataset[dataKey]));
+    });
+  });
+  document.querySelectorAll("[data-remove-income]").forEach((button) => button.addEventListener("click", () => deleteIncome(button.dataset.removeIncome)));
+  document.querySelectorAll("[data-pay-bill]").forEach((button) => button.addEventListener("click", () => markBillPaid(button.dataset.payBill)));
+  document.querySelectorAll("[data-contribute-saving]").forEach((button) => button.addEventListener("click", () => contributeSavings(button.dataset.contributeSaving)));
+  document.querySelectorAll("[data-pay-debt]").forEach((button) => button.addEventListener("click", () => payDebt(button.dataset.payDebt)));
+}
+
+function renderInsights() {
+  if (!$("productivitySummary") || !state.personal) return;
+  updateYearRunway();
+  const today = localIsoDate();
+  const weekStartDate = new Date();
+  weekStartDate.setDate(weekStartDate.getDate() - 6);
+  const weekStart = localIsoDate(weekStartDate);
+  const todayMinutes = focusMinutesBetween(today, today);
+  const weekMinutes = focusMinutesBetween(weekStart, today);
+  const sessions = state.personal.focusSessions || [];
+  const todayEvents = (state.personal.schedule || []).filter((item) => eventDate(item) === today).length;
+  const completedProblems = state.flat.filter((item) => displayStatus(item.id) === "done").length;
+  $("productivitySummary").innerHTML = `
+    <div class="insight-summary-card"><span>Today</span><strong>${todayMinutes}<small> min</small></strong><p>Focused time</p></div>
+    <div class="insight-summary-card"><span>7 days</span><strong>${weekMinutes}<small> min</small></strong><p>${sessions.filter((session) => sessionDate(session) >= weekStart).length} completed sessions</p></div>
+    <div class="insight-summary-card"><span>Today’s plan</span><strong>${todayEvents}</strong><p>Calendar tasks</p></div>
+    <div class="insight-summary-card"><span>Roadmap</span><strong>${completedProblems}</strong><p>Problems completed</p></div>
+  `;
+
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(weekStartDate);
+    date.setDate(weekStartDate.getDate() + index);
+    const iso = localIsoDate(date);
+    return {
+      iso,
+      label: date.toLocaleDateString([], { weekday: "narrow" }),
+      minutes: focusMinutesBetween(iso, iso)
+    };
+  });
+  const peak = Math.max(1, ...days.map((day) => day.minutes));
+  $("weeklyFocusTotal").textContent = `${weekMinutes} min`;
+  $("weeklyFocusChart").innerHTML = days.map((day) => `
+    <div class="focus-bar-column" title="${escapeHtml(day.iso)}: ${day.minutes} minutes">
+      <span>${day.minutes || ""}</span>
+      <div><i style="height:${Math.max(day.minutes ? 8 : 2, (day.minutes / peak) * 100)}%"></i></div>
+      <small>${escapeHtml(day.label)}</small>
+    </div>
+  `).join("");
+  renderFocusTimer();
+
+  const month = selectedSpendMonth();
+  $("spendMonthInput").value = month;
+  const expenses = (state.personal.expenses || [])
+    .filter((expense) => String(expense.date || "").startsWith(month))
+    .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+  const total = expenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
+  const categoryTotals = expenses.reduce((totals, expense) => {
+    totals[expense.category || "Other"] = (totals[expense.category || "Other"] || 0) + Number(expense.amount || 0);
+    return totals;
+  }, {});
+  const categories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+  const daysInMonth = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
+  const topCategory = categories[0];
+  $("spendSummary").innerHTML = `
+    <div class="insight-summary-card spend"><span>Total spent</span><strong>${escapeHtml(formatMoney(total))}</strong><p>${expenses.length} transactions</p></div>
+    <div class="insight-summary-card spend"><span>Daily average</span><strong>${escapeHtml(formatMoney(total / Math.max(1, daysInMonth)))}</strong><p>Across ${daysInMonth} days</p></div>
+    <div class="insight-summary-card spend"><span>Largest category</span><strong>${escapeHtml(topCategory?.[0] || "—")}</strong><p>${topCategory ? escapeHtml(formatMoney(topCategory[1])) : "No spending yet"}</p></div>
+    <div class="insight-summary-card spend"><span>Largest expense</span><strong>${escapeHtml(formatMoney(Math.max(0, ...expenses.map((item) => Number(item.amount || 0)))))}</strong><p>Single transaction</p></div>
+  `;
+  $("spendCategoryChart").innerHTML = categories.length ? categories.map(([category, value]) => `
+    <div class="spend-category-row">
+      <div><strong>${escapeHtml(category)}</strong><span>${escapeHtml(formatMoney(value))}</span></div>
+      <div class="spend-category-track"><i style="width:${total ? (value / total) * 100 : 0}%"></i></div>
+      <small>${total ? Math.round((value / total) * 100) : 0}%</small>
+    </div>
+  `).join("") : `<p class="muted-copy">Add an expense to see the breakdown.</p>`;
+  $("expenseList").innerHTML = expenses.length ? expenses.slice(0, 12).map((expense) => `
+    <div class="expense-row">
+      <span class="expense-category-dot category-${escapeHtml(String(expense.category || "other").toLowerCase())}"></span>
+      <div><strong>${escapeHtml(expense.note || expense.category || "Expense")}</strong><span>${escapeHtml(expense.category || "Other")} · ${escapeHtml(new Date(`${expense.date}T12:00:00`).toLocaleDateString([], { month: "short", day: "numeric" }))}</span></div>
+      <b>${escapeHtml(formatMoney(expense.amount))}</b>
+      <button type="button" data-delete-expense="${escapeHtml(expense.id)}" aria-label="Delete expense">×</button>
+    </div>
+  `).join("") : `<p class="muted-copy">No expenses in this month.</p>`;
+  document.querySelectorAll("[data-delete-expense]").forEach((button) => {
+    button.addEventListener("click", () => deleteExpense(button.dataset.deleteExpense));
+  });
+  renderFinancialPlanning(month, expenses, total);
 }
 
 function renderSheet() {
@@ -1618,6 +2796,8 @@ function renderAll() {
   if (state.activeView === "quant") renderQuant();
   if (state.activeView === "planner") renderSchedule();
   if (state.activeView === "notes") renderNotes();
+  if (state.activeView === "life") renderLife();
+  if (state.activeView === "insights") renderInsights();
   if (state.activeView === "contests") renderContestsView();
   if (state.activeView === "sheet") renderSheet();
   if (state.activeView === "stats") renderStats();
@@ -1628,6 +2808,8 @@ function wireEvents() {
   $("quantTab").addEventListener("click", () => setView("quant"));
   $("plannerTab").addEventListener("click", () => setView("planner"));
   $("notesTab").addEventListener("click", () => setView("notes"));
+  $("lifeTab").addEventListener("click", () => setView("life"));
+  $("insightsTab").addEventListener("click", () => setView("insights"));
   $("contestsTab").addEventListener("click", () => setView("contests"));
   $("treeTab").addEventListener("click", () => setView("tree"));
   $("sheetTab").addEventListener("click", () => setView("sheet"));
@@ -1693,8 +2875,78 @@ function wireEvents() {
   $("newNoteButton").addEventListener("click", newNote);
   $("saveNoteButton").addEventListener("click", saveCurrentNote);
   $("deleteNoteButton").addEventListener("click", deleteCurrentNote);
+  $("pinNoteButton").addEventListener("click", toggleCurrentNotePin);
+  $("notesBackButton").addEventListener("click", () => $("notesBoard").classList.remove("editing-note"));
+  $("notesFolderButton").addEventListener("click", () => {
+    state.notesSearch = "";
+    $("notesSearchInput").value = "";
+    renderNotes();
+  });
+  $("notesSearchInput").addEventListener("input", () => {
+    state.notesSearch = $("notesSearchInput").value;
+    renderNotes();
+  });
   $("noteTitleInput").addEventListener("input", updateCurrentNoteDraft);
   $("noteBodyInput").addEventListener("input", updateCurrentNoteDraft);
+  ["keyup", "mouseup", "focus"].forEach((eventName) => {
+    $("noteBodyInput").addEventListener(eventName, rememberNoteSelection);
+  });
+  $("noteBlockFormat").addEventListener("change", () => runNoteCommand("formatBlock", `<${$("noteBlockFormat").value}>`));
+  document.querySelectorAll("[data-note-command]").forEach((button) => {
+    button.addEventListener("mousedown", (event) => event.preventDefault());
+    button.addEventListener("click", () => runNoteCommand(button.dataset.noteCommand));
+  });
+  document.querySelectorAll("[data-note-action]").forEach((button) => {
+    button.addEventListener("mousedown", (event) => event.preventDefault());
+  });
+  document.querySelector("[data-note-action='checklist']").addEventListener("click", insertNoteChecklist);
+  document.querySelector("[data-note-action='link']").addEventListener("click", addNoteLink);
+  $("noteBodyInput").addEventListener("click", (event) => {
+    if (!event.target.classList.contains("note-check-circle")) return;
+    event.target.textContent = event.target.textContent === "●" ? "○" : "●";
+    event.target.parentElement.classList.toggle("checked", event.target.textContent === "●");
+    updateCurrentNoteDraft();
+  });
+  document.querySelectorAll("[data-focus-minutes]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (state.focusRunning) return;
+      state.focusMinutes = Number(button.dataset.focusMinutes);
+      state.focusRemainingSeconds = state.focusMinutes * 60;
+      saveFocusTimerState();
+      renderFocusTimer();
+    });
+  });
+  $("focusStartButton").addEventListener("click", toggleFocusTimer);
+  $("focusResetButton").addEventListener("click", resetFocusTimer);
+  $("focusLabelInput").addEventListener("input", saveFocusTimerState);
+  $("expenseForm").addEventListener("submit", addExpense);
+  $("accountForm").addEventListener("submit", addAccount);
+  $("incomeForm").addEventListener("submit", addIncome);
+  $("budgetForm").addEventListener("submit", setBudget);
+  $("billForm").addEventListener("submit", addBill);
+  $("savingsGoalForm").addEventListener("submit", addSavingsGoal);
+  $("debtForm").addEventListener("submit", addDebt);
+  $("statementCsvInput").addEventListener("change", importStatementCsv);
+  $("taskForm").addEventListener("submit", addTask);
+  $("goalForm").addEventListener("submit", addGoal);
+  $("habitForm").addEventListener("submit", addHabit);
+  $("weeklyReviewForm").addEventListener("submit", saveWeeklyReview);
+  $("healthForm").addEventListener("submit", saveHealthLog);
+  $("careerForm").addEventListener("submit", addCareerItem);
+  $("documentForm").addEventListener("submit", addDocumentRecord);
+  $("taskFilterInput").addEventListener("change", renderLife);
+  $("lifeEnableRemindersButton").addEventListener("click", enableReminders);
+  document.querySelectorAll("[data-life-panel]").forEach((button) => {
+    button.addEventListener("click", () => setLifePanel(button.dataset.lifePanel));
+  });
+  $("spendMonthInput").addEventListener("change", () => {
+    state.spendMonth = $("spendMonthInput").value;
+    localStorage.setItem("kumarSpendMonth", state.spendMonth);
+    renderInsights();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) tickFocusTimer();
+  });
 }
 
 async function init() {
@@ -1710,11 +2962,19 @@ async function init() {
   state.quantToday = await getJson("/api/quant/today");
   state.quant = await getJson("/api/quant");
   state.personal = await getJson("/api/personal");
+  ensurePersonalCollections();
   state.selectedNoteId = state.personal.notes?.[0]?.id || null;
+  state.spendMonth ||= localIsoDate().slice(0, 7);
+  $("expenseDateInput").value = localIsoDate();
+  $("incomeDateInput").value = localIsoDate();
+  $("healthDateInput").value = localIsoDate();
+  restoreFocusTimerState();
   flattenRoadmap(state.roadmap);
   state.selectedId = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done")?.id || state.flat[0]?.id || null;
   renderAll();
+  updateYearRunway();
   setView(state.activeView);
+  if (initialNewNote && state.activeView === "notes") newNote();
   await loadReminderStatus();
   await loadContests(false);
   startContestTimers();

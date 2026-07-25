@@ -6,7 +6,7 @@
     <title>CF 2000 Tracker</title>
     <link rel="icon" href="/alert-icon.svg">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#111827">
+    <meta name="theme-color" content="#f5b800">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kumar Quant">
@@ -17,7 +17,7 @@
     <div class="app-shell">
       <header class="topbar">
         <div class="app-brand">
-          <span class="brand-mark" aria-hidden="true">KQ</span>
+          <span id="yearAppMark" class="brand-mark" aria-hidden="true"><strong>--</strong><small>days</small></span>
           <div>
             <h1>Kumar Quant</h1>
             <p id="goalText">1700 -> 2000 by 2026-12-31</p>
@@ -33,6 +33,8 @@
           <button id="quantTab" class="tab-button" type="button" data-icon="Q">Quant</button>
           <button id="plannerTab" class="tab-button" type="button" data-icon="□">Schedule</button>
           <button id="notesTab" class="tab-button" type="button" data-icon="≡">Notes</button>
+          <button id="lifeTab" class="tab-button" type="button" data-icon="◆">Life</button>
+          <button id="insightsTab" class="tab-button" type="button" data-icon="◎">Insights</button>
           <button id="contestsTab" class="tab-button contest-tab" type="button">
             <span>Contests</span>
             <span id="contestAlertBadge" class="alert-badge hidden">0</span>
@@ -203,32 +205,391 @@
           </section>
 
           <section id="notesView" class="view">
-            <div class="notes-board">
+            <div id="notesBoard" class="notes-board">
               <aside class="notes-sidebar">
                 <div class="notes-sidebar-header">
                   <div>
-                    <span class="section-eyebrow">Private notebook</span>
-                    <h2>Notes</h2>
+                    <button id="notesFolderButton" class="notes-folder-button" type="button"><span>‹</span> Folders</button>
+                    <h2>All iCloud</h2>
                   </div>
-                  <button id="newNoteButton" class="icon-control accent-control" type="button" aria-label="New note">+</button>
+                  <button id="newNoteButton" class="notes-compose-button" type="button" aria-label="New note">□<span>↗</span></button>
+                </div>
+                <div class="notes-search-wrap">
+                  <span aria-hidden="true">⌕</span>
+                  <input id="notesSearchInput" type="search" placeholder="Search">
                 </div>
                 <div id="notesList" class="notes-list"></div>
               </aside>
               <section class="note-editor">
                 <div class="note-editor-toolbar">
-                  <span id="notesSaveState" class="save-state"></span>
-                  <div>
-                    <button id="deleteNoteButton" class="secondary-button danger-button" type="button">Delete</button>
-                    <button id="saveNoteButton" class="primary-link" type="button">Save</button>
+                  <button id="notesBackButton" class="notes-back-button" type="button" aria-label="Back to notes">‹ <span>Notes</span></button>
+                  <span id="notesSaveState" class="save-state">Saved</span>
+                  <div class="notes-top-actions">
+                    <button id="pinNoteButton" class="notes-icon-button" type="button" aria-label="Pin note" title="Pin note">⌖</button>
+                    <button id="deleteNoteButton" class="notes-icon-button danger-button" type="button" aria-label="Delete note" title="Delete note">⌫</button>
+                    <button id="saveNoteButton" class="notes-done-button" type="button">Done</button>
                   </div>
                 </div>
                 <div id="noteEmptyState" class="note-empty-state">
-                  <strong>Start a new note</strong>
-                  <span>Keep formulas, interview thoughts, and reminders in one place.</span>
+                  <strong>No Note Selected</strong>
+                  <span>Tap the compose button to create a note.</span>
                 </div>
                 <div id="noteEditorFields" class="note-editor-fields hidden">
                   <input id="noteTitleInput" class="note-title-input" type="text" placeholder="Title">
-                  <textarea id="noteBodyInput" class="note-body-input" placeholder="Start writing..."></textarea>
+                  <div id="noteEditedMeta" class="note-edited-meta"></div>
+                  <div id="noteBodyInput" class="note-body-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Start writing..."></div>
+                  <div class="notes-format-toolbar" aria-label="Note formatting">
+                    <select id="noteBlockFormat" aria-label="Text style">
+                      <option value="p">Body</option>
+                      <option value="h1">Title</option>
+                      <option value="h2">Heading</option>
+                      <option value="h3">Subheading</option>
+                    </select>
+                    <span class="toolbar-divider"></span>
+                    <button type="button" data-note-command="bold" aria-label="Bold"><strong>B</strong></button>
+                    <button type="button" data-note-command="italic" aria-label="Italic"><em>I</em></button>
+                    <button type="button" data-note-command="underline" aria-label="Underline"><u>U</u></button>
+                    <button type="button" data-note-command="strikeThrough" aria-label="Strikethrough"><s>S</s></button>
+                    <span class="toolbar-divider"></span>
+                    <button type="button" data-note-command="insertUnorderedList" aria-label="Bulleted list">•≡</button>
+                    <button type="button" data-note-command="insertOrderedList" aria-label="Numbered list">1.</button>
+                    <button type="button" data-note-action="checklist" aria-label="Checklist">☑</button>
+                    <button type="button" data-note-action="link" aria-label="Add link">↗</button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section id="insightsView" class="view">
+            <div class="insights-board">
+              <div class="insights-header">
+                <div>
+                  <span class="section-eyebrow">Personal analytics</span>
+                  <h2>Focus & Spending</h2>
+                  <p>Protect your attention, then see where your time and money went.</p>
+                </div>
+                <div id="yearCountdownCard" class="year-countdown-card"></div>
+              </div>
+
+              <section class="productivity-section">
+                <div class="section-title-row">
+                  <div>
+                    <span class="section-eyebrow">Productivity</span>
+                    <h3>Focus sessions</h3>
+                  </div>
+                  <span id="insightsSaveState" class="save-state"></span>
+                </div>
+                <div id="productivitySummary" class="insight-summary-grid"></div>
+                <div class="focus-workbench">
+                  <div class="focus-timer-card">
+                    <label for="focusLabelInput">What are you focusing on?</label>
+                    <input id="focusLabelInput" type="text" placeholder="Codeforces, quant, reading…">
+                    <div id="focusTimerDisplay" class="focus-timer-display">25:00</div>
+                    <div class="focus-duration-pills" aria-label="Focus duration">
+                      <button type="button" data-focus-minutes="25" class="active">25 min</button>
+                      <button type="button" data-focus-minutes="50">50 min</button>
+                      <button type="button" data-focus-minutes="90">90 min</button>
+                    </div>
+                    <div class="focus-timer-actions">
+                      <button id="focusResetButton" class="secondary-button" type="button">Reset</button>
+                      <button id="focusStartButton" class="primary-link" type="button">Start focus</button>
+                    </div>
+                  </div>
+                  <div class="weekly-focus-card">
+                    <div class="widget-header">
+                      <h3>Last 7 days</h3>
+                      <span id="weeklyFocusTotal"></span>
+                    </div>
+                    <div id="weeklyFocusChart" class="weekly-focus-chart"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="spend-section">
+                <div class="section-title-row">
+                  <div>
+                    <span class="section-eyebrow">Spend analysis</span>
+                    <h3>Monthly overview</h3>
+                  </div>
+                  <input id="spendMonthInput" class="month-input" type="month">
+                </div>
+                <div id="spendSummary" class="insight-summary-grid"></div>
+                <div class="spend-layout">
+                  <form id="expenseForm" class="expense-form">
+                    <h3>Add expense</h3>
+                    <label><span>Amount</span><input id="expenseAmountInput" type="number" min="0" step="0.01" inputmode="decimal" placeholder="₹0"></label>
+                    <label><span>Category</span>
+                      <select id="expenseCategoryInput">
+                        <option>Food</option>
+                        <option>Travel</option>
+                        <option>Learning</option>
+                        <option>Shopping</option>
+                        <option>Bills</option>
+                        <option>Health</option>
+                        <option>Other</option>
+                      </select>
+                    </label>
+                    <label><span>Paid from</span><select id="expenseAccountInput"><option value="">Unassigned</option></select></label>
+                    <label><span>Date</span><input id="expenseDateInput" type="date"></label>
+                    <label><span>Note</span><input id="expenseNoteInput" type="text" placeholder="What was this for?"></label>
+                    <button class="primary-link" type="submit">Add expense</button>
+                  </form>
+                  <div class="spend-analysis-card">
+                    <h3>By category</h3>
+                    <div id="spendCategoryChart" class="spend-category-chart"></div>
+                  </div>
+                  <div class="expense-history-card">
+                    <h3>Recent expenses</h3>
+                    <div id="expenseList" class="expense-list"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="finance-planning-section">
+                <div class="section-title-row">
+                  <div>
+                    <span class="section-eyebrow">Money management</span>
+                    <h3>Plan, protect & grow</h3>
+                  </div>
+                  <label class="csv-import-button">
+                    Import statement CSV
+                    <input id="statementCsvInput" type="file" accept=".csv,text/csv">
+                  </label>
+                </div>
+                <p id="csvImportStatus" class="module-help">CSV columns: Date, Description, Amount, Category, Type. Use Type “income” for credits.</p>
+                <div id="financialSummary" class="insight-summary-grid"></div>
+                <div class="finance-module-grid">
+                  <section class="life-module-card">
+                    <h3>Accounts & net worth</h3>
+                    <form id="accountForm" class="compact-entry-form">
+                      <input id="accountNameInput" type="text" placeholder="Account name" required>
+                      <select id="accountTypeInput"><option>Bank</option><option>Cash</option><option>Investment</option><option>Credit Card</option><option>Other</option></select>
+                      <input id="accountBalanceInput" type="number" step="0.01" placeholder="Balance" required>
+                      <button type="submit">Add</button>
+                    </form>
+                    <div id="accountList" class="compact-record-list"></div>
+                  </section>
+                  <section class="life-module-card">
+                    <h3>Income</h3>
+                    <form id="incomeForm" class="compact-entry-form">
+                      <input id="incomeSourceInput" type="text" placeholder="Salary, freelance…" required>
+                      <input id="incomeAmountInput" type="number" min="0" step="0.01" placeholder="Amount" required>
+                      <select id="incomeAccountInput"><option value="">Unassigned account</option></select>
+                      <input id="incomeDateInput" type="date" required>
+                      <select id="incomeRecurringInput"><option value="none">One-time</option><option value="monthly">Monthly</option></select>
+                      <button type="submit">Add</button>
+                    </form>
+                    <div id="incomeList" class="compact-record-list"></div>
+                  </section>
+                  <section class="life-module-card">
+                    <h3>Category budgets</h3>
+                    <form id="budgetForm" class="compact-entry-form">
+                      <select id="budgetCategoryInput"><option>Food</option><option>Travel</option><option>Learning</option><option>Shopping</option><option>Bills</option><option>Health</option><option>Other</option></select>
+                      <input id="budgetLimitInput" type="number" min="1" step="0.01" placeholder="Monthly limit" required>
+                      <button type="submit">Set</button>
+                    </form>
+                    <div id="budgetList" class="budget-list"></div>
+                  </section>
+                  <section class="life-module-card">
+                    <h3>Bills & subscriptions</h3>
+                    <form id="billForm" class="compact-entry-form">
+                      <input id="billTitleInput" type="text" placeholder="Rent, Netflix…" required>
+                      <input id="billAmountInput" type="number" min="0" step="0.01" placeholder="Amount" required>
+                      <input id="billDueInput" type="date" required>
+                      <select id="billRecurrenceInput"><option value="none">One-time</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+                      <select id="billKindInput"><option value="bill">Bill</option><option value="subscription">Subscription</option></select>
+                      <label class="inline-check"><input id="billAutopayInput" type="checkbox"> Autopay</label>
+                      <button type="submit">Add</button>
+                    </form>
+                    <div id="billList" class="compact-record-list"></div>
+                  </section>
+                  <section class="life-module-card">
+                    <h3>Savings goals</h3>
+                    <form id="savingsGoalForm" class="compact-entry-form">
+                      <input id="savingsTitleInput" type="text" placeholder="Emergency fund…" required>
+                      <input id="savingsTargetInput" type="number" min="1" step="0.01" placeholder="Target" required>
+                      <input id="savingsCurrentInput" type="number" min="0" step="0.01" placeholder="Saved now">
+                      <input id="savingsDateInput" type="date">
+                      <button type="submit">Add</button>
+                    </form>
+                    <div id="savingsGoalList" class="progress-record-list"></div>
+                  </section>
+                  <section class="life-module-card">
+                    <h3>Debt payoff</h3>
+                    <form id="debtForm" class="compact-entry-form">
+                      <input id="debtNameInput" type="text" placeholder="Education loan…" required>
+                      <input id="debtBalanceInput" type="number" min="0" step="0.01" placeholder="Balance" required>
+                      <input id="debtAprInput" type="number" min="0" step="0.01" placeholder="APR %">
+                      <input id="debtEmiInput" type="number" min="0" step="0.01" placeholder="Monthly EMI">
+                      <button type="submit">Add</button>
+                    </form>
+                    <div id="debtList" class="compact-record-list"></div>
+                  </section>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section id="lifeView" class="view">
+            <div class="life-board">
+              <div class="life-header">
+                <div>
+                  <span class="section-eyebrow">Personal operating system</span>
+                  <h2>Life command center</h2>
+                  <p>Capture once, prioritize clearly, and let the app bring important things back at the right time.</p>
+                </div>
+                <button id="lifeEnableRemindersButton" class="primary-link" type="button">Enable reminders</button>
+              </div>
+              <div id="lifeSummary" class="life-summary-grid"></div>
+              <nav class="life-segmented-control" aria-label="Life sections">
+                <button class="active" type="button" data-life-panel="tasks">Tasks</button>
+                <button type="button" data-life-panel="goals">Goals & habits</button>
+                <button type="button" data-life-panel="health">Health</button>
+                <button type="button" data-life-panel="career">Career & learning</button>
+                <button type="button" data-life-panel="vault">Vault</button>
+              </nav>
+
+              <section id="lifeTasksPanel" class="life-panel active">
+                <div class="life-two-column">
+                  <form id="taskForm" class="life-entry-card">
+                    <span class="section-eyebrow">Quick capture</span>
+                    <h3>Add a task or reminder</h3>
+                    <input id="taskTitleInput" type="text" placeholder="What needs to happen?" required>
+                    <div class="form-pair">
+                      <input id="taskDueInput" type="datetime-local">
+                      <select id="taskPriorityInput"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+                    </div>
+                    <div class="form-pair">
+                      <select id="taskRecurrenceInput"><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+                      <select id="taskReminderInput"><option value="0">At due time</option><option value="15">15 min before</option><option value="60">1 hour before</option><option value="1440">1 day before</option></select>
+                    </div>
+                    <input id="taskProjectInput" type="text" placeholder="Project or area (optional)">
+                    <textarea id="taskNotesInput" placeholder="Notes"></textarea>
+                    <button class="primary-link" type="submit">Add task</button>
+                  </form>
+                  <div class="life-list-card">
+                    <div class="section-title-row compact">
+                      <h3>Your tasks</h3>
+                      <select id="taskFilterInput"><option value="open">Open</option><option value="today">Today</option><option value="urgent">Urgent</option><option value="all">All</option></select>
+                    </div>
+                    <div id="taskList" class="task-list"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="lifeGoalsPanel" class="life-panel">
+                <div class="life-two-column">
+                  <form id="goalForm" class="life-entry-card">
+                    <span class="section-eyebrow">Direction</span>
+                    <h3>Add a goal</h3>
+                    <input id="goalTitleInput" type="text" placeholder="Reach CF 2000…" required>
+                    <div class="form-pair">
+                      <select id="goalHorizonInput"><option>Annual</option><option>Quarterly</option><option>Monthly</option><option>Weekly</option></select>
+                      <input id="goalTargetDateInput" type="date">
+                    </div>
+                    <textarea id="goalWhyInput" placeholder="Why does this matter?"></textarea>
+                    <button class="primary-link" type="submit">Add goal</button>
+                    <div id="goalList" class="progress-record-list"></div>
+                  </form>
+                  <form id="habitForm" class="life-entry-card">
+                    <span class="section-eyebrow">Consistency</span>
+                    <h3>Add a habit</h3>
+                    <input id="habitTitleInput" type="text" placeholder="Read for 30 minutes…" required>
+                    <div class="form-pair">
+                      <select id="habitFrequencyInput"><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly3">3× a week</option></select>
+                      <input id="habitReminderTimeInput" type="time">
+                    </div>
+                    <button class="primary-link" type="submit">Add habit</button>
+                    <div id="habitList" class="habit-list"></div>
+                  </form>
+                </div>
+                <form id="weeklyReviewForm" class="weekly-review-card">
+                  <div>
+                    <span class="section-eyebrow">Weekly reflection</span>
+                    <h3>Review, learn, adjust</h3>
+                    <div id="weeklyReviewSummary" class="weekly-review-summary"></div>
+                  </div>
+                  <label><span>What worked, what did not, and what will you change?</span><textarea id="weeklyReviewTextInput" placeholder="A short honest reflection…"></textarea></label>
+                  <label><span>Week rating</span><select id="weeklyReviewRatingInput"><option value="5">5 — Excellent</option><option value="4">4 — Strong</option><option value="3" selected>3 — Mixed</option><option value="2">2 — Difficult</option><option value="1">1 — Reset needed</option></select></label>
+                  <button class="primary-link" type="submit">Save weekly review</button>
+                  <div id="weeklyReviewList" class="compact-record-list"></div>
+                </form>
+              </section>
+
+              <section id="lifeHealthPanel" class="life-panel">
+                <div class="life-two-column">
+                  <form id="healthForm" class="life-entry-card">
+                    <span class="section-eyebrow">Daily check-in</span>
+                    <h3>Log health</h3>
+                    <input id="healthDateInput" type="date" required>
+                    <div class="form-pair">
+                      <input id="healthSleepInput" type="number" min="0" max="24" step="0.1" placeholder="Sleep hours">
+                      <input id="healthStepsInput" type="number" min="0" placeholder="Steps">
+                    </div>
+                    <div class="form-pair">
+                      <input id="healthWaterInput" type="number" min="0" step="0.1" placeholder="Water litres">
+                      <input id="healthWeightInput" type="number" min="0" step="0.1" placeholder="Weight kg">
+                    </div>
+                    <div class="form-pair">
+                      <select id="healthMoodInput"><option value="">Mood</option><option value="5">Great</option><option value="4">Good</option><option value="3">Okay</option><option value="2">Low</option><option value="1">Bad</option></select>
+                      <select id="healthEnergyInput"><option value="">Energy</option><option value="5">Very high</option><option value="4">High</option><option value="3">Medium</option><option value="2">Low</option><option value="1">Very low</option></select>
+                    </div>
+                    <input id="healthWorkoutInput" type="text" placeholder="Workout or activity">
+                    <input id="healthMealsInput" type="text" placeholder="Meals or nutrition note">
+                    <input id="healthScreenTimeInput" type="number" min="0" step="0.1" placeholder="Screen time hours">
+                    <input id="healthMedicationInput" type="text" placeholder="Medication/check-in note">
+                    <button class="primary-link" type="submit">Save check-in</button>
+                  </form>
+                  <div class="life-list-card">
+                    <h3>Health overview</h3>
+                    <div id="healthSummary" class="health-summary"></div>
+                    <div id="healthLogList" class="compact-record-list"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="lifeCareerPanel" class="life-panel">
+                <div class="life-two-column">
+                  <form id="careerForm" class="life-entry-card">
+                    <span class="section-eyebrow">Career & learning</span>
+                    <h3>Add an item</h3>
+                    <select id="careerTypeInput"><option>Job application</option><option>Interview</option><option>Learning</option><option>Reading</option><option>Flashcard</option><option>Skill</option><option>Resume</option><option>Certificate</option><option>Idea</option></select>
+                    <input id="careerTitleInput" type="text" placeholder="Company, course, book…" required>
+                    <div class="form-pair">
+                      <select id="careerStatusInput"><option>Planned</option><option>In progress</option><option>Waiting</option><option>Done</option></select>
+                      <input id="careerDueInput" type="date">
+                    </div>
+                    <input id="careerLinkInput" type="url" placeholder="Link">
+                    <textarea id="careerNotesInput" placeholder="Notes and next action"></textarea>
+                    <button class="primary-link" type="submit">Add item</button>
+                  </form>
+                  <div class="life-list-card">
+                    <h3>Pipeline</h3>
+                    <div id="careerList" class="career-list"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="lifeVaultPanel" class="life-panel">
+                <div class="life-two-column">
+                  <form id="documentForm" class="life-entry-card">
+                    <span class="section-eyebrow">Private records</span>
+                    <h3>Add document metadata</h3>
+                    <select id="documentTypeInput"><option>ID</option><option>Insurance</option><option>Warranty</option><option>Certificate</option><option>Receipt</option><option>Policy</option><option>Other</option></select>
+                    <input id="documentTitleInput" type="text" placeholder="Passport, laptop warranty…" required>
+                    <div class="form-pair">
+                      <input id="documentExpiryInput" type="date">
+                      <input id="documentLinkInput" type="url" placeholder="Secure file link">
+                    </div>
+                    <textarea id="documentNotesInput" placeholder="Reference number or notes. Do not store passwords or PINs."></textarea>
+                    <button class="primary-link" type="submit">Add record</button>
+                    <p class="module-help">This stores metadata and an optional secure link—not sensitive credentials.</p>
+                  </form>
+                  <div class="life-list-card">
+                    <h3>Documents & expiries</h3>
+                    <div id="documentList" class="document-list"></div>
+                  </div>
                 </div>
               </section>
             </div>

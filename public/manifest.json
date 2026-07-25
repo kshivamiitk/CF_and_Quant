@@ -1,12 +1,36 @@
 {
   "name": "Kumar Quant Tracker",
   "short_name": "Kumar Quant",
+  "id": "/",
   "description": "Private quant interview, Codeforces, schedule, and notes tracker for Kumar Shivam.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f3f4f6",
-  "theme_color": "#111827",
+  "background_color": "#f7f7f2",
+  "theme_color": "#f5b800",
+  "categories": ["productivity", "education", "finance"],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "url": "/?view=today"
+    },
+    {
+      "name": "New note",
+      "short_name": "Note",
+      "url": "/?view=notes&new=1"
+    },
+    {
+      "name": "Focus & Spending",
+      "short_name": "Insights",
+      "url": "/?view=insights"
+    },
+    {
+      "name": "Tasks & Reminders",
+      "short_name": "Tasks",
+      "url": "/?view=life"
+    }
+  ],
   "icons": [
     {
       "src": "/cf2000_tracker_icon_1024.png",

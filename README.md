@@ -30,6 +30,18 @@ Enter your Codeforces handle in the header and press `Sync` to update problem st
 
 The Contests tab tracks upcoming Codeforces and CodeChef contests. The tracker polls every 10 minutes, shows a red or amber emergency banner for live/near contests, and can send browser notifications after you press `Notify` and grant permission.
 
+The Notes tab uses an Apple Notes-style editor with rich text, headings, lists,
+checklists, links, search, pinning, and automatic saving. The Insights tab adds
+a focus timer, seven-day productivity chart, expense capture, monthly spend
+analysis, accounts/net worth, income, category budgets, recurring bills and
+subscriptions, savings goals, debt payoff, and CSV statement import.
+
+The Life tab is the personal command center. It includes urgent and recurring
+tasks, due-time reminders, goals, habits and streaks, weekly reviews, manual
+health check-ins, job/learning tracking, and a metadata vault with document
+expiry alerts. The Today view surfaces urgent work, habits, upcoming bills, and
+the current safe-to-spend amount.
+
 Progress is stored in:
 
 ```text
@@ -42,13 +54,19 @@ Quant progress is stored in:
 data/quant_progress.json
 ```
 
-Schedule and notes are stored in:
+Schedule, notes, tasks, goals, habits, health, career records, financial data,
+focus sessions, and expenses are stored in:
 
 ```text
 data/personal.json
 ```
 
 The app is installable as a PWA from supported browsers. On iPhone, open the app URL in Safari and use Share -> Add to Home Screen. For a reliable installable PWA outside localhost, serve it over HTTPS.
+
+The installed iPhone icon uses the supported app badge to show the number of
+days remaining in the year. iOS keeps Home Screen icon artwork static for web
+apps, so the app also shows the live countdown inside the icon mark and Insights
+screen.
 
 ## Private phone access
 
@@ -161,10 +179,20 @@ Add these Production environment variables in Vercel:
 - `VAPID_SUBJECT=mailto:YOUR_EMAIL`
 - `QSTASH_TOKEN` from the Upstash QStash dashboard
 - `REMINDER_DISPATCH_SECRET` set to a long random value
+- `APP_TIMEZONE=Asia/Kolkata` (optional; this is the default)
 
 Redeploy, launch the installed iPhone app, open Calendar, and tap **Enable
 reminders**. The app creates one QStash minute schedule and sends a test
-notification immediately.
+notification immediately. The same minute dispatcher sends event reminders, a
+morning summary of calendar work/contests/practice, and contest alerts at
+24 hours, 1 hour, 15 minutes, and live. It also handles urgent and due tasks,
+habit times, bills/subscriptions, goal and career deadlines, and document
+expiries. Urgent-task alerts are held during the overnight quiet window from
+10 PM to 7 AM; explicit due-time reminders still fire at their selected time.
+
+Bank CSV import accepts the columns `Date`, `Description`, `Amount`, `Category`,
+and `Type`. Set `Type` to `income` or `credit` for inflows. Imported rows are
+deduplicated on date, description, and amount.
 
 The roadmap is stored in:
 

@@ -106,10 +106,26 @@ def default_quant_progress():
 
 def default_personal():
     return {
-        "version": 2,
+        "version": 4,
         "owner": OWNER_NAME,
         "schedule": [],
         "notes": [],
+        "expenses": [],
+        "incomes": [],
+        "focusSessions": [],
+        "tasks": [],
+        "goals": [],
+        "habits": [],
+        "weeklyReviews": [],
+        "healthLogs": [],
+        "careerItems": [],
+        "documents": [],
+        "accounts": [],
+        "budgets": [],
+        "bills": [],
+        "savingsGoals": [],
+        "debts": [],
+        "notificationState": {},
         "pushSubscriptions": [],
         "updatedAt": None
     }
@@ -117,10 +133,25 @@ def default_personal():
 
 def public_personal(personal):
     return {
-        "version": personal.get("version", 2),
+        "version": personal.get("version", 4),
         "owner": personal.get("owner", OWNER_NAME),
         "schedule": personal.get("schedule", []),
         "notes": personal.get("notes", []),
+        "expenses": personal.get("expenses", []),
+        "incomes": personal.get("incomes", []),
+        "focusSessions": personal.get("focusSessions", []),
+        "tasks": personal.get("tasks", []),
+        "goals": personal.get("goals", []),
+        "habits": personal.get("habits", []),
+        "weeklyReviews": personal.get("weeklyReviews", []),
+        "healthLogs": personal.get("healthLogs", []),
+        "careerItems": personal.get("careerItems", []),
+        "documents": personal.get("documents", []),
+        "accounts": personal.get("accounts", []),
+        "budgets": personal.get("budgets", []),
+        "bills": personal.get("bills", []),
+        "savingsGoals": personal.get("savingsGoals", []),
+        "debts": personal.get("debts", []),
         "updatedAt": personal.get("updatedAt"),
     }
 
@@ -902,8 +933,14 @@ class TrackerHandler(BaseHTTPRequestHandler):
             existing["owner"] = OWNER_NAME
             existing["schedule"] = payload.get("schedule", existing.get("schedule", []))
             existing["notes"] = payload.get("notes", existing.get("notes", []))
+            existing["expenses"] = payload.get("expenses", existing.get("expenses", []))
+            existing["incomes"] = payload.get("incomes", existing.get("incomes", []))
+            existing["focusSessions"] = payload.get("focusSessions", existing.get("focusSessions", []))
+            for field in ("tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
+                          "accounts", "budgets", "bills", "savingsGoals", "debts"):
+                existing[field] = payload.get(field, existing.get(field, []))
             existing["updatedAt"] = isoformat_utc(utc_now())
-            existing["version"] = 2
+            existing["version"] = 4
             write_json(PERSONAL_PATH, existing)
             return self.send_json({"ok": True, "personal": public_personal(existing)})
 
