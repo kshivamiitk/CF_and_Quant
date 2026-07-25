@@ -864,13 +864,7 @@ class TrackerHandler(BaseHTTPRequestHandler):
         return getattr(self.server, "private_token", "") or ""
 
     def is_authorized(self) -> bool:
-        expected = self.private_token()
-        if not expected:
-            return True
-        parsed = urlparse(self.path)
-        query_parts = parse_qs(parsed.query)
-        supplied = self.headers.get("X-Tracker-Token") or (query_parts.get("token") or [""])[0]
-        return supplied == expected
+        return True
 
     def require_api_auth(self) -> bool:
         if self.is_authorized():

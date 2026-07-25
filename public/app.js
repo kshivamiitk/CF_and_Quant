@@ -56,7 +56,6 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 const initialParams = new URLSearchParams(window.location.search);
-const initialToken = initialParams.get("token");
 const initialView = initialParams.get("view");
 const initialDate = initialParams.get("date");
 const initialNewNote = initialParams.get("new") === "1";
@@ -64,14 +63,11 @@ if (["today", "play", "quant", "planner", "gym", "wellness", "focus", "notes", "
   state.activeView = initialView;
 }
 if (/^\d{4}-\d{2}-\d{2}$/.test(initialDate || "")) state.selectedScheduleDate = initialDate;
-if (initialToken) {
-  localStorage.setItem("kumarQuantToken", initialToken);
-}
-if (initialToken || initialView || initialNewNote) window.history.replaceState({}, document.title, window.location.pathname);
+localStorage.removeItem("kumarQuantToken");
+if (initialParams.has("token") || initialView || initialNewNote) window.history.replaceState({}, document.title, window.location.pathname);
 
 function authHeaders(extra = {}) {
-  const token = localStorage.getItem("kumarQuantToken");
-  return token ? { ...extra, "X-Tracker-Token": token } : extra;
+  return extra;
 }
 
 function escapeHtml(value) {
@@ -85,7 +81,6 @@ function escapeHtml(value) {
 
 async function getJson(url) {
   const response = await fetch(url, { cache: "no-store", headers: authHeaders() });
-  if (response.status === 401) throw new Error("Private token required");
   if (!response.ok) throw new Error(`GET ${url} failed`);
   return response.json();
 }
@@ -96,7 +91,6 @@ async function postJson(url, payload) {
     headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(payload)
   });
-  if (response.status === 401) throw new Error("Private token required");
   if (!response.ok) throw new Error(`POST ${url} failed`);
   return response.json();
 }
@@ -3939,9 +3933,7 @@ async function init() {
 
 init().catch((error) => {
   console.error(error);
-  const message = error.message === "Private token required"
-    ? "Private token required. Open the app once with ?token=YOUR_PRIVATE_TOKEN."
-    : "Failed to load tracker data.";
+  const message = "Failed to load tracker data.";
   const todayPanel = $("todayPanel");
   if (todayPanel) {
     todayPanel.innerHTML = `

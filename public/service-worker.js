@@ -1,4 +1,4 @@
-const CACHE_NAME = "kumar-quant-tracker-v14";
+const CACHE_NAME = "kumar-quant-tracker-v15";
 const ASSETS = [
   "/",
   "/index.html",

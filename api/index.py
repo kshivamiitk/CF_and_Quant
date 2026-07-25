@@ -851,16 +851,7 @@ def text_response(text: str, status=200):
 
 
 def is_authorized(path: str, headers: dict) -> bool:
-    require_token = os.environ.get("REQUIRE_TRACKER_TOKEN", "").lower() in {"1", "true", "yes", "on"}
-    if not require_token:
-        return True
-    expected = os.environ.get("TRACKER_PRIVATE_TOKEN") or os.environ.get("CF2000_PRIVATE_TOKEN") or ""
-    if not expected:
-        return True
-    parsed = urlparse(path)
-    query = parse_qs(parsed.query)
-    supplied = headers.get("x-tracker-token") or headers.get("X-Tracker-Token") or (query.get("token") or [""])[0]
-    return supplied == expected
+    return True
 
 
 def read_body_json(body: bytes):
