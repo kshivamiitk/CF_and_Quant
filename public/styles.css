@@ -3628,6 +3628,253 @@ body {
 .wellness-columns{grid-template-columns:1fr}.wellness-columns .gym-studio{display:none}
 .exercise-picker{display:grid;grid-template-columns:2fr repeat(5,1fr);gap:9px;padding:15px;border-radius:18px;background:#f7f4ff}.exercise-picker label{display:grid;gap:5px;font-size:.76rem;color:var(--muted)}.exercise-picker select,.exercise-picker input{min-width:0;border:1px solid #dcd5eb;border-radius:11px;background:#fff;padding:10px;font:inherit;color:var(--ink)}.exercise-picker button{grid-column:1/-1;justify-self:start}.gym-draft-exercises{display:grid;gap:8px}.gym-draft-exercises article{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:12px;border:1px solid #e9e3f3;border-radius:14px;background:#fff}.gym-draft-exercises article>b{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#eee8ff;color:#673ee7}.gym-draft-exercises article span{display:block;color:var(--muted);font-size:.82rem;margin-top:3px}.gym-draft-exercises article button,.custom-exercise-box button{border:0;border-radius:9px;padding:7px 9px;background:#eee8ff;color:#5834c7}.custom-exercise-box{border:1px dashed #cfc3e5;border-radius:14px;padding:12px}.custom-exercise-box summary{cursor:pointer;font-weight:700}.custom-exercise-box>div{display:flex;gap:8px;margin-top:10px}.custom-exercise-box input{flex:1;border:1px solid #ddd5eb;border-radius:10px;padding:10px}
 @media(max-width:900px){.exercise-picker{grid-template-columns:repeat(2,1fr)}.exercise-picker label:first-child{grid-column:1/-1}}@media(max-width:560px){.exercise-picker{grid-template-columns:1fr}.exercise-picker label:first-child,.exercise-picker button{grid-column:auto}.gym-draft-exercises article{grid-template-columns:auto 1fr}.gym-draft-exercises article>div:last-child{grid-column:2}}
+
+/* iPhone 16 Plus: 430 × 932 CSS px */
+@media (min-width: 390px) and (max-width: 520px) {
+  :root {
+    --phone-gutter: 12px;
+    --phone-radius: 22px;
+  }
+
+  html { background: #f7f2ff; }
+  body {
+    min-height: 100dvh;
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 100% 0, rgba(255, 208, 231, .72), transparent 33%),
+      radial-gradient(circle at 0 18%, rgba(255, 231, 154, .62), transparent 34%),
+      linear-gradient(165deg, #fffaf0 0%, #f8f4ff 47%, #eaf9ff 100%);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button, a, select { touch-action: manipulation; }
+  input, select, textarea { font-size: 16px !important; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(190px, 1.2fr);
+    gap: 10px;
+    padding: calc(7px + env(safe-area-inset-top)) var(--phone-gutter) 9px;
+    border: 0;
+    border-bottom: 1px solid rgba(71, 54, 115, .1);
+    background: rgba(255, 255, 255, .88);
+    box-shadow: 0 8px 28px rgba(54, 37, 95, .08);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+  }
+
+  .app-brand { gap: 8px; }
+  .brand-mark {
+    width: 43px;
+    height: 43px;
+    flex: 0 0 43px;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #ffd84d, #f4b900);
+    color: #302300;
+    box-shadow: 0 5px 12px rgba(190, 139, 0, .22);
+    transform: rotate(-3deg);
+  }
+  .topbar h1 {
+    max-width: 92px;
+    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topbar p { display: none; }
+
+  .sync-bar {
+    grid-template-columns: minmax(0, 1fr) 55px;
+    gap: 6px;
+  }
+  .sync-bar label, .sync-bar span { display: none; }
+  .sync-bar input, .sync-bar button {
+    height: 43px;
+    border-radius: 13px;
+  }
+  .sync-bar input {
+    padding: 0 10px;
+    background: rgba(247, 244, 255, .95);
+  }
+  .sync-bar button {
+    padding: 0;
+    background: linear-gradient(145deg, #14a77e, #0b8a68);
+    border: 0;
+    font-size: 13px;
+  }
+
+  .top-actions {
+    left: 8px;
+    right: 8px;
+    bottom: calc(6px + env(safe-area-inset-bottom));
+    width: auto;
+    height: 66px;
+    gap: 3px;
+    padding: 6px;
+    border: 1px solid rgba(66, 48, 104, .1);
+    border-radius: 22px;
+    background: rgba(252, 251, 255, .93);
+    box-shadow: 0 12px 38px rgba(40, 28, 68, .2);
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+  .top-actions::-webkit-scrollbar { display: none; }
+  .tab-button, .desktop-link {
+    flex-basis: 67px;
+    height: 52px;
+    border-radius: 16px;
+    scroll-snap-align: center;
+    font-size: 9.5px;
+    font-weight: 800;
+  }
+  .tab-button[data-icon]::before { font-size: 20px; }
+  .tab-button.active {
+    background: linear-gradient(150deg, #8065ff, #6541e9);
+    color: #fff;
+    box-shadow: 0 7px 15px rgba(92, 57, 210, .3);
+  }
+
+  .content { padding: 10px var(--phone-gutter) 18px; }
+  .view { width: 100%; }
+  .today-grid, .today-side { gap: 12px; }
+  .today-main, .today-widget, .quant-board, .calendar-board, .wellness-board,
+  .contest-board, .roadmap-card, .sheet-toolbar, .focus-history-card {
+    border-radius: var(--phone-radius);
+    box-shadow: 0 10px 28px rgba(45, 32, 75, .08);
+  }
+
+  .today-header {
+    min-height: 126px;
+    padding: 20px 18px;
+    border-radius: var(--phone-radius) var(--phone-radius) 0 0;
+  }
+  .today-header h2 { max-width: 290px; font-size: 25px; line-height: 1.05; }
+  .today-header p { max-width: 285px; margin-top: 8px; font-size: 12px; line-height: 1.4; }
+  .today-header .secondary-button { top: 18px; right: 18px; }
+  .focus-strip { padding: 13px 17px; }
+  .quant-current { padding: 17px; }
+  .question-title-row { align-items: flex-start; }
+  .question-title-row h3 { font-size: 18px; }
+  .question-prompt {
+    max-height: 260px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .today-widget { padding: 16px; }
+  .today-widget h3 { font-size: 15px; }
+  .today-event, .today-routine { min-height: 54px; }
+
+  .gym-hub, .focus-hub { width: 100%; }
+  .gym-hub-header, .focus-hub-header {
+    min-height: 170px;
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 7px 7px 0 #75dfd2;
+  }
+  .gym-hub-header { display: grid; grid-template-columns: 1fr auto; }
+  .gym-hub-header > div:first-child { min-width: 0; }
+  .gym-hub-header h2, .focus-hub-header h2 { font-size: 36px; }
+  .gym-hub-header p, .focus-hub-header p { font-size: 12px; line-height: 1.45; }
+  .gym-date-badge { min-width: 79px; padding: 11px 7px; }
+  .gym-date-badge strong { font-size: 20px; }
+  .gym-mode-tabs {
+    gap: 7px;
+    margin: 20px 2px 15px;
+    overflow-x: auto;
+    padding: 0 0 5px;
+    scrollbar-width: none;
+  }
+  .gym-mode-tabs::-webkit-scrollbar { display: none; }
+  .gym-mode-tabs button {
+    flex: 1 0 82px;
+    min-width: 82px;
+    height: 44px;
+    border-radius: 13px;
+    box-shadow: 3px 3px 0 var(--fun-ink);
+  }
+  .gym-session-card, .gym-plan-layout, .gym-history-list { padding: 15px; border-radius: 20px; box-shadow: 4px 4px 0 rgba(32,32,56,.14); }
+  .gym-session-card > header { align-items: center; gap: 8px; }
+  .gym-session-card h3 { font-size: 21px; }
+  .gym-attendance-actions { display: grid; grid-template-columns: 1.35fr 1fr 1fr; }
+  .gym-attendance-actions button { min-height: 43px; padding: 5px; font-size: 11px; }
+  .gym-exercise-heading { padding: 12px; }
+  .gym-set-table { overflow: hidden; }
+  .gym-set-head, .gym-set-row {
+    grid-template-columns: 26px repeat(3, minmax(0, 1fr)) 38px;
+    gap: 4px;
+    padding: 7px 5px;
+  }
+  .gym-set-head { font-size: 8px; }
+  .gym-set-row input { height: 40px; padding: 0 5px; text-align: center; }
+  .gym-set-row > button { width: 36px; height: 36px; }
+  .gym-plan-layout { gap: 20px; }
+  .gym-plan-form > div { grid-template-columns: 1fr; }
+  .exercise-picker { grid-template-columns: 1fr 1fr; padding: 12px; }
+  .exercise-picker label:first-child, .exercise-picker button { grid-column: 1/-1; }
+  .exercise-picker button { width: 100%; min-height: 44px; }
+  .gym-draft-exercises article { padding: 10px; }
+  .custom-exercise-box > div { flex-direction: column; }
+  .custom-exercise-box button { min-height: 42px; }
+  .gym-plan-list article { align-items: flex-start; flex-direction: column; }
+  .gym-plan-list article > div:last-child { display: flex; width: 100%; gap: 8px; }
+  .gym-plan-list article button { flex: 1; min-height: 40px; }
+  .gym-history-row { align-items: flex-start; }
+  .gym-history-row time { min-width: 72px; font-size: 12px; }
+  .gym-coach-grid { gap: 12px; }
+  .gym-coach-hero, .gym-pr-card, .gym-tools-card { padding: 17px; border-radius: 20px; }
+
+  .calendar-header { gap: 13px; padding: 18px; }
+  .calendar-header h2 { font-size: 24px; }
+  .calendar-header p { font-size: 12px; }
+  .calendar-header-actions { width: 100%; }
+  .calendar-header-actions button { min-height: 42px; }
+  .month-panel { padding: 14px 9px 16px; }
+  .month-toolbar { flex-direction: row; align-items: center; }
+  .month-toolbar h3 { font-size: 18px; }
+  .calendar-day { min-height: 47px; padding: 5px 3px; border-radius: 10px; }
+  .calendar-day span { font-size: 12px; }
+  .agenda-panel, .daily-history-panel { padding: 15px; }
+  .daily-history-panel { margin: 10px 0; }
+  .daily-reflection-card { padding: 16px; }
+
+  .wellness-hero { align-items: flex-start; flex-direction: column; padding: 20px; }
+  .wellness-hero h2 { font-size: 30px; }
+  .wellness-summary { grid-template-columns: auto 1fr; padding: 16px; }
+  .wellness-mini-stat { display: none; }
+  .wellness-columns { padding: 12px; }
+  .routine-studio, .product-library-card { padding: 16px; border-radius: 20px; }
+  .wellness-form-row, .wellness-form-row.three { grid-template-columns: 1fr; }
+  .weekday-picker { justify-content: space-between; }
+  .product-library-form { grid-template-columns: 1fr 1fr; }
+  .product-library-form textarea, .product-library-form button { grid-column: 1/-1; }
+
+  .focus-hub-header { gap: 14px; }
+  .focus-today-total { width: 100%; min-width: 0; padding: 12px; }
+  .focus-hub-grid { gap: 12px; }
+  .focus-clock-card, .focus-motivation-card, .focus-history-card { padding: 16px; border-radius: 20px; }
+  .focus-hub-clock { font-size: 58px; }
+  .focus-hub-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .focus-hub-actions .primary-link { grid-column: 1/-1; }
+
+  .contest-emergency-banner { align-items: flex-start; flex-direction: column; padding: 14px; border-radius: 18px; }
+  .emergency-actions { width: 100%; }
+  .emergency-actions button { flex: 1; }
+  .contest-card { align-items: flex-start; flex-direction: column; }
+  .contest-card-actions { width: 100%; }
+  .contest-card-actions > * { flex: 1; text-align: center; }
+
+  .notes-format-toolbar { border-radius: 18px; }
+  .note-editor-fields { padding-right: 16px; padding-left: 16px; }
+  .sheet-toolbar, .quant-toolbar { grid-template-columns: 1fr; padding: 12px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .arcade-hero, .game-card { padding: 18px; border-radius: 22px; }
+  .memory-grid { gap: 7px; }
+}
 .daily-history-item.gym { background:#ebfaf5; }
 .daily-history-item.missed { background:#fff0f0; }
 .daily-history-item.focus { background:#f0edff; }
@@ -4933,6 +5180,41 @@ body {
   .month-input {
     width: 100%;
   }
+}
+
+/* Final iPhone 16 Plus precedence layer. Keep this last. */
+@media (min-width: 390px) and (max-width: 520px) {
+  body { overflow-x: hidden; padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  .topbar {
+    position: sticky;
+    display: grid;
+    grid-template-columns: minmax(145px, .85fr) minmax(0, 1.15fr);
+    gap: 8px;
+    padding: calc(7px + env(safe-area-inset-top)) 10px 9px;
+  }
+  .topbar p, .sync-bar label, .sync-bar span { display: none; }
+  .topbar h1 { max-width: 92px; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sync-bar { min-width: 0; grid-template-columns: minmax(0, 1fr) 52px; gap: 5px; }
+  .sync-bar input, .sync-bar button { min-width: 0; height: 43px; }
+  .content { width: 100%; padding: 10px 12px 20px; overflow-x: clip; }
+  .gym-hub, .focus-hub { width: 100%; }
+  .gym-hub-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 78px;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+  }
+  .focus-hub-header { align-items: flex-start; flex-direction: column; padding: 20px; }
+  .gym-date-badge { min-width: 78px; width: 78px; }
+  .gym-mode-tabs { display: grid; grid-template-columns: repeat(4, 1fr); overflow: visible; gap: 6px; }
+  .gym-mode-tabs button { min-width: 0; width: 100%; padding: 0 3px; font-size: 12px; }
+  .gym-plan-layout, .focus-hub-grid { grid-template-columns: minmax(0, 1fr); }
+  .gym-plan-form > div { grid-template-columns: 1fr; }
+  .exercise-picker { grid-template-columns: 1fr 1fr !important; }
+  .exercise-picker label:first-child, .exercise-picker button { grid-column: 1 / -1 !important; }
+  .gym-set-head, .gym-set-row { grid-template-columns: 25px repeat(3, minmax(0, 1fr)) 37px; }
+  .calendar-layout, .notes-board, .today-grid, .today-side, .wellness-columns { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Life command center and complete money planning */

@@ -411,6 +411,9 @@ function setView(viewName) {
   if (viewName === "contests") renderContestsView();
   if (viewName === "sheet") renderSheet();
   if (viewName === "stats") renderStats();
+  if (window.matchMedia("(max-width: 480px)").matches) {
+    requestAnimationFrame(() => $(`${viewName}Tab`)?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }));
+  }
 }
 
 function renderGoal() {
