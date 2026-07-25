@@ -54,6 +54,8 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+const isInstalledApp = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+document.body.classList.toggle("standalone-app", isInstalledApp);
 
 const initialParams = new URLSearchParams(window.location.search);
 const initialView = initialParams.get("view");
@@ -412,7 +414,11 @@ function setView(viewName) {
   if (viewName === "sheet") renderSheet();
   if (viewName === "stats") renderStats();
   if (window.matchMedia("(max-width: 480px)").matches) {
-    requestAnimationFrame(() => $(`${viewName}Tab`)?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }));
+    requestAnimationFrame(() => $(`${viewName}Tab`)?.scrollIntoView({
+      behavior: "smooth",
+      inline: isInstalledApp ? "nearest" : "center",
+      block: isInstalledApp ? "center" : "nearest"
+    }));
   }
 }
 
