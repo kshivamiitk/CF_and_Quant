@@ -99,6 +99,7 @@ def default_quant_progress():
         "version": 1,
         "owner": OWNER_NAME,
         "activeQuestionId": None,
+        "activeSelection": "automatic",
         "items": {},
         "history": []
     }
@@ -661,6 +662,7 @@ def quant_progress() -> dict:
     progress.setdefault("version", 1)
     progress.setdefault("owner", OWNER_NAME)
     progress.setdefault("activeQuestionId", None)
+    progress.setdefault("activeSelection", "automatic")
     progress.setdefault("items", {})
     progress.setdefault("history", [])
     return progress
@@ -741,7 +743,7 @@ def build_quant_today_payload(assign_next: bool = True) -> dict:
     active_item = (progress.get("items") or {}).get(active_id, {}) if active_id else {}
     changed = False
 
-    if active_id and active_item.get("status") != "done" and active_id in question_by_id:
+    if (progress.get("activeSelection") == "manual" or not assign_next) and active_id and active_item.get("status") != "done" and active_id in question_by_id:
         current_id = active_id
     else:
         current_id = None
@@ -752,6 +754,7 @@ def build_quant_today_payload(assign_next: bool = True) -> dict:
                     current_id = question_id
                     break
             progress["activeQuestionId"] = current_id
+            progress["activeSelection"] = "automatic"
             changed = True
 
     if current_id:
@@ -805,6 +808,7 @@ def update_quant_question(payload: dict) -> dict:
             item["solutionRevealed"] = True
             if progress.get("activeQuestionId") == question_id:
                 progress["activeQuestionId"] = None
+                progress["activeSelection"] = "automatic"
             if previous_status != "done":
                 progress["history"].append({"id": question_id, "solvedAt": item["solvedAt"]})
         else:
@@ -819,6 +823,7 @@ def update_quant_question(payload: dict) -> dict:
             progress["activeQuestionId"] = question_id
         elif status == "todo" and progress.get("activeQuestionId") == question_id:
             progress["activeQuestionId"] = None
+            progress["activeSelection"] = "automatic"
     if "attempts" in payload:
         item["attempts"] = max(0, int(payload.get("attempts") or 0))
     if "userSolution" in payload:
@@ -827,6 +832,12 @@ def update_quant_question(payload: dict) -> dict:
         item["notes"] = str(payload.get("notes") or "")
     if "solutionRevealed" in payload:
         item["solutionRevealed"] = bool(payload.get("solutionRevealed"))
+    if payload.get("activate"):
+        progress["activeQuestionId"] = question_id
+        progress["activeSelection"] = "manual"
+        if item.get("status") in {None, "", "todo"}:
+            item["status"] = "doing"
+            item["assignedAt"] = item.get("assignedAt") or now
     item["lastUpdated"] = now
     write_json(QUANT_PROGRESS_PATH, progress)
     include_solution = item.get("status") == "done" or bool(item.get("solutionRevealed"))

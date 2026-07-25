@@ -7,6 +7,7 @@ const state = {
   activeTopic: "all",
   activeView: "today",
   saveTimer: null,
+  quantSaveTimer: null,
   drawerOpen: false,
   contestPayload: null,
   contests: [],
@@ -1247,7 +1248,7 @@ function currentQuantCard(compact = false) {
       ${compact ? "" : `
         <div class="quant-work-grid">
           <div class="field-group">
-            <label>Your solution</label>
+            <label>Your solution <span id="quantAnswerSaveState" class="inline-save-state">Saved</span></label>
             <textarea id="quantUserSolutionInput">${escapeHtml(current.userSolution || "")}</textarea>
           </div>
           <div class="field-group">
@@ -1431,9 +1432,10 @@ function renderQuant() {
   $("quantStatsText").textContent = quantProgressText();
   $("quantCurrentPanel").innerHTML = currentQuantCard(false);
   wireQuantCurrent();
-  const rows = visibleQuantQuestions().slice(0, 400).map((question) => `
-    <tr class="quant-row-${escapeHtml(question.status || "todo")}">
-      <td><strong>Q${escapeHtml(question.number)}</strong> ${escapeHtml(question.title)}</td>
+  const visibleQuestions = visibleQuantQuestions();
+  const rows = visibleQuestions.map((question) => `
+    <tr class="quant-row-${escapeHtml(question.status || "todo")} ${state.quantToday?.activeQuestionId===question.id?"quant-active-row":""}">
+      <td><button class="quant-question-picker" type="button" data-choose-quant="${escapeHtml(question.id)}"><strong>Q${escapeHtml(question.number)}</strong> ${escapeHtml(question.title)}<small>${state.quantToday?.activeQuestionId===question.id?"Solving now":"Open and solve"}</small></button></td>
       <td>${escapeHtml(sourceLabel(question.sourceId))}</td>
       <td>${escapeHtml(question.topic || "")}</td>
       <td>${escapeHtml(difficultyLabel(question.difficulty))}</td>
@@ -1450,6 +1452,15 @@ function renderQuant() {
   document.querySelectorAll("[data-quant-status-id]").forEach((select) => {
     select.addEventListener("change", () => updateQuantStatus(select.dataset.quantStatusId, select.value, select));
   });
+  document.querySelectorAll("[data-choose-quant]").forEach((button)=>button.addEventListener("click",()=>chooseQuantQuestion(button.dataset.chooseQuant)));
+}
+
+async function chooseQuantQuestion(questionId) {
+  const result=await postJson("/api/quant/progress",{id:questionId,status:"doing",activate:true});
+  if(result.today) state.quantToday=result.today;
+  state.quant=await getJson(`/api/quant?ts=${Date.now()}`);
+  renderQuant();
+  $("quantCurrentPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 async function updateQuantStatus(questionId, status, control) {
@@ -1495,13 +1506,29 @@ async function updateQuantCurrent(fields, debounced = false) {
   const current = state.quantToday?.current;
   if (!current) return;
   Object.assign(current, fields);
-  clearTimeout(state.saveTimer);
-  state.saveTimer = setTimeout(async () => {
-    const result = await postJson("/api/quant/progress", { id: current.id, ...fields });
-    if (result.question) state.quantToday.current = result.question;
-    state.quant = await getJson(`/api/quant?ts=${Date.now()}`);
-    renderToday();
-    renderQuant();
+  const listQuestion=(state.quant?.questions||[]).find(item=>item.id===current.id);
+  if(listQuestion) Object.assign(listQuestion,fields);
+  const saveState=$("quantAnswerSaveState");
+  if(saveState) saveState.textContent="Saving…";
+  clearTimeout(state.quantSaveTimer);
+  state.quantSaveTimer = setTimeout(async () => {
+    try {
+      const result = await postJson("/api/quant/progress", { id: current.id, ...fields });
+      if (result.question) {
+        Object.assign(current,result.question);
+        if(listQuestion) Object.assign(listQuestion,result.question);
+      }
+      if(result.today) state.quantToday=result.today;
+      if(saveState?.isConnected) saveState.textContent="Saved";
+      if(fields.status) {
+        state.quant=await getJson(`/api/quant?ts=${Date.now()}`);
+        renderToday();
+        renderQuant();
+      }
+    } catch(error) {
+      if(saveState?.isConnected) saveState.textContent="Save failed";
+      console.error(error);
+    }
   }, debounced ? 450 : 0);
 }
 

@@ -6295,3 +6295,31 @@ body {
   body.standalone-app .tab-button[data-icon]::before { font-size: 21px; }
   body.standalone-app .content { width: 100%; padding: 10px 12px 22px; }
 }
+
+.quant-question-picker {
+  width: 100%;
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 8px;
+  text-align: left;
+  color: inherit;
+}
+.quant-question-picker:hover { background: #f3efff; border-radius: 10px; }
+.quant-question-picker small {
+  display: block;
+  margin-top: 4px;
+  color: #7657ff;
+  font-size: .7rem;
+  font-weight: 800;
+}
+.quant-active-row {
+  background: #f2eeff !important;
+  box-shadow: inset 4px 0 #7657ff;
+}
+.inline-save-state {
+  float: right;
+  color: #14865c;
+  font-size: .72rem;
+  font-weight: 700;
+}
