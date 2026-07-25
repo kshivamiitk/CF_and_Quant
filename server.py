@@ -110,6 +110,15 @@ def default_personal():
         "owner": OWNER_NAME,
         "schedule": [],
         "notes": [],
+        "skinRoutines": [],
+        "skinStepLogs": [],
+        "gymPlans": [],
+        "gymSessions": [],
+        "customExercises": [],
+        "contestCalendar": [],
+        "skinProducts": [],
+        "dailyReflections": [],
+        "quantAttemptHistory": [],
         "expenses": [],
         "incomes": [],
         "focusSessions": [],
@@ -125,6 +134,7 @@ def default_personal():
         "bills": [],
         "savingsGoals": [],
         "debts": [],
+        "settings": {"humourStyle": "playful", "flexibleStreaks": True},
         "notificationState": {},
         "pushSubscriptions": [],
         "updatedAt": None
@@ -137,6 +147,15 @@ def public_personal(personal):
         "owner": personal.get("owner", OWNER_NAME),
         "schedule": personal.get("schedule", []),
         "notes": personal.get("notes", []),
+        "skinRoutines": personal.get("skinRoutines", []),
+        "skinStepLogs": personal.get("skinStepLogs", []),
+        "gymPlans": personal.get("gymPlans", []),
+        "gymSessions": personal.get("gymSessions", []),
+        "customExercises": personal.get("customExercises", []),
+        "contestCalendar": personal.get("contestCalendar", []),
+        "skinProducts": personal.get("skinProducts", []),
+        "dailyReflections": personal.get("dailyReflections", []),
+        "quantAttemptHistory": personal.get("quantAttemptHistory", []),
         "expenses": personal.get("expenses", []),
         "incomes": personal.get("incomes", []),
         "focusSessions": personal.get("focusSessions", []),
@@ -152,6 +171,7 @@ def public_personal(personal):
         "bills": personal.get("bills", []),
         "savingsGoals": personal.get("savingsGoals", []),
         "debts": personal.get("debts", []),
+        "settings": personal.get("settings", {"humourStyle": "playful", "flexibleStreaks": True}),
         "updatedAt": personal.get("updatedAt"),
     }
 
@@ -778,14 +798,27 @@ def update_quant_question(payload: dict) -> dict:
         status = str(status)
         if status not in {"todo", "doing", "done"}:
             raise ValueError("Status must be todo, doing, or done")
+        previous_status = item.get("status") or "todo"
         item["status"] = status
         if status == "done":
             item["solvedAt"] = item.get("solvedAt") or now
             item["solutionRevealed"] = True
-            progress["activeQuestionId"] = None
-            progress["history"].append({"id": question_id, "solvedAt": item["solvedAt"]})
-        elif progress.get("activeQuestionId") in {None, question_id}:
+            if progress.get("activeQuestionId") == question_id:
+                progress["activeQuestionId"] = None
+            if previous_status != "done":
+                progress["history"].append({"id": question_id, "solvedAt": item["solvedAt"]})
+        else:
+            # Correcting a mistakenly completed question must also correct the
+            # solved count and history. Keep a revealed solution available.
+            item["solvedAt"] = None
+            progress["history"] = [
+                entry for entry in progress.get("history", [])
+                if entry.get("id") != question_id
+            ]
+        if status == "doing" and progress.get("activeQuestionId") in {None, question_id}:
             progress["activeQuestionId"] = question_id
+        elif status == "todo" and progress.get("activeQuestionId") == question_id:
+            progress["activeQuestionId"] = None
     if "attempts" in payload:
         item["attempts"] = max(0, int(payload.get("attempts") or 0))
     if "userSolution" in payload:
@@ -936,9 +969,10 @@ class TrackerHandler(BaseHTTPRequestHandler):
             existing["expenses"] = payload.get("expenses", existing.get("expenses", []))
             existing["incomes"] = payload.get("incomes", existing.get("incomes", []))
             existing["focusSessions"] = payload.get("focusSessions", existing.get("focusSessions", []))
-            for field in ("tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
+            for field in ("skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
                           "accounts", "budgets", "bills", "savingsGoals", "debts"):
                 existing[field] = payload.get(field, existing.get(field, []))
+            existing["settings"] = payload.get("settings", existing.get("settings", {}))
             existing["updatedAt"] = isoformat_utc(utc_now())
             existing["version"] = 4
             write_json(PERSONAL_PATH, existing)

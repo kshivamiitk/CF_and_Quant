@@ -26,21 +26,37 @@ http://127.0.0.1:8765
 
 The first screen is the Today dashboard. It assigns one quant problem at a time. The current quant problem stays locked as the active problem until you mark it solved; only then is the solution revealed and the next problem can be loaded.
 
+Every question in the Quant table has an editable `Todo`, `Doing`, or `Done`
+status. A previously completed question can be corrected later; changing it
+away from `Done` removes its solved timestamp and solved-history entry.
+
+The Brain Arcade includes a twelve-card memory matching game, a ten-question
+mental-math sprint, and procedurally generated missing-number sequences. Scores,
+XP, and the sequence streak are retained on the device.
+
 Enter your Codeforces handle in the header and press `Sync` to update problem status from your submissions. Accepted submissions mark problems `Done`; attempted problems without an accepted submission are marked `Doing`.
 
 The Contests tab tracks upcoming Codeforces and CodeChef contests. The tracker polls every 10 minutes, shows a red or amber emergency banner for live/near contests, and can send browser notifications after you press `Notify` and grant permission.
 
 The Notes tab uses an Apple Notes-style editor with rich text, headings, lists,
-checklists, links, search, pinning, and automatic saving. The Insights tab adds
-a focus timer, seven-day productivity chart, expense capture, monthly spend
-analysis, accounts/net worth, income, category budgets, recurring bills and
-subscriptions, savings goals, debt payoff, and CSV statement import.
+checklists, links, search, pinning, and automatic saving. The focused phone
+navigation contains Today, Quant, Schedule, Wellness, Notes, Contests, and roadmap views;
+the former Life and Insights screens are no longer shown.
 
-The Life tab is the personal command center. It includes urgent and recurring
-tasks, due-time reminders, goals, habits and streaks, weekly reviews, manual
-health check-ins, job/learning tracking, and a metadata vault with document
-expiry alerts. The Today view surfaces urgent work, habits, upcoming bills, and
-the current safe-to-spend amount.
+The Wellness tab stores repeatable skincare routines with ordered steps, time,
+and selected weekdays. It also stores daily or weekday gym plans with workout
+duration and per-exercise sets, reps, and duration. Each routine can be checked
+off for the day and contributes to the daily completion indicator.
+
+The dedicated Gym tab separates weekly plans from dated sessions. Today shows
+only the current weekday’s plan, with editable actual weight, reps, duration,
+and an independent checkbox for every set. Sessions can be marked present,
+absent, rest, partial, or complete, and remain in Gym and Calendar history.
+
+The Focus tab provides 25/50/90-minute timers, partial-session logging, daily and
+weekly focused minutes, a seven-day chart, session history, and a consistency
+rhythm. Contest `Add to my calendar` actions now create internal schedule events
+instead of opening Google Calendar.
 
 Progress is stored in:
 
@@ -65,8 +81,7 @@ The app is installable as a PWA from supported browsers. On iPhone, open the app
 
 The installed iPhone icon uses the supported app badge to show the number of
 days remaining in the year. iOS keeps Home Screen icon artwork static for web
-apps, so the app also shows the live countdown inside the icon mark and Insights
-screen.
+apps, so the app also shows the live countdown inside the header icon mark.
 
 ## Private phone access
 
@@ -173,6 +188,10 @@ npx web-push generate-vapid-keys --json
 
 Add these Production environment variables in Vercel:
 
+- `SUPABASE_URL` from Supabase Project Settings
+- `SUPABASE_ANON_KEY` (or the newer publishable key)
+- `SUPABASE_OWNER_ID=kumar-shivam`
+
 - `APP_BASE_URL=https://YOUR-PROJECT.vercel.app`
 - `VAPID_PUBLIC_KEY` from the generated public key
 - `VAPID_PRIVATE_KEY` from the generated private key
@@ -181,14 +200,21 @@ Add these Production environment variables in Vercel:
 - `REMINDER_DISPATCH_SECRET` set to a long random value
 - `APP_TIMEZONE=Asia/Kolkata` (optional; this is the default)
 
+Before the first Supabase-backed deployment, open the Supabase SQL Editor and
+run [`supabase/schema.sql`](supabase/schema.sql). Supabase becomes the primary
+store; existing Redis/local data is imported automatically when a Supabase
+document does not exist, and remains available as a temporary fallback.
+
 Redeploy, launch the installed iPhone app, open Calendar, and tap **Enable
 reminders**. The app creates one QStash minute schedule and sends a test
 notification immediately. The same minute dispatcher sends event reminders, a
 morning summary of calendar work/contests/practice, and contest alerts at
-24 hours, 1 hour, 15 minutes, and live. It also handles urgent and due tasks,
-habit times, bills/subscriptions, goal and career deadlines, and document
-expiries. Urgent-task alerts are held during the overnight quiet window from
-10 PM to 7 AM; explicit due-time reminders still fire at their selected time.
+24 hours, 1 hour, 15 minutes, and live. A delayed scheduler run can catch up a
+missed event reminder for six hours. Unfinished calendar work is repeated every
+two hours from 9 AM to 10 PM on its scheduled day, until you press `Done`; the
+active unsolved quant problem is repeated every three hours in that window.
+Skincare and gym reminders fire at their selected local time, retry within a
+45-minute catch-up window, and nudge every two hours until completed for the day.
 
 Bank CSV import accepts the columns `Date`, `Description`, `Amount`, `Category`,
 and `Type`. Set `Type` to `income` or `credit` for inflows. Imported rows are

@@ -1,4 +1,4 @@
-const CACHE_NAME = "kumar-quant-tracker-v7";
+const CACHE_NAME = "kumar-quant-tracker-v14";
 const ASSETS = [
   "/",
   "/index.html",
@@ -24,6 +24,17 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
   if (requestUrl.pathname.startsWith("/api/")) return;
+  const networkFirst = ["/", "/index.html", "/app.js", "/styles.css", "/service-worker.js"].includes(requestUrl.pathname);
+  if (networkFirst) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      }).catch(() => caches.match(event.request).then((cached) => cached || caches.match(requestUrl.pathname)))
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then((cached) => (
       cached || fetch(event.request).then((response) => {

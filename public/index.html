@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kumar Quant">
     <link rel="apple-touch-icon" href="/cf2000_tracker_icon_1024.png">
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=14">
   </head>
   <body>
     <div class="app-shell">
@@ -24,17 +24,20 @@
           </div>
         </div>
         <div class="sync-bar" aria-label="Codeforces sync">
+          <label for="cfHandleInput">Codeforces handle</label>
           <input id="cfHandleInput" type="text" placeholder="Codeforces handle">
           <button id="syncButton" type="button">Sync</button>
           <span id="syncStatus"></span>
         </div>
         <nav class="top-actions" aria-label="App sections">
           <button id="todayTab" class="tab-button active" type="button" data-icon="⌂">Today</button>
+          <button id="playTab" class="tab-button play-tab" type="button" data-icon="☻">Brain Arcade</button>
           <button id="quantTab" class="tab-button" type="button" data-icon="Q">Quant</button>
           <button id="plannerTab" class="tab-button" type="button" data-icon="□">Schedule</button>
+          <button id="gymTab" class="tab-button" type="button" data-icon="◫">Gym</button>
+          <button id="wellnessTab" class="tab-button" type="button" data-icon="✦">Wellness</button>
+          <button id="focusTab" class="tab-button" type="button" data-icon="◎">Focus</button>
           <button id="notesTab" class="tab-button" type="button" data-icon="≡">Notes</button>
-          <button id="lifeTab" class="tab-button" type="button" data-icon="◆">Life</button>
-          <button id="insightsTab" class="tab-button" type="button" data-icon="◎">Insights</button>
           <button id="contestsTab" class="tab-button contest-tab" type="button">
             <span>Contests</span>
             <span id="contestAlertBadge" class="alert-badge hidden">0</span>
@@ -70,6 +73,67 @@
 
           <section id="todayView" class="view active">
             <div id="todayPanel" class="today-grid"></div>
+          </section>
+
+          <section id="playView" class="view">
+            <div class="arcade-board">
+              <header class="arcade-hero">
+                <div>
+                  <span class="arcade-sticker">NO BORING ALLOWED</span>
+                  <h2>Brain Arcade <span>🧠</span></h2>
+                  <p>Warm up your memory, bully some numbers, and leave with a slightly more powerful brain.</p>
+                </div>
+                <div class="brain-meter">
+                  <span>Today’s brain energy</span>
+                  <strong id="brainEnergyScore">0 XP</strong>
+                  <div><i id="brainEnergyBar"></i></div>
+                </div>
+              </header>
+
+              <div class="arcade-grid">
+                <section class="game-card memory-game-card">
+                  <div class="game-card-header">
+                    <div><span class="game-number">01</span><h3>Memory Mischief</h3><p>Find every matching pair. No peeking, detective.</p></div>
+                    <div class="game-score"><strong id="memoryMoves">0</strong><span>moves</span></div>
+                  </div>
+                  <div id="memoryGrid" class="memory-grid" aria-label="Memory card game"></div>
+                  <div class="game-footer">
+                    <span id="memoryMessage">Match the tiny weirdos.</span>
+                    <button id="memoryResetButton" class="game-button" type="button">Shuffle chaos ↻</button>
+                  </div>
+                </section>
+
+                <section class="game-card math-game-card">
+                  <div class="game-card-header">
+                    <div><span class="game-number">02</span><h3>Math Mayhem</h3><p>Ten quick questions. Your calculator is on holiday.</p></div>
+                    <div class="game-score"><strong id="mathScore">0</strong><span>points</span></div>
+                  </div>
+                  <div class="math-arena">
+                    <span id="mathProgress">Question 1 of 10</span>
+                    <div id="mathQuestion" class="math-question">Ready?</div>
+                    <form id="mathAnswerForm">
+                      <input id="mathAnswerInput" type="number" inputmode="numeric" placeholder="Your answer" autocomplete="off">
+                      <button class="game-button" type="submit">Fire! →</button>
+                    </form>
+                    <p id="mathMessage">Press start and show those numbers who’s boss.</p>
+                  </div>
+                  <button id="mathStartButton" class="game-button full" type="button">Start 10-question sprint ⚡</button>
+                </section>
+
+                <section class="game-card sequence-game-card">
+                  <div class="game-card-header">
+                    <div><span class="game-number">03</span><h3>What Comes Next?</h3><p>Spot the pattern before the pattern spots you.</p></div>
+                    <div class="game-score"><strong id="sequenceScore">0</strong><span>streak</span></div>
+                  </div>
+                  <div id="sequenceNumbers" class="sequence-numbers"></div>
+                  <div id="sequenceChoices" class="sequence-choices"></div>
+                  <div class="game-footer">
+                    <span id="sequenceMessage">Choose the missing number.</span>
+                    <button id="sequenceNewButton" class="game-button" type="button">New puzzle ✦</button>
+                  </div>
+                </section>
+              </div>
+            </div>
           </section>
 
           <section id="quantView" class="view">
@@ -153,6 +217,7 @@
                   <div id="scheduleList" class="agenda-list"></div>
                 </aside>
               </div>
+              <section id="dailyHistoryPanel" class="daily-history-panel"></section>
               <div id="scheduleEditor" class="schedule-editor hidden">
                 <div class="editor-heading">
                   <div>
@@ -201,6 +266,134 @@
                   <button id="addScheduleButton" class="primary-link" type="button">Save event</button>
                 </div>
               </div>
+            </div>
+          </section>
+
+          <section id="gymView" class="view">
+            <div class="gym-hub">
+              <header class="gym-hub-header">
+                <div><span class="section-eyebrow">Show up. Log honestly. Grow.</span><h2>Gym floor</h2><p>Today’s workout, every set, and the days you chose recovery.</p></div>
+                <div class="gym-date-badge"><span id="gymTodayWeekday"></span><strong id="gymTodayDate"></strong></div>
+              </header>
+              <nav class="gym-mode-tabs">
+                <button class="active" type="button" data-gym-mode="today">Today</button>
+                <button type="button" data-gym-mode="plan">Plan</button>
+                <button type="button" data-gym-mode="history">History</button>
+                <button type="button" data-gym-mode="coach">Coach</button>
+              </nav>
+              <div id="gymHubContent"></div>
+            </div>
+          </section>
+
+          <section id="wellnessView" class="view">
+            <div class="wellness-board">
+              <header class="wellness-hero">
+                <div>
+                  <span class="section-eyebrow">Daily self-care studio</span>
+                  <h2>Feel good. Get stronger.</h2>
+                  <p>Build repeatable routines, follow today’s plan, and let your lock screen keep you on track.</p>
+                </div>
+                <div class="wellness-hero-actions">
+                  <span id="wellnessSaveState" class="save-state"></span>
+                  <button id="wellnessEnableRemindersButton" class="primary-link" type="button">Enable reminders</button>
+                </div>
+              </header>
+
+              <div id="wellnessSummary" class="wellness-summary"></div>
+
+              <div class="wellness-columns">
+                <section class="routine-studio skin-studio">
+                  <div class="routine-title">
+                    <span class="routine-symbol">◇</span>
+                    <div><span>Skin care</span><h3>Your glow routine</h3></div>
+                  </div>
+                  <form id="skinRoutineForm" class="wellness-form">
+                    <input id="skinRoutineNameInput" type="text" placeholder="Morning glow, evening reset…" required>
+                    <div class="wellness-form-row">
+                      <select id="skinRoutinePeriodInput">
+                        <option value="morning">Morning</option>
+                        <option value="evening">Evening</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                      <input id="skinRoutineTimeInput" type="time" value="08:00" required>
+                    </div>
+                    <div class="weekday-picker" aria-label="Skin routine days">
+                      <label><input type="checkbox" name="skinDay" value="0" checked><span>M</span></label>
+                      <label><input type="checkbox" name="skinDay" value="1" checked><span>T</span></label>
+                      <label><input type="checkbox" name="skinDay" value="2" checked><span>W</span></label>
+                      <label><input type="checkbox" name="skinDay" value="3" checked><span>T</span></label>
+                      <label><input type="checkbox" name="skinDay" value="4" checked><span>F</span></label>
+                      <label><input type="checkbox" name="skinDay" value="5" checked><span>S</span></label>
+                      <label><input type="checkbox" name="skinDay" value="6" checked><span>S</span></label>
+                    </div>
+                    <textarea id="skinRoutineStepsInput" placeholder="Step | product | duration seconds | notes&#10;Cleanse | Gentle cleanser | 60 | Massage softly&#10;Protect | SPF 50 | 30 | Face and neck" required></textarea>
+                    <p class="form-hint">One line per step: name | product | duration seconds | notes</p>
+                    <button id="skinRoutineSubmitButton" class="wellness-add-button" type="submit">Add skin routine <span>＋</span></button>
+                  </form>
+                  <div id="skinRoutineList" class="routine-list"></div>
+                </section>
+
+                <section class="routine-studio gym-studio">
+                  <div class="routine-title">
+                    <span class="routine-symbol">↗</span>
+                    <div><span>Training</span><h3>Your gym plan</h3></div>
+                  </div>
+                  <form id="gymPlanForm" class="wellness-form">
+                    <input id="gymPlanNameInput" type="text" placeholder="Push day, legs, full body…" required>
+                    <div class="wellness-form-row three">
+                      <select id="gymPlanDayInput">
+                        <option value="daily">Every day</option>
+                        <option value="0">Monday</option><option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option><option value="3">Thursday</option>
+                        <option value="4">Friday</option><option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                      </select>
+                      <input id="gymPlanTimeInput" type="time" value="18:00" required>
+                      <input id="gymPlanDurationInput" type="number" min="5" max="300" value="60" placeholder="Minutes" required>
+                    </div>
+                    <textarea id="gymPlanExercisesInput" placeholder="Exercise | sets | reps | weight kg | duration sec | rest sec&#10;Bench press | 4 | 8-10 | 60 | 900 | 90" required></textarea>
+                    <p class="form-hint">One line per exercise: name | sets | reps | weight kg | duration seconds | rest seconds</p>
+                    <button id="gymPlanSubmitButton" class="wellness-add-button" type="submit">Add workout plan <span>＋</span></button>
+                  </form>
+                  <div id="gymPlanList" class="routine-list"></div>
+                </section>
+              </div>
+              <section class="product-library-card">
+                <div class="widget-header"><div><span class="section-eyebrow">Shelf intelligence</span><h3>Skincare product library</h3></div></div>
+                <form id="skinProductForm" class="product-library-form">
+                  <input id="skinProductNameInput" required placeholder="Product name">
+                  <input id="skinProductTypeInput" required placeholder="Cleanser, serum, SPF…">
+                  <input id="skinProductOpenedInput" type="date" aria-label="Date opened">
+                  <input id="skinProductExpiryInput" type="date" aria-label="Expiry date">
+                  <textarea id="skinProductNotesInput" placeholder="Skin response, usage notes…"></textarea>
+                  <button class="primary-link" type="submit">Add product</button>
+                </form>
+                <div id="skinProductList" class="product-library-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="focusView" class="view">
+            <div class="focus-hub">
+              <header class="focus-hub-header">
+                <div><span class="section-eyebrow">Attention is the real currency</span><h2>Focus studio</h2><p>One session at a time. The graph will take care of motivation.</p></div>
+                <div id="focusHubTodayTotal" class="focus-today-total"></div>
+              </header>
+              <div class="focus-hub-grid">
+                <section class="focus-clock-card">
+                  <label for="focusHubLabelInput">What deserves your full attention?</label>
+                  <input id="focusHubLabelInput" type="text" placeholder="Quant, Codeforces, reading…">
+                  <div id="focusHubClock" class="focus-hub-clock">25:00</div>
+                  <div class="focus-preset-row">
+                    <button type="button" data-focus-hub-minutes="25">25m</button>
+                    <button type="button" data-focus-hub-minutes="50">50m</button>
+                    <button type="button" data-focus-hub-minutes="90">90m</button>
+                  </div>
+                  <div class="focus-hub-actions"><button id="focusHubResetButton" class="secondary-button" type="button">Reset</button><button id="focusHubFinishButton" class="secondary-button" type="button">Finish & log</button><button id="focusHubStartButton" class="primary-link" type="button">Start focus</button></div>
+                </section>
+                <section class="focus-motivation-card"><div id="focusHubStats"></div><div id="focusHubWeekChart" class="focus-week-chart"></div></section>
+              </div>
+              <section class="focus-history-card"><div class="widget-header"><h3>Recent focus sessions</h3><span id="focusHubStreak"></span></div><div id="focusHubHistory"></div></section>
             </div>
           </section>
 
@@ -261,7 +454,7 @@
             </div>
           </section>
 
-          <section id="insightsView" class="view">
+          <section id="insightsView" class="view" hidden aria-hidden="true">
             <div class="insights-board">
               <div class="insights-header">
                 <div>
@@ -431,7 +624,7 @@
             </div>
           </section>
 
-          <section id="lifeView" class="view">
+          <section id="lifeView" class="view" hidden aria-hidden="true">
             <div class="life-board">
               <div class="life-header">
                 <div>
@@ -681,6 +874,6 @@
       <div id="drawerContent"></div>
     </aside>
 
-    <script src="/app.js"></script>
+    <script src="/app.js?v=14"></script>
   </body>
 </html>

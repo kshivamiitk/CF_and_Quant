@@ -33,7 +33,24 @@ const state = {
   focusRemainingSeconds: 25 * 60,
   focusRunning: false,
   focusStartedAt: null,
-  focusTimer: null
+  focusTimer: null,
+  brainXp: Number(localStorage.getItem("kumarBrainXp") || 0),
+  memoryCards: [],
+  memoryOpen: [],
+  memoryMatched: new Set(),
+  memoryMoves: 0,
+  memoryLocked: false,
+  mathRound: 0,
+  mathScore: 0,
+  mathAnswer: null,
+  mathPlaying: false,
+  sequenceAnswer: null,
+  sequenceStreak: Number(localStorage.getItem("kumarSequenceStreak") || 0),
+  editingSkinRoutineId: null,
+  editingGymPlanId: null,
+  activeGymMode: "today",
+  offlineSavePending: false,
+  gymDraftExercises: []
 };
 
 const $ = (id) => document.getElementById(id);
@@ -43,7 +60,7 @@ const initialToken = initialParams.get("token");
 const initialView = initialParams.get("view");
 const initialDate = initialParams.get("date");
 const initialNewNote = initialParams.get("new") === "1";
-if (["today", "quant", "planner", "notes", "life", "insights", "tree", "contests", "sheet", "stats"].includes(initialView)) {
+if (["today", "play", "quant", "planner", "gym", "wellness", "focus", "notes", "tree", "contests", "sheet", "stats"].includes(initialView)) {
   state.activeView = initialView;
 }
 if (/^\d{4}-\d{2}-\d{2}$/.test(initialDate || "")) state.selectedScheduleDate = initialDate;
@@ -218,7 +235,7 @@ function localIsoDate(date = new Date()) {
 }
 
 const personalCollectionFields = [
-  "schedule", "notes", "expenses", "incomes", "focusSessions", "tasks", "goals",
+  "schedule", "notes", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "expenses", "incomes", "focusSessions", "tasks", "goals",
   "habits", "weeklyReviews", "healthLogs", "careerItems", "documents", "accounts", "budgets",
   "bills", "savingsGoals", "debts"
 ];
@@ -228,6 +245,7 @@ function ensurePersonalCollections() {
   personalCollectionFields.forEach((field) => {
     if (!Array.isArray(state.personal[field])) state.personal[field] = [];
   });
+  state.personal.settings ||= { humourStyle: "playful", flexibleStreaks: true };
 }
 
 function daysBetweenDates(fromIso, toIso) {
@@ -382,13 +400,17 @@ function setView(viewName) {
   state.activeView = viewName;
   document.body.dataset.view = viewName;
   document.body.classList.toggle("code-view", ["tree", "sheet", "stats"].includes(viewName));
-  ["today", "quant", "planner", "notes", "life", "insights", "tree", "contests", "sheet", "stats"].forEach((name) => {
-    $(`${name}View`).classList.toggle("active", name === viewName);
-    $(`${name}Tab`).classList.toggle("active", name === viewName);
+  ["today", "play", "quant", "planner", "gym", "wellness", "focus", "notes", "tree", "contests", "sheet", "stats"].forEach((name) => {
+    $(`${name}View`)?.classList.toggle("active", name === viewName);
+    $(`${name}Tab`)?.classList.toggle("active", name === viewName);
   });
   if (viewName === "today") renderToday();
+  if (viewName === "play") renderArcade();
   if (viewName === "quant") renderQuant();
   if (viewName === "planner") renderSchedule();
+  if (viewName === "gym") renderGymHub();
+  if (viewName === "wellness") renderWellness();
+  if (viewName === "focus") renderFocusHub();
   if (viewName === "notes") renderNotes();
   if (viewName === "life") renderLife();
   if (viewName === "insights") renderInsights();
@@ -713,7 +735,21 @@ function updateCurrent(field, value, debounced = false) {
   const noteField = ["comments", "learnings", "mistakes", "nextAction"].includes(field);
   if (!noteField && !isUnlocked(state.selectedId)) return;
   const progress = itemProgress(state.selectedId);
+  const previousValue = progress[field];
   progress[field] = value;
+  if (state.personal && ["status", "attempts"].includes(field) && previousValue !== value) {
+    state.personal.quantAttemptHistory ||= [];
+    state.personal.quantAttemptHistory.unshift({
+      id: `quant-attempt-${Date.now()}`,
+      questionId: state.selectedId,
+      title: state.byId.get(state.selectedId)?.title || state.selectedId,
+      field,
+      from: previousValue ?? "",
+      to: value,
+      occurredAt: new Date().toISOString()
+    });
+    savePersonal(true, false);
+  }
   if (field === "status") {
     progress.statusSource = "manual";
   }
@@ -724,6 +760,11 @@ function updateCurrent(field, value, debounced = false) {
     if (state.drawerOpen) renderDrawer();
   }
   scheduleSave(debounced);
+}
+
+function quantAttemptTimeline(questionId) {
+  const entries=(state.personal?.quantAttemptHistory||[]).filter(item=>item.questionId===questionId).slice(0,6);
+  return entries.length?`<div class="quant-attempt-timeline"><strong>Attempt history</strong>${entries.map(item=>`<span>${escapeHtml(formatLocalDateTime(item.occurredAt))} · ${escapeHtml(item.field)}: ${escapeHtml(item.from)} → ${escapeHtml(item.to)}</span>`).join("")}</div>`:"";
 }
 
 function openProblemDrawer() {
@@ -1030,6 +1071,7 @@ function renderContestAlerts() {
 function contestCard(contest) {
   const timing = contestTiming(contest);
   const urgency = timing.urgency;
+  const added = (state.personal?.contestCalendar || []).some((item) => item.platform === contest.platform && Number(item.startTimeSeconds) === Number(contest.startTimeSeconds));
   return `
     <article class="contest-card ${escapeHtml(urgency)}">
       <div class="contest-card-main">
@@ -1043,7 +1085,7 @@ function contestCard(contest) {
       </div>
       <div class="contest-card-actions">
         <a class="primary-link" href="${escapeHtml(contest.url)}" target="_blank" rel="noreferrer">Open</a>
-        <a class="secondary-button" href="${escapeHtml(contest.calendarUrl)}" target="_blank" rel="noreferrer">Calendar</a>
+        <button class="secondary-button ${added ? "added" : ""}" data-add-contest-calendar="${escapeHtml(contest.platform)}:${escapeHtml(contest.startTimeSeconds)}" type="button">${added ? "Added ✓" : "Add to my calendar"}</button>
       </div>
     </article>
   `;
@@ -1086,10 +1128,39 @@ function renderContestsView() {
   list.innerHTML = contests.length
     ? contests.map(contestCard).join("")
     : `<div class="empty-state">No upcoming contests found in the next 45 days.</div>`;
+  document.querySelectorAll("[data-add-contest-calendar]").forEach((button) => button.addEventListener("click", () => {
+    const [platform, start] = button.dataset.addContestCalendar.split(":");
+    addContestToInternalCalendar(platform, Number(start));
+  }));
 
   if (next && !primaryContestAlert()) {
     $("contestEmergencyBanner").classList.add("hidden");
   }
+}
+
+function addContestToInternalCalendar(platform, startTimeSeconds) {
+  const contest = (state.contests || []).find((item) => item.platform === platform && Number(item.startTimeSeconds) === startTimeSeconds);
+  if (!contest) return;
+  state.personal.contestCalendar ||= [];
+  const existing = state.personal.contestCalendar.find((item) => item.platform === platform && Number(item.startTimeSeconds) === startTimeSeconds);
+  if (existing) {
+    state.personal.contestCalendar = state.personal.contestCalendar.filter((item) => item !== existing);
+    state.personal.schedule = state.personal.schedule.filter((event) => event.contestKey !== existing.id);
+  } else {
+    const id = `contest-${platform}-${startTimeSeconds}`;
+    state.personal.contestCalendar.push({ id, platform, title: contest.title, url: contest.url, startTimeSeconds, durationSeconds: contest.durationSeconds, status: "interested", addedAt: new Date().toISOString() });
+    const start = new Date(startTimeSeconds * 1000);
+    const end = new Date((startTimeSeconds + Number(contest.durationSeconds || 7200)) * 1000);
+    state.personal.schedule.push({
+      id: `event-${id}`, contestKey: id, kind: "contest", title: `${platform}: ${contest.title}`,
+      start: dateTimeInputValue(start), startUtc: start.toISOString(), end: dateTimeInputValue(end), endUtc: end.toISOString(),
+      notes: contest.url, notify: true, completed: false, reminderMinutes: 60,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    });
+  }
+  savePersonal(false);
+  renderContestsView();
+  renderSchedule();
 }
 
 function startContestTimers() {
@@ -1183,6 +1254,7 @@ function currentQuantCard(compact = false) {
         </div>
       `}
       <div class="quant-actions">${actions}</div>
+      ${compact ? "" : quantAttemptTimeline(current.id)}
       ${solution}
     </article>
   `;
@@ -1201,23 +1273,16 @@ function renderToday() {
     .slice(0, 4);
   const nextCf = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done");
   const nextContest = visibleContests()[0];
-  const todayFocusMinutes = (state.personal?.focusSessions || [])
-    .filter((session) => sessionDate(session) === localIsoDate())
-    .reduce((sum, session) => sum + Number(session.minutes || 0), 0);
-  const urgentTasks = (state.personal?.tasks || [])
-    .filter((task) => !task.completed && (task.priority === "urgent" || (task.due && String(task.due).slice(0, 10) <= localIsoDate())))
-    .sort((a, b) => String(a.due || "9999").localeCompare(String(b.due || "9999")))
-    .slice(0, 3);
-  const habits = (state.personal?.habits || []).filter((habit) => habitScheduledToday(habit));
-  const habitsDone = habits.filter((habit) => (habit.completions || []).includes(localIsoDate())).length;
-  const currentMonth = localIsoDate().slice(0, 7);
-  const monthIncome = (state.personal?.incomes || []).filter((item) => String(item.date || "").startsWith(currentMonth)
-    || (item.recurring === "monthly" && String(item.date || "").slice(0, 7) < currentMonth)).reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const monthSpend = (state.personal?.expenses || []).filter((item) => String(item.date || "").startsWith(currentMonth)).reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const upcomingBills = (state.personal?.bills || []).filter((bill) => !bill.paid && bill.dueDate >= localIsoDate()).sort((a, b) => String(a.dueDate).localeCompare(String(b.dueDate)));
-  const monthBills = upcomingBills.filter((bill) => String(bill.dueDate || "").startsWith(currentMonth)).reduce((sum, bill) => sum + Number(bill.amount || 0), 0);
-  const availableCash = (state.personal?.accounts || []).reduce((sum, account) => sum + Number(account.balance || 0), 0);
-  const safeToSpend = monthIncome ? monthIncome - monthSpend - monthBills : availableCash - monthBills;
+  const todaySkinRoutines = (state.personal?.skinRoutines || []).filter((item) => routineRunsToday(item, "skin"));
+  const todayGymPlans = (state.personal?.gymPlans || []).filter((item) => routineRunsToday(item, "gym"));
+  const todayFocusSessions = (state.personal?.focusSessions || []).filter((item) => sessionDate(item) === localIsoDate());
+  const todayFocusMinutes = todayFocusSessions.reduce((sum, item) => sum + Number(item.minutes || 0), 0);
+  const humour=state.personal?.settings?.humourStyle||"playful";
+  const coachMessage=todaysEvents.some(item=>!item.completed)
+    ? (humour==="direct"?"Finish the next calendar item before adding more.":humour==="gentle"?"One unfinished calendar item is enough for your next small win.":"Your calendar has unfinished business. It has hired me as collection agent.")
+    : todayFocusMinutes<25
+      ? (humour==="direct"?"Log one focused session today.":humour==="gentle"?"A short focus session would be a kind next step.":"Your focus timer is looking suspiciously well-rested.")
+      : "Today has evidence of progress. Keep the landing clean.";
 
   panel.innerHTML = `
     <section class="today-main">
@@ -1251,6 +1316,46 @@ function renderToday() {
           </button>
         `).join("") : `<p class="muted-copy">No events scheduled today.</p>`}
       </div>
+      <div class="today-widget wellness-today-widget skin-today-widget">
+        <div class="widget-header">
+          <h3>✨ Skin care</h3>
+          <button type="button" data-open-wellness="1">Edit</button>
+        </div>
+        ${todaySkinRoutines.length ? todaySkinRoutines.map((routine) => `
+          <div class="today-routine ${completedToday(routine) ? "complete" : ""}">
+            <button type="button" data-today-skin-complete="${escapeHtml(routine.id)}" aria-label="${completedToday(routine) ? "Mark incomplete" : "Mark complete"}">${completedToday(routine) ? "✓" : ""}</button>
+            <div>
+              <strong>${escapeHtml(routine.name)}</strong>
+              <span>${escapeHtml(routine.time || "Any time")} · ${(routine.steps || []).length} steps</span>
+            </div>
+          </div>
+        `).join("") : `<p class="muted-copy">No skin routine today. Your face has a day off.</p>`}
+      </div>
+      <div class="today-widget wellness-today-widget gym-today-widget">
+        <div class="widget-header">
+          <h3>💪 Gym plan</h3>
+          <button type="button" data-open-gym="1">Open workout</button>
+        </div>
+        ${todayGymPlans.length ? todayGymPlans.map((plan) => `
+          ${(() => { const session=gymSessionFor(plan.id); const progress=session?gymSessionProgress(session):{done:0,total:(plan.exercises||[]).reduce((sum,e)=>sum+(Number.parseInt(e.sets,10)||1),0)}; return `<div class="today-routine ${session?.status === "completed" ? "complete" : ""}">
+            <button type="button" data-open-gym="1" aria-label="Open workout">${session?.status === "completed" ? "✓" : "›"}</button>
+            <div>
+              <strong>${escapeHtml(plan.name)}</strong>
+              <span>${escapeHtml(plan.time || "Any time")} · ${progress.done}/${progress.total} sets · ${session?.status || "planned"}</span>
+            </div>
+          </div>`; })()}
+        `).join("") : `<p class="muted-copy">No workout today. Even dumbbells need space.</p>`}
+      </div>
+      <div class="today-widget focus-today-widget">
+        <div class="widget-header"><h3>◎ Focus</h3><button type="button" data-open-focus="1">Start</button></div>
+        <div class="today-focus-summary"><strong>${todayFocusMinutes}</strong><span>focused minutes · ${todayFocusSessions.length} sessions</span></div>
+        <p class="muted-copy">${todayFocusMinutes ? "Evidence that you showed up." : "Start small. Twenty-five honest minutes counts."}</p>
+      </div>
+      <div class="today-widget contextual-widget">
+        <div class="widget-header"><h3>🧭 Right now</h3><button type="button" data-open-gym-coach="1">Coach</button></div>
+        <p>${escapeHtml(coachMessage)}</p>
+        <small>${state.offlineSavePending?"Working offline · changes will sync automatically":"Synced across your devices"}</small>
+      </div>
       <div class="today-widget">
         <div class="widget-header">
           <h3>Codeforces</h3>
@@ -1275,43 +1380,19 @@ function renderToday() {
           </button>
         ` : `<p class="muted-copy">No upcoming contest found.</p>`}
       </div>
-      <div class="today-widget">
-        <div class="widget-header">
-          <h3>Urgent & due</h3>
-          <button type="button" data-open-life="tasks">Life</button>
-        </div>
-        ${urgentTasks.length ? urgentTasks.map((task) => `
-          <div class="today-task priority-${escapeHtml(task.priority || "normal")}">
-            <button type="button" data-today-toggle-task="${escapeHtml(task.id)}">${task.completed ? "✓" : ""}</button>
-            <div><strong>${escapeHtml(task.title)}</strong><span>${task.due ? escapeHtml(formatLocalDateTime(task.due)) : "Marked urgent"}</span></div>
-          </div>
-        `).join("") : `<p class="muted-copy">No urgent or overdue tasks.</p>`}
-      </div>
-      <div class="today-widget">
-        <div class="widget-header">
-          <h3>Money pulse</h3>
-          <button type="button" data-open-insights="1">Money</button>
-        </div>
-        <div class="money-pulse">
-          <div><strong>${escapeHtml(formatMoney(safeToSpend))}</strong><span>Safe to spend</span></div>
-          <div><strong>${upcomingBills[0] ? escapeHtml(formatMoney(upcomingBills[0].amount)) : "—"}</strong><span>${upcomingBills[0] ? `Next: ${escapeHtml(upcomingBills[0].title)}` : "No upcoming bill"}</span></div>
-        </div>
-      </div>
-      <div class="today-widget">
-        <div class="widget-header">
-          <h3>Today’s pace</h3>
-          <button type="button" data-open-life="goals">Habits</button>
-        </div>
-        <div class="stats-grid compact-stats">
-          <div class="stat-box"><strong>${todayFocusMinutes}</strong><span>Focus min</span></div>
-          <div class="stat-box"><strong>${habitsDone}/${habits.length}</strong><span>Habits done</span></div>
-        </div>
-      </div>
     </aside>
   `;
   $("todayRefreshButton")?.addEventListener("click", loadQuant);
   wireQuantCurrent();
   document.querySelectorAll("[data-open-planner]").forEach((button) => button.addEventListener("click", () => setView("planner")));
+  document.querySelectorAll("[data-open-wellness]").forEach((button) => button.addEventListener("click", () => setView("wellness")));
+  document.querySelectorAll("[data-open-gym]").forEach((button) => button.addEventListener("click", () => setView("gym")));
+  document.querySelectorAll("[data-open-focus]").forEach((button) => button.addEventListener("click", () => setView("focus")));
+  document.querySelectorAll("[data-open-gym-coach]").forEach((button)=>button.addEventListener("click",()=>{state.activeGymMode="coach";setView("gym");}));
+  document.querySelectorAll("[data-today-skin-complete]").forEach((button) => button.addEventListener("click", () => {
+    toggleWellnessCompletion("skinRoutines", button.dataset.todaySkinComplete);
+    renderToday();
+  }));
   document.querySelectorAll("[data-open-cf]").forEach((button) => {
     button.addEventListener("click", () => {
       setView("tree");
@@ -1320,12 +1401,6 @@ function renderToday() {
   });
   document.querySelectorAll("[data-open-cf-home]").forEach((button) => button.addEventListener("click", () => setView("tree")));
   document.querySelectorAll("[data-open-contests]").forEach((button) => button.addEventListener("click", () => setView("contests")));
-  document.querySelectorAll("[data-open-insights]").forEach((button) => button.addEventListener("click", () => setView("insights")));
-  document.querySelectorAll("[data-open-life]").forEach((button) => button.addEventListener("click", () => {
-    setView("life");
-    setLifePanel(button.dataset.openLife);
-  }));
-  document.querySelectorAll("[data-today-toggle-task]").forEach((button) => button.addEventListener("click", () => toggleTask(button.dataset.todayToggleTask)));
 }
 
 function visibleQuantQuestions() {
@@ -1359,10 +1434,45 @@ function renderQuant() {
       <td>${escapeHtml(sourceLabel(question.sourceId))}</td>
       <td>${escapeHtml(question.topic || "")}</td>
       <td>${escapeHtml(difficultyLabel(question.difficulty))}</td>
-      <td><span class="table-status ${escapeHtml(question.status || "todo")}">${escapeHtml(question.status || "todo")}</span></td>
+      <td>
+        <select class="quant-status-editor ${escapeHtml(question.status || "todo")}" data-quant-status-id="${escapeHtml(question.id)}" aria-label="Status for question ${escapeHtml(question.number)}">
+          <option value="todo" ${question.status === "todo" ? "selected" : ""}>Todo</option>
+          <option value="doing" ${question.status === "doing" ? "selected" : ""}>Doing</option>
+          <option value="done" ${question.status === "done" ? "selected" : ""}>Done</option>
+        </select>
+      </td>
     </tr>
   `).join("");
   $("quantRows").innerHTML = rows || `<tr><td colspan="5">No matching quant questions.</td></tr>`;
+  document.querySelectorAll("[data-quant-status-id]").forEach((select) => {
+    select.addEventListener("change", () => updateQuantStatus(select.dataset.quantStatusId, select.value, select));
+  });
+}
+
+async function updateQuantStatus(questionId, status, control) {
+  const question = (state.quant?.questions || []).find((item) => item.id === questionId);
+  const previousStatus = question?.status || "todo";
+  if (control) {
+    control.disabled = true;
+    control.classList.add("saving");
+  }
+  try {
+    const result = await postJson("/api/quant/progress", { id: questionId, status });
+    if (question && result.question) Object.assign(question, result.question);
+    if (result.today) state.quantToday = result.today;
+    state.quant = await getJson(`/api/quant?ts=${Date.now()}`);
+    renderToday();
+    renderQuant();
+  } catch (error) {
+    if (question) question.status = previousStatus;
+    if (control) control.value = previousStatus;
+    console.error(error);
+  } finally {
+    if (control?.isConnected) {
+      control.disabled = false;
+      control.classList.remove("saving");
+    }
+  }
 }
 
 function wireQuantCurrent() {
@@ -1393,11 +1503,20 @@ async function updateQuantCurrent(fields, debounced = false) {
 }
 
 async function loadPersonal() {
-  state.personal = await getJson(`/api/personal?ts=${Date.now()}`);
+  try {
+    state.personal = await getJson(`/api/personal?ts=${Date.now()}`);
+    localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
+  } catch (error) {
+    const cached = localStorage.getItem("kumarPersonalOffline");
+    if (!cached) throw error;
+    state.personal = JSON.parse(cached);
+    state.offlineSavePending = true;
+  }
   ensurePersonalCollections();
   state.selectedScheduleDate ||= localIsoDate();
   state.selectedNoteId ||= state.personal.notes?.[0]?.id || null;
   renderSchedule();
+  renderWellness();
   renderNotes();
   renderInsights();
   renderLife();
@@ -1405,29 +1524,40 @@ async function loadPersonal() {
 }
 
 function savePersonal(debounced = true, rerender = true) {
+  localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
   const saveState = $("personalSaveState");
   const notesState = $("notesSaveState");
+  const wellnessState = $("wellnessSaveState");
   if (saveState) saveState.textContent = "Saving...";
   if (notesState) notesState.textContent = "Saving...";
+  if (wellnessState) wellnessState.textContent = "Saving...";
   clearTimeout(state.personalSaveTimer);
   state.personalSaveTimer = setTimeout(async () => {
     try {
       const result = await postJson("/api/personal", state.personal);
       if (result.personal) state.personal = result.personal;
+      state.offlineSavePending = false;
+      localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
       if (saveState) saveState.textContent = "Saved";
       if (notesState) notesState.textContent = "Saved";
+      if (wellnessState) wellnessState.textContent = "Saved";
       const insightsState = $("insightsSaveState");
       if (insightsState) insightsState.textContent = "Saved";
       if (rerender) {
         renderToday();
         renderSchedule();
+        renderGymHub();
+        renderWellness();
+        renderFocusHub();
         renderNotes();
         renderInsights();
         renderLife();
       }
     } catch (error) {
+      state.offlineSavePending = true;
       if (saveState) saveState.textContent = "Save failed";
       if (notesState) notesState.textContent = "Save failed";
+      if (wellnessState) wellnessState.textContent = "Save failed";
       const insightsState = $("insightsSaveState");
       if (insightsState) insightsState.textContent = "Save failed";
       console.error(error);
@@ -1488,6 +1618,7 @@ function saveScheduleEvent() {
     endUtc: $("scheduleEndInput").value ? new Date($("scheduleEndInput").value).toISOString() : null,
     notes: $("scheduleNotesInput").value.trim(),
     notify: $("scheduleNotifyInput").checked,
+    completed: existing?.completed === true,
     reminderMinutes: Number($("scheduleReminderInput").value || 0),
     createdAt: existing?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -1547,8 +1678,9 @@ function renderSchedule() {
       <div class="agenda-time">${event.start ? escapeHtml(new Date(event.start).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })) : "Any time"}</div>
       <div class="agenda-event-copy">
         <h3>${escapeHtml(event.title || "Untitled event")}</h3>
-        <p>${event.notify === false ? "No reminder" : `${escapeHtml(String(event.reminderMinutes || 0))} min reminder`}</p>
+        <p>${event.completed ? "Completed" : (event.notify === false ? "No reminder" : `${escapeHtml(String(event.reminderMinutes || 0))} min reminder`)}</p>
       </div>
+      <button class="event-complete-button ${event.completed ? "completed" : ""}" type="button" data-complete-event="${escapeHtml(event.id)}" aria-label="${event.completed ? "Mark event incomplete" : "Mark event complete"}">${event.completed ? "✓" : "Done"}</button>
       <button class="icon-control" type="button" data-edit-event="${escapeHtml(event.id)}" aria-label="Edit event">›</button>
     </article>
   `).join("") : `<div class="agenda-empty">Nothing planned for this day.</div>`;
@@ -1565,6 +1697,49 @@ function renderSchedule() {
       if (event) openScheduleEditor(event);
     });
   });
+  document.querySelectorAll("[data-complete-event]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const event = state.personal.schedule.find((item) => item.id === button.dataset.completeEvent);
+      if (!event) return;
+      event.completed = !event.completed;
+      savePersonal(false);
+      renderSchedule();
+      renderToday();
+    });
+  });
+  renderDailyHistory();
+}
+
+function renderDailyHistory() {
+  const panel = $("dailyHistoryPanel");
+  if (!panel || !state.personal) return;
+  const date = state.selectedScheduleDate;
+  const events = (state.personal.schedule || []).filter((event) => eventDate(event) === date);
+  const selectedDay = wellnessDayIndex(dateFromIsoDate(date));
+  const skin = (state.personal.skinRoutines || []).filter((routine) => !(routine.days || []).length || (routine.days || []).map(Number).includes(selectedDay));
+  const gym = (state.personal.gymSessions || []).filter((session) => session.date === date);
+  const focus = (state.personal.focusSessions || []).filter((session) => sessionDate(session) === date);
+  const quant = (state.quant?.questions || []).filter((question) => String(question.solvedAt || "").slice(0, 10) === date);
+  const items = [
+    ...events.filter((event)=>event.kind!=="contest").map((item)=>({icon:item.completed?"✓":"□",title:item.title,meta:item.completed?"Schedule completed":date<localIsoDate()?"Schedule missed/incomplete":"Scheduled activity",tone:item.completed?"gym":"focus"})),
+    ...skin.map((item) => { const done=(item.completions||[]).includes(date); return { icon: "✨", title: item.name, meta: done ? `${(item.steps || []).length} skincare steps completed` : (date < localIsoDate() ? "Skincare routine missed" : "Skincare routine planned"), tone: done ? "skin" : "missed" }; }),
+    ...gym.map((item) => { const p=gymSessionProgress(item); return { icon:"💪", title:item.planName, meta:`${item.status} · ${p.done}/${p.total} sets`,tone:item.status==="absent"?"missed":"gym" }; }),
+    ...focus.map((item) => ({ icon:"◎",title:item.label||"Focus session",meta:`${item.minutes} focused minutes`,tone:"focus" })),
+    ...quant.map((item) => ({ icon:"Q",title:item.title,meta:"Quant question solved",tone:"quant" })),
+    ...events.filter((event)=>event.kind==="contest").map((item)=>({icon:"🏆",title:item.title,meta:item.completed?"Participated/completed":"Contest on calendar",tone:"contest"}))
+  ];
+  const reflection = (state.personal.dailyReflections || []).find((item)=>item.date===date);
+  const missed = items.filter((item)=>item.tone==="missed").length;
+  panel.innerHTML = `<div class="daily-history-heading"><div><span class="section-eyebrow">Life record</span><h3>What happened on ${escapeHtml(formatShortDate(date))}</h3></div><strong>${items.length} records</strong></div>
+    <div class="daily-history-grid">${items.map((item)=>`<article class="daily-history-item ${item.tone}"><i>${item.icon}</i><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.meta)}</span></div></article>`).join("") || `<div class="agenda-empty">Nothing recorded for this day yet. You can still add or correct it.</div>`}</div>
+    <form id="dailyReflectionForm" class="daily-reflection-card">
+      <div><span class="section-eyebrow">Close the loop</span><h3>${missed ? `${missed} missed item${missed===1?"":"s"}—reconcile without guilt` : "Daily reflection"}</h3></div>
+      <label>Mood <select id="reflectionMood"><option ${reflection?.mood==="great"?"selected":""}>great</option><option ${reflection?.mood==="okay"?"selected":""}>okay</option><option ${reflection?.mood==="rough"?"selected":""}>rough</option></select></label>
+      <textarea id="reflectionText" placeholder="What worked? What should tomorrow inherit?">${escapeHtml(reflection?.text||"")}</textarea>
+      <input id="reflectionReconcile" value="${escapeHtml(reflection?.reconciliation||"")}" placeholder="Move, forgive, or reschedule missed work">
+      <button class="primary-link" type="submit">${reflection ? "Update reflection" : "Save reflection"}</button>
+    </form>`;
+  $("dailyReflectionForm").addEventListener("submit",(event)=>{event.preventDefault();const value={id:reflection?.id||`reflection-${date}`,date,mood:$("reflectionMood").value,text:$("reflectionText").value.trim(),reconciliation:$("reflectionReconcile").value.trim(),updatedAt:new Date().toISOString()};state.personal.dailyReflections=state.personal.dailyReflections.filter(item=>item.date!==date);state.personal.dailyReflections.push(value);savePersonal(false);});
 }
 
 function deleteEditingEvent() {
@@ -1572,6 +1747,503 @@ function deleteEditingEvent() {
   state.personal.schedule = state.personal.schedule.filter((event) => event.id !== state.editingEventId);
   closeScheduleEditor();
   savePersonal(false);
+}
+
+function wellnessDayIndex(date = new Date()) {
+  return (date.getDay() + 6) % 7;
+}
+
+function routineRunsToday(item, kind) {
+  const day = wellnessDayIndex();
+  if (kind === "gym") return item.day === "daily" || Number(item.day) === day;
+  return !item.days?.length || item.days.map(Number).includes(day);
+}
+
+function completedToday(item) {
+  return (item.completions || []).includes(localIsoDate());
+}
+
+function skinStepDone(routineId, stepIndex, date=localIsoDate()) {
+  return (state.personal.skinStepLogs||[]).some(log=>log.routineId===routineId&&Number(log.stepIndex)===Number(stepIndex)&&log.date===date);
+}
+
+function toggleSkinStep(routineId, stepIndex) {
+  const date=localIsoDate();
+  const exists=skinStepDone(routineId,stepIndex,date);
+  state.personal.skinStepLogs=state.personal.skinStepLogs.filter(log=>!(log.routineId===routineId&&Number(log.stepIndex)===Number(stepIndex)&&log.date===date));
+  if(!exists) state.personal.skinStepLogs.push({id:`skin-log-${routineId}-${stepIndex}-${date}`,routineId,stepIndex:Number(stepIndex),date,completedAt:new Date().toISOString()});
+  const routine=state.personal.skinRoutines.find(item=>item.id===routineId);
+  if(routine) {
+    routine.completions ||= [];
+    const allDone=(routine.steps||[]).every((_,index)=>skinStepDone(routineId,index,date));
+    routine.completions=routine.completions.filter(item=>item!==date);
+    if(allDone) routine.completions.push(date);
+  }
+  savePersonal(false);
+}
+
+function parseExerciseLines(value) {
+  return value.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+    const [name, sets, reps, weightKg, durationSeconds, restSeconds, notes] = line.split("|").map((part) => part?.trim() || "");
+    return {
+      name, sets, reps,
+      weightKg: Number(weightKg || 0),
+      durationSeconds: Number(durationSeconds || 0),
+      restSeconds: Number(restSeconds || 0),
+      notes: notes || ""
+    };
+  });
+}
+
+function parseSkinStepLines(value) {
+  return value.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+    const [name, product, durationSeconds, notes] = line.split("|").map((part) => part?.trim() || "");
+    return { name, product, durationSeconds: Number(durationSeconds || 0), notes };
+  });
+}
+
+function addSkinRoutine(event) {
+  event.preventDefault();
+  const days = [...document.querySelectorAll("input[name='skinDay']:checked")].map((input) => Number(input.value));
+  const steps = parseSkinStepLines($("skinRoutineStepsInput").value);
+  if (!days.length || !steps.length) return;
+  const existing = state.personal.skinRoutines.find((item) => item.id === state.editingSkinRoutineId);
+  const routine = {
+    id: existing?.id || `skin-${Date.now()}`,
+    name: $("skinRoutineNameInput").value.trim(),
+    period: $("skinRoutinePeriodInput").value,
+    time: $("skinRoutineTimeInput").value,
+    days,
+    steps,
+    completions: existing?.completions || [],
+    completionHistory: existing?.completionHistory || [],
+    createdAt: existing?.createdAt || new Date().toISOString()
+  };
+  if (existing) state.personal.skinRoutines = state.personal.skinRoutines.map((item) => item.id === existing.id ? routine : item);
+  else state.personal.skinRoutines.push(routine);
+  state.editingSkinRoutineId = null;
+  event.currentTarget.reset();
+  $("skinRoutineTimeInput").value = "08:00";
+  document.querySelectorAll("input[name='skinDay']").forEach((input) => { input.checked = true; });
+  $("skinRoutineSubmitButton").innerHTML = `Add skin routine <span>＋</span>`;
+  savePersonal(false);
+  renderWellness();
+}
+
+function addGymPlan(event) {
+  event.preventDefault();
+  const exercises = parseExerciseLines($("gymPlanExercisesInput").value);
+  if (!exercises.length) return;
+  const existing = state.personal.gymPlans.find((item) => item.id === state.editingGymPlanId);
+  const plan = {
+    id: existing?.id || `gym-${Date.now()}`,
+    name: $("gymPlanNameInput").value.trim(),
+    day: $("gymPlanDayInput").value,
+    time: $("gymPlanTimeInput").value,
+    durationMinutes: Number($("gymPlanDurationInput").value || 0),
+    exercises,
+    completions: existing?.completions || [],
+    completionHistory: existing?.completionHistory || [],
+    createdAt: existing?.createdAt || new Date().toISOString()
+  };
+  if (existing) state.personal.gymPlans = state.personal.gymPlans.map((item) => item.id === existing.id ? plan : item);
+  else state.personal.gymPlans.push(plan);
+  state.editingGymPlanId = null;
+  event.currentTarget.reset();
+  $("gymPlanTimeInput").value = "18:00";
+  $("gymPlanDurationInput").value = "60";
+  $("gymPlanSubmitButton").innerHTML = `Add workout plan <span>＋</span>`;
+  savePersonal(false);
+  renderWellness();
+}
+
+function toggleWellnessCompletion(collection, id) {
+  const item = (state.personal[collection] || []).find((entry) => entry.id === id);
+  if (!item) return;
+  item.completions ||= [];
+  const today = localIsoDate();
+  item.completionHistory ||= [];
+  if (item.completions.includes(today)) {
+    item.completions = item.completions.filter((date) => date !== today);
+    item.completionHistory = item.completionHistory.filter((entry) => entry.date !== today);
+  } else {
+    item.completions = [...item.completions, today];
+    item.completionHistory.push({
+      date: today,
+      completedAt: new Date().toISOString(),
+      durationMinutes: Number(item.durationMinutes || 0),
+      snapshot: JSON.parse(JSON.stringify(collection === "gymPlans" ? (item.exercises || []) : (item.steps || [])))
+    });
+  }
+  savePersonal(false);
+  renderWellness();
+}
+
+function removeWellnessItem(collection, id) {
+  state.personal[collection] = (state.personal[collection] || []).filter((item) => item.id !== id);
+  savePersonal(false);
+  renderWellness();
+}
+
+function editSkinRoutine(id) {
+  const item = state.personal.skinRoutines.find((routine) => routine.id === id);
+  if (!item) return;
+  state.editingSkinRoutineId = id;
+  $("skinRoutineNameInput").value = item.name || "";
+  $("skinRoutinePeriodInput").value = item.period || "custom";
+  $("skinRoutineTimeInput").value = item.time || "08:00";
+  document.querySelectorAll("input[name='skinDay']").forEach((input) => {
+    input.checked = (item.days || []).map(Number).includes(Number(input.value));
+  });
+  $("skinRoutineStepsInput").value = (item.steps || []).map((step) => {
+    const value = typeof step === "string" ? { name: step } : step;
+    return [value.name, value.product, value.durationSeconds, value.notes].filter((part, index) => index === 0 || part).join(" | ");
+  }).join("\n");
+  $("skinRoutineSubmitButton").innerHTML = `Save changes <span>✓</span>`;
+  $("skinRoutineNameInput").focus();
+}
+
+function editGymPlan(id) {
+  const item = state.personal.gymPlans.find((plan) => plan.id === id);
+  if (!item) return;
+  state.editingGymPlanId = id;
+  $("gymPlanNameInput").value = item.name || "";
+  $("gymPlanDayInput").value = item.day ?? "daily";
+  $("gymPlanTimeInput").value = item.time || "18:00";
+  $("gymPlanDurationInput").value = item.durationMinutes || 60;
+  $("gymPlanExercisesInput").value = (item.exercises || []).map((exercise) => [
+    exercise.name, exercise.sets, exercise.reps, exercise.weightKg,
+    exercise.durationSeconds, exercise.restSeconds, exercise.notes
+  ].map((part) => part ?? "").join(" | ")).join("\n");
+  $("gymPlanSubmitButton").innerHTML = `Save changes <span>✓</span>`;
+  $("gymPlanNameInput").focus();
+}
+
+function renderWellness() {
+  if (!$("wellnessSummary") || !state.personal) return;
+  const skins = state.personal.skinRoutines || [];
+  const gyms = state.personal.gymPlans || [];
+  const todaySkin = skins.filter((item) => routineRunsToday(item, "skin"));
+  const todayGym = gyms.filter((item) => routineRunsToday(item, "gym"));
+  const due = [...todaySkin, ...todayGym];
+  const completed = due.filter(completedToday).length;
+  const percentage = due.length ? Math.round((completed / due.length) * 100) : 0;
+  $("wellnessSummary").innerHTML = `
+    <div class="wellness-progress-ring" style="--progress:${percentage * 3.6}deg"><span>${percentage}%</span></div>
+    <div><span class="section-eyebrow">Today’s consistency</span><strong>${completed} of ${due.length} routines complete</strong><p>${due.length ? (completed === due.length ? "Everything done. Beautiful work." : "Small routines, repeated well, create the change.") : "Add a routine to begin your streak."}</p></div>
+    <div class="wellness-mini-stat"><strong>${todaySkin.length}</strong><span>skin routines</span></div>
+    <div class="wellness-mini-stat"><strong>${todayGym.length}</strong><span>workouts</span></div>
+  `;
+  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  $("skinRoutineList").innerHTML = skins.length ? skins.map((item) => `
+    <article class="routine-card ${completedToday(item) ? "complete" : ""} ${routineRunsToday(item, "skin") ? "due-today" : ""}">
+      <div class="routine-card-head"><div><span>${escapeHtml(item.period || "routine")} · ${escapeHtml(item.time || "")}</span><h4>${escapeHtml(item.name)}</h4></div><div class="routine-card-tools"><button data-edit-skin="${escapeHtml(item.id)}" aria-label="Edit routine">✎</button><button data-remove-wellness="skinRoutines:${escapeHtml(item.id)}" aria-label="Delete routine">×</button></div></div>
+      <div class="routine-days">${(item.days || []).map((day) => `<span class="${day === wellnessDayIndex() ? "today" : ""}">${dayNames[day]}</span>`).join("")}</div>
+      <ol class="skin-steps">${(item.steps || []).map((step,index) => { const value = typeof step === "string" ? { name: step } : step; const done=skinStepDone(item.id,index); return `<li class="${done?"done":""}"><button type="button" data-skin-step="${escapeHtml(item.id)}:${index}">${done?"✓":""}</button><span><strong>${escapeHtml(value.name)}</strong>${value.product ? ` · ${escapeHtml(value.product)}` : ""}${value.durationSeconds ? ` · ${escapeHtml(value.durationSeconds)} sec` : ""}${value.notes ? `<small>${escapeHtml(value.notes)}</small>` : ""}</span></li>`; }).join("")}</ol>
+      ${routineRunsToday(item, "skin") ? `<button class="routine-complete ${completedToday(item) ? "done" : ""}" data-toggle-wellness="skinRoutines:${escapeHtml(item.id)}">${completedToday(item) ? "✓ Completed today" : "Mark routine complete"}</button>` : ""}
+    </article>
+  `).join("") : `<div class="wellness-empty">Your skin routine will appear here.</div>`;
+  $("gymPlanList").innerHTML = gyms.length ? gyms.map((item) => `
+    <article class="routine-card ${completedToday(item) ? "complete" : ""} ${routineRunsToday(item, "gym") ? "due-today" : ""}">
+      <div class="routine-card-head"><div><span>${item.day === "daily" ? "Every day" : dayNames[Number(item.day)]} · ${escapeHtml(item.time || "")}</span><h4>${escapeHtml(item.name)}</h4></div><div class="routine-card-tools"><button data-edit-gym="${escapeHtml(item.id)}" aria-label="Edit workout">✎</button><button data-remove-wellness="gymPlans:${escapeHtml(item.id)}" aria-label="Delete workout">×</button></div></div>
+      <div class="workout-duration"><strong>${Number(item.durationMinutes || 0)}</strong><span>minutes</span><b>${(item.exercises || []).length} exercises</b></div>
+      <div class="exercise-list">${(item.exercises || []).map((exercise, index) => `<div><i>${index + 1}</i><strong>${escapeHtml(exercise.name)}</strong><span>${escapeHtml(exercise.sets || "—")} sets</span><span>${escapeHtml(exercise.reps || "—")} reps</span><span>${exercise.weightKg ? `${escapeHtml(exercise.weightKg)} kg` : "bodyweight"}</span><small>${exercise.durationSeconds ? `${escapeHtml(exercise.durationSeconds)}s work` : ""}${exercise.restSeconds ? ` · ${escapeHtml(exercise.restSeconds)}s rest` : ""}</small></div>`).join("")}</div>
+      ${routineRunsToday(item, "gym") ? `<button class="routine-complete ${completedToday(item) ? "done" : ""}" data-toggle-wellness="gymPlans:${escapeHtml(item.id)}">${completedToday(item) ? "✓ Workout completed" : "Finish today’s workout"}</button>` : ""}
+    </article>
+  `).join("") : `<div class="wellness-empty">Your training plan will appear here.</div>`;
+  document.querySelectorAll("[data-toggle-wellness]").forEach((button) => button.addEventListener("click", () => {
+    const [collection, id] = button.dataset.toggleWellness.split(":");
+    toggleWellnessCompletion(collection, id);
+  }));
+  document.querySelectorAll("[data-remove-wellness]").forEach((button) => button.addEventListener("click", () => {
+    const [collection, id] = button.dataset.removeWellness.split(":");
+    removeWellnessItem(collection, id);
+  }));
+  document.querySelectorAll("[data-edit-skin]").forEach((button) => button.addEventListener("click", () => editSkinRoutine(button.dataset.editSkin)));
+  document.querySelectorAll("[data-edit-gym]").forEach((button) => button.addEventListener("click", () => editGymPlan(button.dataset.editGym)));
+  document.querySelectorAll("[data-skin-step]").forEach((button)=>button.addEventListener("click",()=>{const [id,index]=button.dataset.skinStep.split(":");toggleSkinStep(id,Number(index));}));
+  renderSkinProducts();
+}
+
+function addSkinProduct(event) {
+  event.preventDefault();
+  state.personal.skinProducts.unshift({
+    id: `product-${Date.now()}`,
+    name: $("skinProductNameInput").value.trim(),
+    type: $("skinProductTypeInput").value.trim(),
+    openedOn: $("skinProductOpenedInput").value,
+    expiresOn: $("skinProductExpiryInput").value,
+    notes: $("skinProductNotesInput").value.trim()
+  });
+  event.currentTarget.reset();
+  savePersonal(false);
+}
+
+function renderSkinProducts() {
+  if (!$("skinProductList")) return;
+  const today = localIsoDate();
+  $("skinProductList").innerHTML = (state.personal.skinProducts || []).map((product) => {
+    const expiring = product.expiresOn && product.expiresOn <= today;
+    return `<article class="${expiring?"expired":""}"><div><strong>${escapeHtml(product.name)}</strong><span>${escapeHtml(product.type)}${product.openedOn?` · opened ${escapeHtml(formatShortDate(product.openedOn))}`:""}${product.expiresOn?` · ${expiring?"expired":"expires"} ${escapeHtml(formatShortDate(product.expiresOn))}`:""}</span><small>${escapeHtml(product.notes||"")}</small></div><button data-remove-product="${escapeHtml(product.id)}" aria-label="Delete product">×</button></article>`;
+  }).join("") || `<p class="muted-copy">Add products to remember what worked—and what made your face file a complaint.</p>`;
+  document.querySelectorAll("[data-remove-product]").forEach((button)=>button.addEventListener("click",()=>{state.personal.skinProducts=state.personal.skinProducts.filter(item=>item.id!==button.dataset.removeProduct);savePersonal(false);}));
+}
+
+function gymPlansForDate(dateIso) {
+  const day = wellnessDayIndex(dateFromIsoDate(dateIso));
+  return (state.personal?.gymPlans || []).filter((plan) => plan.day === "daily" || Number(plan.day) === day);
+}
+
+function gymSessionFor(planId, dateIso = localIsoDate()) {
+  return (state.personal?.gymSessions || []).find((session) => session.planId === planId && session.date === dateIso);
+}
+
+function buildGymSession(plan, dateIso = localIsoDate()) {
+  return {
+    id: `session-${plan.id}-${dateIso}`,
+    planId: plan.id,
+    planName: plan.name,
+    date: dateIso,
+    status: "planned",
+    plannedMinutes: Number(plan.durationMinutes || 0),
+    startedAt: null,
+    completedAt: null,
+    notes: "",
+    exercises: (plan.exercises || []).map((exercise, exerciseIndex) => ({
+      id: `${plan.id}-exercise-${exerciseIndex}`,
+      name: exercise.name,
+      notes: exercise.notes || "",
+      sets: Array.from({ length: Math.max(1, Number.parseInt(exercise.sets, 10) || 1) }, (_, setIndex) => ({
+        number: setIndex + 1,
+        plannedWeightKg: Number(exercise.weightKg || 0),
+        actualWeightKg: Number(exercise.weightKg || 0),
+        targetReps: String(exercise.reps || ""),
+        actualReps: "",
+        durationSeconds: Number(exercise.durationSeconds || 0),
+        restSeconds: Number(exercise.restSeconds || 0),
+        completed: false
+      }))
+    }))
+  };
+}
+
+function ensureGymSession(plan) {
+  let session = gymSessionFor(plan.id);
+  if (!session) {
+    session = buildGymSession(plan);
+    state.personal.gymSessions.push(session);
+  }
+  return session;
+}
+
+function gymSessionProgress(session) {
+  const sets = (session.exercises || []).flatMap((exercise) => exercise.sets || []);
+  const done = sets.filter((set) => set.completed).length;
+  return { done, total: sets.length, percent: sets.length ? Math.round(done * 100 / sets.length) : 0 };
+}
+
+function setGymAttendance(planId, status) {
+  const plan = state.personal.gymPlans.find((item) => item.id === planId);
+  if (!plan) return;
+  const session = ensureGymSession(plan);
+  session.status = status;
+  session.startedAt ||= status === "in_progress" ? new Date().toISOString() : null;
+  session.completedAt = ["completed", "absent", "rest"].includes(status) ? new Date().toISOString() : null;
+  savePersonal(false);
+  renderGymHub();
+  renderToday();
+}
+
+function updateGymSet(sessionId, exerciseIndex, setIndex, field, value) {
+  const session = state.personal.gymSessions.find((item) => item.id === sessionId);
+  const set = session?.exercises?.[exerciseIndex]?.sets?.[setIndex];
+  if (!set) return;
+  set[field] = field === "completed" ? Boolean(value) : (field === "actualReps" ? String(value) : Number(value || 0));
+  session.status = "in_progress";
+  session.startedAt ||= new Date().toISOString();
+  const progress = gymSessionProgress(session);
+  if (progress.total && progress.done === progress.total) {
+    session.status = "completed";
+    session.completedAt = new Date().toISOString();
+  }
+  savePersonal(true, false);
+  renderGymHub();
+  renderToday();
+}
+
+const gymExerciseCatalogue = {
+  Chest:["Barbell Flat Bench Press","Dumbbell Flat Bench Press","Barbell Incline Bench Press","Dumbbell Incline Bench Press","Decline Bench Press","Machine Chest Press","Smith Machine Bench Press","Cable Fly","Incline Cable Fly","Pec Deck Fly","Dumbbell Pullover","Push-Up","Incline Push-Up","Decline Push-Up","Chest Dip"],
+  Back:["Conventional Deadlift","Romanian Deadlift","Barbell Bent-Over Row","Pendlay Row","T-Bar Row","One-Arm Dumbbell Row","Chest-Supported Row","Seated Cable Row","Lat Pulldown","Close-Grip Lat Pulldown","Pull-Up","Chin-Up","Machine Row","Straight-Arm Pulldown","Rack Pull","Back Extension"],
+  Shoulders:["Barbell Overhead Press","Dumbbell Shoulder Press","Arnold Press","Machine Shoulder Press","Dumbbell Lateral Raise","Cable Lateral Raise","Front Raise","Reverse Pec Deck","Rear Delt Fly","Face Pull","Upright Row","Barbell Shrug","Dumbbell Shrug"],
+  Biceps:["Barbell Curl","EZ-Bar Curl","Dumbbell Curl","Alternating Dumbbell Curl","Hammer Curl","Incline Dumbbell Curl","Preacher Curl","Cable Curl","Concentration Curl","Spider Curl","Reverse Curl"],
+  Triceps:["Cable Triceps Pushdown","Rope Pushdown","Overhead Cable Extension","Dumbbell Overhead Extension","Skull Crusher","Close-Grip Bench Press","Triceps Dip","Diamond Push-Up","Kickback"],
+  Legs:["Back Squat","Front Squat","Goblet Squat","Hack Squat","Leg Press","Bulgarian Split Squat","Walking Lunge","Reverse Lunge","Leg Extension","Lying Leg Curl","Seated Leg Curl","Romanian Deadlift","Hip Thrust","Glute Bridge","Cable Kickback","Standing Calf Raise","Seated Calf Raise","Adductor Machine","Abductor Machine"],
+  Core:["Plank","Side Plank","Hanging Leg Raise","Captain's Chair Knee Raise","Cable Crunch","Ab Wheel Rollout","Russian Twist","Bicycle Crunch","Dead Bug","Bird Dog","Pallof Press","Mountain Climber"],
+  Cardio:["Treadmill Run","Incline Treadmill Walk","Outdoor Run","Cycling","Stationary Bike","Elliptical","Rowing Machine","Stair Climber","Jump Rope","Swimming","Battle Ropes","Sled Push"],
+  Mobility:["Full-Body Mobility","Shoulder Mobility","Hip Mobility","Ankle Mobility","Thoracic Rotation","Foam Rolling","Dynamic Warm-Up","Yoga Flow"]
+};
+
+function exerciseCatalogueOptions() {
+  const custom=(state.personal.customExercises||[]).map(item=>item.name);
+  return Object.entries({...gymExerciseCatalogue,...(custom.length?{Custom:custom}:{})}).map(([group,names])=>`<optgroup label="${escapeHtml(group)}">${names.map(name=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")}</optgroup>`).join("");
+}
+
+function addDraftExercise() {
+  const name=$("gymExerciseSelect").value;
+  if(!name)return;
+  state.gymDraftExercises.push({name,sets:Number($("gymExerciseSets").value||3),reps:$("gymExerciseReps").value.trim()||"8-12",weightKg:Number($("gymExerciseWeight").value||0),durationSeconds:Number($("gymExerciseDuration").value||0),restSeconds:Number($("gymExerciseRest").value||60),notes:""});
+  renderGymDraftList();
+}
+
+function addCustomExercise() {
+  const name=$("gymCustomExerciseName").value.trim(); if(!name)return;
+  if(!(state.personal.customExercises||[]).some(item=>item.name.toLowerCase()===name.toLowerCase())) state.personal.customExercises.push({id:`custom-exercise-${Date.now()}`,name});
+  savePersonal(false,false);
+  renderGymHub();
+}
+
+function renderGymDraftList() {
+  if(!$("gymDraftExerciseList"))return;
+  $("gymDraftExerciseList").innerHTML=state.gymDraftExercises.map((exercise,index)=>`<article><b>${index+1}</b><div><strong>${escapeHtml(exercise.name)}</strong><span>${exercise.sets} sets × ${escapeHtml(exercise.reps)}${exercise.weightKg?` · ${exercise.weightKg} kg`:" · bodyweight"}${exercise.durationSeconds?` · ${exercise.durationSeconds}s`:""} · ${exercise.restSeconds}s rest</span></div><div><button type="button" data-move-draft="${index}:-1" ${index===0?"disabled":""}>↑</button><button type="button" data-move-draft="${index}:1" ${index===state.gymDraftExercises.length-1?"disabled":""}>↓</button><button type="button" data-remove-draft="${index}">×</button></div></article>`).join("")||`<p class="muted-copy">Choose an exercise above, set its numbers, then tap Add exercise.</p>`;
+  document.querySelectorAll("[data-remove-draft]").forEach(button=>button.addEventListener("click",()=>{state.gymDraftExercises.splice(Number(button.dataset.removeDraft),1);renderGymDraftList();}));
+  document.querySelectorAll("[data-move-draft]").forEach(button=>button.addEventListener("click",()=>{const [from,delta]=button.dataset.moveDraft.split(":").map(Number);const to=from+delta;[state.gymDraftExercises[from],state.gymDraftExercises[to]]=[state.gymDraftExercises[to],state.gymDraftExercises[from]];renderGymDraftList();}));
+}
+
+function addGymPlanFromHub(event) {
+  event.preventDefault();
+  const exercises = state.gymDraftExercises;
+  if (!exercises.length) return;
+  const existing=state.personal.gymPlans.find(item=>item.id===state.editingGymPlanId);
+  const value={
+    id: existing?.id || `gym-${Date.now()}`,
+    name: $("gymHubPlanName").value.trim(),
+    day: $("gymHubDay").value,
+    time: $("gymHubTime").value,
+    durationMinutes: Number($("gymHubDuration").value || 60),
+    exercises,
+    completions: existing?.completions||[],
+    completionHistory: existing?.completionHistory||[],
+    createdAt: existing?.createdAt||new Date().toISOString()
+  };
+  if(existing) state.personal.gymPlans=state.personal.gymPlans.map(item=>item.id===existing.id?value:item);
+  else state.personal.gymPlans.push(value);
+  state.editingGymPlanId=null;
+  state.gymDraftExercises=[];
+  savePersonal(false);
+  renderGymHub();
+}
+
+function editGymPlanFromHub(id) {
+  const plan=state.personal.gymPlans.find(item=>item.id===id); if(!plan)return;
+  state.editingGymPlanId=id;
+  $("gymHubPlanName").value=plan.name||"";
+  $("gymHubDay").value=plan.day??"daily";
+  $("gymHubTime").value=plan.time||"18:00";
+  $("gymHubDuration").value=plan.durationMinutes||60;
+  state.gymDraftExercises=(plan.exercises||[]).map(exercise=>({...exercise}));
+  renderGymDraftList();
+  $("gymHubPlanForm").querySelector("button[type='submit']").textContent="Save changes";
+}
+
+function renderGymToday() {
+  const plans = gymPlansForDate(localIsoDate());
+  if (!plans.length) return `<div class="gym-empty-day"><span>🛌</span><h3>No workout planned today</h3><p>Recovery is training too—or add a plan for this weekday.</p><button type="button" data-gym-switch="plan" class="primary-link">Build a plan</button></div>`;
+  return plans.map((plan) => {
+    const existing = gymSessionFor(plan.id);
+    const session = existing || buildGymSession(plan);
+    if (!existing) state.personal.gymSessions.push(session);
+    const progress = gymSessionProgress(session);
+    return `<article class="gym-session-card status-${session.status}">
+      <header><div><span>${escapeHtml(plan.time || "Flexible")} · ${Number(plan.durationMinutes || 0)} min</span><h3>${escapeHtml(plan.name)}</h3></div><div class="gym-session-progress"><strong>${progress.done}/${progress.total}</strong><span>sets</span></div></header>
+      <div class="gym-progress-track"><i style="width:${progress.percent}%"></i></div>
+      <div class="gym-attendance-actions">
+        <button data-gym-attendance="${escapeHtml(plan.id)}:in_progress">Start / Present</button>
+        <button data-gym-attendance="${escapeHtml(plan.id)}:absent">Absent</button>
+        <button data-gym-attendance="${escapeHtml(plan.id)}:rest">Rest day</button>
+      </div>
+      ${["absent", "rest"].includes(session.status) ? `<div class="gym-status-message">${session.status === "absent" ? "Absent recorded. No courtroom drama—tomorrow remains available." : "Recovery day recorded. Your muscles approve."}</div>` : `
+      <div class="gym-execution-list">${(session.exercises || []).map((exercise, exerciseIndex) => `
+        <section class="gym-execution-exercise"><div class="gym-exercise-heading"><strong>${escapeHtml(exercise.name)}</strong><span>${exercise.sets.filter((set) => set.completed).length}/${exercise.sets.length} sets</span></div>
+          <div class="gym-set-table"><div class="gym-set-head"><span>Set</span><span>Weight</span><span>Reps</span><span>Seconds</span><span>Done</span></div>
+          ${exercise.sets.map((set, setIndex) => `<div class="gym-set-row ${set.completed ? "complete" : ""}">
+            <b>${set.number}</b>
+            <input data-gym-set="${session.id}:${exerciseIndex}:${setIndex}:actualWeightKg" type="number" step="0.5" value="${set.actualWeightKg}" aria-label="Weight for set ${set.number}">
+            <input data-gym-set="${session.id}:${exerciseIndex}:${setIndex}:actualReps" inputmode="numeric" value="${escapeHtml(set.actualReps)}" placeholder="${escapeHtml(set.targetReps)}" aria-label="Reps for set ${set.number}">
+            <input data-gym-set="${session.id}:${exerciseIndex}:${setIndex}:durationSeconds" type="number" value="${set.durationSeconds}" aria-label="Duration for set ${set.number}">
+            <button data-gym-check="${session.id}:${exerciseIndex}:${setIndex}" type="button" aria-label="Complete set ${set.number}">${set.completed ? "✓" : ""}</button>
+          </div>`).join("")}</div>
+        </section>`).join("")}</div>`}
+    </article>`;
+  }).join("");
+}
+
+function renderGymPlan() {
+  return `<div class="gym-plan-layout"><form id="gymHubPlanForm" class="gym-plan-form">
+    <span class="section-eyebrow">Weekly template</span><h3>Add a workout day</h3>
+    <input id="gymHubPlanName" required placeholder="Push day, legs, full body…">
+    <div><select id="gymHubDay"><option value="daily">Every day</option>${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day,index)=>`<option value="${index}">${day}</option>`).join("")}</select><input id="gymHubTime" type="time" value="18:00"><input id="gymHubDuration" type="number" min="5" value="60" placeholder="Minutes"></div>
+    <section class="exercise-picker"><label>Exercise<select id="gymExerciseSelect">${exerciseCatalogueOptions()}</select></label><label>Sets<input id="gymExerciseSets" type="number" min="1" max="20" value="3"></label><label>Reps<input id="gymExerciseReps" value="8-12"></label><label>Weight kg<input id="gymExerciseWeight" type="number" min="0" step="0.5" value="0"></label><label>Work seconds<input id="gymExerciseDuration" type="number" min="0" value="0"></label><label>Rest seconds<input id="gymExerciseRest" type="number" min="0" value="60"></label><button id="gymAddExerciseButton" class="secondary-button" type="button">＋ Add exercise</button></section>
+    <div id="gymDraftExerciseList" class="gym-draft-exercises"></div>
+    <details class="custom-exercise-box"><summary>Exercise missing? Add it to my catalogue</summary><div><input id="gymCustomExerciseName" placeholder="Your exercise name"><button id="gymAddCustomExerciseButton" type="button">Add to dropdown</button></div></details>
+    <button class="primary-link" type="submit">Save workout plan</button>
+  </form><div class="gym-plan-list">${(state.personal.gymPlans || []).map((plan) => `<article><div><strong>${escapeHtml(plan.name)}</strong><span>${plan.day === "daily" ? "Every day" : ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][Number(plan.day)]} · ${escapeHtml(plan.time)} · ${(plan.exercises || []).length} exercises</span></div><div><button data-edit-gym-from-hub="${escapeHtml(plan.id)}">Edit</button><button data-delete-gym-from-hub="${escapeHtml(plan.id)}">Delete</button></div></article>`).join("") || `<p class="muted-copy">No workout templates yet.</p>`}</div></div>`;
+}
+
+function renderGymHistory() {
+  const sessions = [...(state.personal.gymSessions || [])].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  return `<div class="gym-history-list">${sessions.map((session) => { const progress=gymSessionProgress(session); const volume=(session.exercises||[]).flatMap(e=>e.sets||[]).filter(s=>s.completed).reduce((sum,set)=>sum+Number(set.actualWeightKg||0)*Number(set.actualReps||0),0); return `<article class="gym-history-row status-${session.status}"><time>${escapeHtml(formatShortDate(session.date))}</time><div><strong>${escapeHtml(session.planName)}</strong><span>${escapeHtml(session.status.replace("_"," "))} · ${progress.done}/${progress.total} sets · ${volume.toLocaleString("en-IN")} kg volume</span></div></article>`; }).join("") || `<div class="gym-empty-day"><h3>Your workout history begins when you show up.</h3></div>`}</div>`;
+}
+
+function gymExerciseRecords() {
+  const records = new Map();
+  (state.personal.gymSessions || []).forEach((session)=>(session.exercises||[]).forEach((exercise)=>(exercise.sets||[]).filter(set=>set.completed).forEach((set)=>{
+    const key=String(exercise.name||"Exercise").toLowerCase();
+    const score=Number(set.actualWeightKg||0)*Number(set.actualReps||0);
+    const current=records.get(key);
+    if(!current||score>current.score) records.set(key,{name:exercise.name,weight:Number(set.actualWeightKg||0),reps:set.actualReps||0,score,date:session.date});
+  })));
+  return [...records.values()].sort((a,b)=>b.score-a.score);
+}
+
+function renderGymCoach() {
+  const sessions=[...(state.personal.gymSessions||[])].filter(item=>item.status==="completed").sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const records=gymExerciseRecords();
+  const recent=sessions.slice(-4);
+  const volumes=recent.map(session=>(session.exercises||[]).flatMap(e=>e.sets||[]).filter(s=>s.completed).reduce((sum,s)=>sum+Number(s.actualWeightKg||0)*Number(s.actualReps||0),0));
+  const trend=volumes.length>1?Math.round((volumes.at(-1)-volumes[0])/Math.max(1,volumes[0])*100):0;
+  const attendance=(state.personal.gymSessions||[]).filter(s=>["completed","absent"].includes(s.status));
+  const rate=attendance.length?Math.round(attendance.filter(s=>s.status==="completed").length/attendance.length*100):0;
+  const observation=!sessions.length?"Complete a workout and I’ll start spotting patterns.":trend>5?"Your training volume is climbing. Keep form strict while the numbers get louder.":trend< -10?"Volume dipped recently. Recovery, sleep, and a gentler return may beat forcing it.":"Your workload is steady. Add a rep or a small weight increase when the last set feels clean.";
+  return `<div class="gym-coach-grid">
+    <section class="gym-coach-hero"><span class="section-eyebrow">Pattern observation</span><h3>${escapeHtml(observation)}</h3><div><strong>${rate}%</strong><span>attendance</span><strong>${trend>0?"+":""}${trend}%</strong><span>volume trend</span><strong>${records.length}</strong><span>personal records</span></div></section>
+    <section class="gym-pr-card"><h3>Personal records</h3>${records.slice(0,10).map(item=>`<article><div><strong>${escapeHtml(item.name)}</strong><span>${item.weight} kg × ${escapeHtml(item.reps)} · ${escapeHtml(formatShortDate(item.date))}</span></div><b>🏆</b></article>`).join("")||`<p class="muted-copy">Completed sets will build your record board.</p>`}</section>
+    <section class="gym-tools-card"><h3>Your app, your voice</h3><label>Coach humour<select id="humourStyleSelect"><option value="playful">Playful</option><option value="gentle">Gentle</option><option value="direct">Direct</option></select></label><label class="toggle-label"><input id="flexibleStreaksInput" type="checkbox"> Flexible streaks allow one recovery day</label><button id="exportDataButton" class="primary-link" type="button">Export all my data</button><small>${state.offlineSavePending?"Offline changes waiting to sync":"All changes synced"} · JSON export includes every tracker.</small></section>
+  </div>`;
+}
+
+function exportPersonalData() {
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),personal:state.personal,quantProgress:state.progress},null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`life-tracker-${localIsoDate()}.json`;link.click();URL.revokeObjectURL(url);
+}
+
+function renderGymHub() {
+  if (!$("gymHubContent") || !state.personal) return;
+  const now = new Date();
+  $("gymTodayWeekday").textContent = now.toLocaleDateString([], { weekday: "long" });
+  $("gymTodayDate").textContent = now.toLocaleDateString([], { day: "numeric", month: "short" });
+  document.querySelectorAll("[data-gym-mode]").forEach((button)=>button.classList.toggle("active",button.dataset.gymMode===state.activeGymMode));
+  $("gymHubContent").innerHTML = state.activeGymMode === "today" ? renderGymToday() : state.activeGymMode === "plan" ? renderGymPlan() : state.activeGymMode === "history" ? renderGymHistory() : renderGymCoach();
+  document.querySelectorAll("[data-gym-switch]").forEach((button)=>button.addEventListener("click",()=>{state.activeGymMode=button.dataset.gymSwitch;renderGymHub();}));
+  document.querySelectorAll("[data-gym-attendance]").forEach((button)=>button.addEventListener("click",()=>{const [id,status]=button.dataset.gymAttendance.split(":");setGymAttendance(id,status);}));
+  document.querySelectorAll("[data-gym-check]").forEach((button)=>button.addEventListener("click",()=>{const [id,e,s]=button.dataset.gymCheck.split(":");const session=state.personal.gymSessions.find(x=>x.id===id)||ensureGymSession(state.personal.gymPlans.find(x=>id.includes(x.id)));const current=session.exercises[Number(e)].sets[Number(s)].completed;updateGymSet(session.id,Number(e),Number(s),"completed",!current);}));
+  document.querySelectorAll("[data-gym-set]").forEach((input)=>input.addEventListener("change",()=>{const [id,e,s,field]=input.dataset.gymSet.split(":");updateGymSet(id,Number(e),Number(s),field,input.value);}));
+  $("gymHubPlanForm")?.addEventListener("submit",addGymPlanFromHub);
+  $("gymAddExerciseButton")?.addEventListener("click",addDraftExercise);
+  $("gymAddCustomExerciseButton")?.addEventListener("click",addCustomExercise);
+  renderGymDraftList();
+  document.querySelectorAll("[data-edit-gym-from-hub]").forEach((button)=>button.addEventListener("click",()=>editGymPlanFromHub(button.dataset.editGymFromHub)));
+  document.querySelectorAll("[data-delete-gym-from-hub]").forEach((button)=>button.addEventListener("click",()=>{state.personal.gymPlans=state.personal.gymPlans.filter(item=>item.id!==button.dataset.deleteGymFromHub);savePersonal(false);}));
+  if ($("humourStyleSelect")) { $("humourStyleSelect").value=state.personal.settings.humourStyle||"playful"; $("flexibleStreaksInput").checked=state.personal.settings.flexibleStreaks!==false; $("humourStyleSelect").addEventListener("change",()=>{state.personal.settings.humourStyle=$("humourStyleSelect").value;savePersonal(false,false);}); $("flexibleStreaksInput").addEventListener("change",()=>{state.personal.settings.flexibleStreaks=$("flexibleStreaksInput").checked;savePersonal(false,false);}); $("exportDataButton").addEventListener("click",exportPersonalData); }
 }
 
 function newNote() {
@@ -2137,7 +2809,7 @@ async function loadReminderStatus() {
   $("enableRemindersButton").textContent = ready ? "Send test" : "Enable reminders";
   $("reminderStatus").className = `reminder-status ${ready ? "ready" : ""}`;
   $("reminderStatus").innerHTML = ready
-    ? `<strong>Reminders are on</strong><span>Calendar events, urgent tasks, habits, bills, expiries, goals and contests can reach this iPhone while the app is closed.</span>`
+    ? `<strong>Reminders are on</strong><span>Calendar work, quant practice, skin care, workouts, and contests can reach this iPhone while the app is closed.</span>`
     : `<strong>${installed ? "Turn on notifications" : "Install on your Home Screen first"}</strong><span>${escapeHtml(state.reminderConfig.message || "Tap Enable reminders after opening the installed app.")}</span>`;
 }
 
@@ -2165,8 +2837,10 @@ async function enableReminders() {
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(config.publicKey)
     });
-    await postJson("/api/push/subscribe", { subscription: subscription.toJSON() });
   }
+  // Always refresh the server copy and recreate the minute schedule. Browser
+  // subscriptions can outlive a deployment or server-side storage reset.
+  await postJson("/api/push/subscribe", { subscription: subscription.toJSON() });
   await postJson("/api/push/test", {});
   await loadReminderStatus();
 }
@@ -2206,12 +2880,22 @@ function focusMinutesBetween(startDate, endDate) {
 
 function renderFocusTimer() {
   const display = $("focusTimerDisplay");
-  if (!display) return;
-  display.textContent = formatFocusClock(state.focusRemainingSeconds);
-  display.classList.toggle("running", state.focusRunning);
-  $("focusStartButton").textContent = state.focusRunning ? "Pause" : (state.focusRemainingSeconds < state.focusMinutes * 60 ? "Resume" : "Start focus");
+  if (display) {
+    display.textContent = formatFocusClock(state.focusRemainingSeconds);
+    display.classList.toggle("running", state.focusRunning);
+    $("focusStartButton").textContent = state.focusRunning ? "Pause" : (state.focusRemainingSeconds < state.focusMinutes * 60 ? "Resume" : "Start focus");
+  }
+  if ($("focusHubClock")) {
+    $("focusHubClock").textContent = formatFocusClock(state.focusRemainingSeconds);
+    $("focusHubClock").classList.toggle("running", state.focusRunning);
+    $("focusHubStartButton").textContent = state.focusRunning ? "Pause" : (state.focusRemainingSeconds < state.focusMinutes * 60 ? "Resume" : "Start focus");
+  }
   document.querySelectorAll("[data-focus-minutes]").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.focusMinutes) === state.focusMinutes);
+    button.disabled = state.focusRunning;
+  });
+  document.querySelectorAll("[data-focus-hub-minutes]").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.focusHubMinutes) === state.focusMinutes);
     button.disabled = state.focusRunning;
   });
 }
@@ -2222,7 +2906,7 @@ function saveFocusTimerState() {
     remainingSeconds: state.focusRemainingSeconds,
     running: state.focusRunning,
     startedAt: state.focusStartedAt,
-    label: $("focusLabelInput")?.value || ""
+    label: $("focusHubLabelInput")?.value || $("focusLabelInput")?.value || ""
   }));
 }
 
@@ -2234,7 +2918,8 @@ function restoreFocusTimerState() {
     state.focusRemainingSeconds = Number(saved.remainingSeconds || state.focusMinutes * 60);
     state.focusRunning = Boolean(saved.running);
     state.focusStartedAt = Number(saved.startedAt) || null;
-    $("focusLabelInput").value = saved.label || "";
+    if ($("focusLabelInput")) $("focusLabelInput").value = saved.label || "";
+    if ($("focusHubLabelInput")) $("focusHubLabelInput").value = saved.label || "";
     if (state.focusRunning) {
       tickFocusTimer();
       if (state.focusRunning) state.focusTimer = setInterval(tickFocusTimer, 1000);
@@ -2280,17 +2965,18 @@ function resetFocusTimer() {
   renderFocusTimer();
 }
 
-function completeFocusSession() {
+function completeFocusSession(minutesOverride = null) {
   state.focusRunning = false;
   clearInterval(state.focusTimer);
   state.focusTimer = null;
   const completedAt = new Date().toISOString();
   state.personal.focusSessions ||= [];
+  const loggedMinutes = minutesOverride === null ? state.focusMinutes : Math.max(1, Math.round(minutesOverride));
   state.personal.focusSessions.push({
     id: `focus-${Date.now()}`,
-    label: $("focusLabelInput")?.value.trim() || "Focus session",
-    minutes: state.focusMinutes,
-    startedAt: new Date(Date.now() - state.focusMinutes * 60000).toISOString(),
+    label: $("focusHubLabelInput")?.value.trim() || $("focusLabelInput")?.value.trim() || "Focus session",
+    minutes: loggedMinutes,
+    startedAt: new Date(Date.now() - loggedMinutes * 60000).toISOString(),
     completedAt
   });
   state.focusRemainingSeconds = state.focusMinutes * 60;
@@ -2299,13 +2985,46 @@ function completeFocusSession() {
   savePersonal(false);
   if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
     navigator.serviceWorker.ready.then((registration) => registration.showNotification("Focus session complete", {
-      body: `${state.focusMinutes} focused minutes logged.`,
+      body: `${loggedMinutes} focused minutes logged.`,
       icon: "/cf2000_tracker_icon_1024.png",
       badge: "/alert-icon.svg",
       tag: "focus-complete",
-      data: { url: "/?view=insights" }
+      data: { url: "/?view=focus" }
     })).catch(() => {});
   }
+  renderFocusHub();
+}
+
+function focusDayStreak() {
+  const dates = new Set((state.personal?.focusSessions || []).map(sessionDate));
+  let streak = 0;
+  const cursor = new Date();
+  let recoveryDays=state.personal?.settings?.flexibleStreaks===false?0:1;
+  while (true) {
+    if(dates.has(localIsoDate(cursor))) streak += 1;
+    else if(recoveryDays>0&&streak>0) recoveryDays -= 1;
+    else break;
+    cursor.setDate(cursor.getDate()-1);
+  }
+  return streak;
+}
+
+function renderFocusHub() {
+  if (!$("focusHubStats") || !state.personal) return;
+  renderFocusTimer();
+  const today = localIsoDate();
+  const sessions = [...(state.personal.focusSessions || [])].sort((a,b)=>String(b.completedAt).localeCompare(String(a.completedAt)));
+  const todaySessions = sessions.filter((session)=>sessionDate(session)===today);
+  const todayMinutes = todaySessions.reduce((sum,item)=>sum+Number(item.minutes||0),0);
+  const week = Array.from({length:7},(_,index)=>{const date=new Date();date.setDate(date.getDate()-(6-index));const iso=localIsoDate(date);return {iso,label:date.toLocaleDateString([],{weekday:"short"}).slice(0,1),minutes:focusMinutesBetween(iso,iso)};});
+  const weekMinutes = week.reduce((sum,item)=>sum+item.minutes,0);
+  $("focusHubTodayTotal").innerHTML = `<strong>${todayMinutes}</strong><span>focused minutes today</span><small>${todaySessions.length} session${todaySessions.length===1?"":"s"}</small>`;
+  $("focusHubStats").innerHTML = `<div><strong>${todayMinutes}</strong><span>today</span></div><div><strong>${weekMinutes}</strong><span>this week</span></div><div><strong>${focusDayStreak()}</strong><span>day rhythm</span></div>`;
+  const max=Math.max(25,...week.map(item=>item.minutes));
+  $("focusHubWeekChart").innerHTML=week.map(item=>`<div><i style="height:${Math.max(4,Math.round(item.minutes/max*100))}%"></i><span>${item.label}</span><b>${item.minutes}</b></div>`).join("");
+  $("focusHubStreak").textContent=`${focusDayStreak()} day focus rhythm`;
+  $("focusHubHistory").innerHTML=sessions.slice(0,12).map(item=>`<article><div><strong>${escapeHtml(item.label||"Focus session")}</strong><span>${escapeHtml(formatShortDate(sessionDate(item)))} · ${item.minutes} minutes</span></div><button data-remove-focus="${escapeHtml(item.id)}">×</button></article>`).join("")||`<p class="muted-copy">Finish your first session. Momentum loves evidence.</p>`;
+  document.querySelectorAll("[data-remove-focus]").forEach(button=>button.addEventListener("click",()=>{state.personal.focusSessions=state.personal.focusSessions.filter(item=>item.id!==button.dataset.removeFocus);savePersonal(false);renderFocusHub();}));
 }
 
 function addExpense(event) {
@@ -2786,6 +3505,203 @@ function renderStats() {
   }).join("");
 }
 
+function addBrainXp(amount) {
+  state.brainXp += amount;
+  localStorage.setItem("kumarBrainXp", String(state.brainXp));
+  renderBrainEnergy();
+}
+
+function renderBrainEnergy() {
+  if (!$("brainEnergyScore")) return;
+  $("brainEnergyScore").textContent = `${state.brainXp} XP`;
+  $("brainEnergyBar").style.width = `${Math.min(100, state.brainXp % 101)}%`;
+}
+
+function shuffle(values) {
+  const items = [...values];
+  for (let index = items.length - 1; index > 0; index -= 1) {
+    const other = Math.floor(Math.random() * (index + 1));
+    [items[index], items[other]] = [items[other], items[index]];
+  }
+  return items;
+}
+
+function resetMemoryGame() {
+  const faces = ["🦖", "👽", "🦄", "🐙", "🤖", "🍕"];
+  state.memoryCards = shuffle([...faces, ...faces]).map((face, index) => ({ id: `card-${Date.now()}-${index}`, face }));
+  state.memoryOpen = [];
+  state.memoryMatched = new Set();
+  state.memoryMoves = 0;
+  state.memoryLocked = false;
+  if ($("memoryMessage")) $("memoryMessage").textContent = "Match the tiny weirdos.";
+  renderMemoryGame();
+}
+
+function flipMemoryCard(cardId) {
+  if (state.memoryLocked || state.memoryOpen.includes(cardId) || state.memoryMatched.has(cardId)) return;
+  state.memoryOpen.push(cardId);
+  renderMemoryGame();
+  if (state.memoryOpen.length < 2) return;
+  state.memoryMoves += 1;
+  const [firstId, secondId] = state.memoryOpen;
+  const first = state.memoryCards.find((card) => card.id === firstId);
+  const second = state.memoryCards.find((card) => card.id === secondId);
+  if (first?.face === second?.face) {
+    state.memoryMatched.add(firstId);
+    state.memoryMatched.add(secondId);
+    state.memoryOpen = [];
+    addBrainXp(5);
+    $("memoryMessage").textContent = state.memoryMatched.size === state.memoryCards.length
+      ? `You found them all in ${state.memoryMoves} moves. Brain = enormous.`
+      : "A match! Your neurons are doing jazz hands.";
+    if (state.memoryMatched.size === state.memoryCards.length) addBrainXp(Math.max(10, 40 - state.memoryMoves));
+    renderMemoryGame();
+    return;
+  }
+  state.memoryLocked = true;
+  $("memoryMessage").textContent = "Nope. The weirdos fooled you.";
+  setTimeout(() => {
+    state.memoryOpen = [];
+    state.memoryLocked = false;
+    renderMemoryGame();
+  }, 720);
+}
+
+function renderMemoryGame() {
+  if (!$("memoryGrid")) return;
+  if (!state.memoryCards.length) {
+    resetMemoryGame();
+    return;
+  }
+  $("memoryMoves").textContent = state.memoryMoves;
+  $("memoryGrid").innerHTML = state.memoryCards.map((card) => {
+    const revealed = state.memoryOpen.includes(card.id) || state.memoryMatched.has(card.id);
+    return `<button class="memory-card ${revealed ? "revealed" : ""} ${state.memoryMatched.has(card.id) ? "matched" : ""}" data-memory-card="${card.id}" type="button" aria-label="${revealed ? card.face : "Hidden card"}"><span class="card-back">?</span><span class="card-face">${card.face}</span></button>`;
+  }).join("");
+  document.querySelectorAll("[data-memory-card]").forEach((button) => {
+    button.addEventListener("click", () => flipMemoryCard(button.dataset.memoryCard));
+  });
+}
+
+function nextMathQuestion() {
+  state.mathRound += 1;
+  if (state.mathRound > 10) {
+    state.mathPlaying = false;
+    $("mathQuestion").textContent = `${state.mathScore}/10`;
+    $("mathProgress").textContent = "Sprint complete";
+    $("mathMessage").textContent = state.mathScore >= 8 ? "Certified number wizard. Very suspicious." : state.mathScore >= 5 ? "Solid! The numbers respect you now." : "A brave battle. Demand a rematch.";
+    $("mathStartButton").textContent = "Play again ↻";
+    $("mathStartButton").classList.remove("hidden");
+    $("mathAnswerInput").disabled = true;
+    addBrainXp(state.mathScore * 3);
+    return;
+  }
+  const mode = Math.floor(Math.random() * 4);
+  let left = 0;
+  let right = 0;
+  let symbol = "+";
+  if (mode === 0) {
+    left = 10 + Math.floor(Math.random() * 90); right = 5 + Math.floor(Math.random() * 50); state.mathAnswer = left + right;
+  } else if (mode === 1) {
+    left = 30 + Math.floor(Math.random() * 120); right = 5 + Math.floor(Math.random() * Math.min(60, left)); symbol = "−"; state.mathAnswer = left - right;
+  } else if (mode === 2) {
+    left = 2 + Math.floor(Math.random() * 18); right = 2 + Math.floor(Math.random() * 12); symbol = "×"; state.mathAnswer = left * right;
+  } else {
+    right = 2 + Math.floor(Math.random() * 10); state.mathAnswer = 2 + Math.floor(Math.random() * 15); left = right * state.mathAnswer; symbol = "÷";
+  }
+  $("mathQuestion").textContent = `${left} ${symbol} ${right}`;
+  $("mathProgress").textContent = `Question ${state.mathRound} of 10`;
+  $("mathAnswerInput").value = "";
+  $("mathAnswerInput").focus();
+}
+
+function startMathGame() {
+  state.mathRound = 0;
+  state.mathScore = 0;
+  state.mathPlaying = true;
+  $("mathScore").textContent = "0";
+  $("mathMessage").textContent = "Go go go! Tiny arithmetic thunder!";
+  $("mathStartButton").classList.add("hidden");
+  $("mathAnswerInput").disabled = false;
+  nextMathQuestion();
+}
+
+function submitMathAnswer(event) {
+  event.preventDefault();
+  if (!state.mathPlaying) return;
+  const answer = Number($("mathAnswerInput").value);
+  if (!Number.isFinite(answer) || $("mathAnswerInput").value === "") return;
+  if (answer === state.mathAnswer) {
+    state.mathScore += 1;
+    $("mathScore").textContent = state.mathScore;
+    $("mathMessage").textContent = shuffle(["Correct. Delicious.", "Boom! Number defeated.", "Yes! Big brain behavior.", "Math surrendered."])[0];
+  } else {
+    $("mathMessage").textContent = `Almost! It was ${state.mathAnswer}. We pretend nobody saw.`;
+  }
+  setTimeout(nextMathQuestion, 380);
+}
+
+function newSequencePuzzle() {
+  const kind = Math.floor(Math.random() * 4);
+  const length = 5;
+  let values = [];
+  if (kind === 0) {
+    const start = 2 + Math.floor(Math.random() * 15);
+    const step = 2 + Math.floor(Math.random() * 8);
+    values = Array.from({ length }, (_, index) => start + index * step);
+  } else if (kind === 1) {
+    const start = 2 + Math.floor(Math.random() * 5);
+    const factor = 2 + Math.floor(Math.random() * 2);
+    values = Array.from({ length }, (_, index) => start * factor ** index);
+  } else if (kind === 2) {
+    const start = 1 + Math.floor(Math.random() * 6);
+    values = Array.from({ length }, (_, index) => start + index * index);
+  } else {
+    const first = 1 + Math.floor(Math.random() * 8);
+    const second = first + 1 + Math.floor(Math.random() * 5);
+    values = [first, second];
+    while (values.length < length) values.push(values.at(-1) + values.at(-2));
+  }
+  state.sequenceAnswer = values.at(-1);
+  const shown = [...values.slice(0, -1), "?"];
+  const offsets = shuffle([-5, -3, -2, 2, 3, 5]);
+  const choices = shuffle([state.sequenceAnswer, state.sequenceAnswer + offsets[0], Math.max(0, state.sequenceAnswer + offsets[1]), state.sequenceAnswer + offsets[2]]);
+  $("sequenceNumbers").innerHTML = shown.map((value) => `<span>${value}</span>`).join("");
+  $("sequenceChoices").innerHTML = choices.map((value) => `<button type="button" data-sequence-choice="${value}">${value}</button>`).join("");
+  $("sequenceMessage").textContent = "Choose the missing number.";
+  document.querySelectorAll("[data-sequence-choice]").forEach((button) => {
+    button.addEventListener("click", () => answerSequence(Number(button.dataset.sequenceChoice), button));
+  });
+}
+
+function answerSequence(value, button) {
+  document.querySelectorAll("[data-sequence-choice]").forEach((choice) => { choice.disabled = true; });
+  if (value === state.sequenceAnswer) {
+    state.sequenceStreak += 1;
+    localStorage.setItem("kumarSequenceStreak", String(state.sequenceStreak));
+    button.classList.add("correct");
+    $("sequenceMessage").textContent = "Pattern obliterated. Nice.";
+    addBrainXp(8);
+  } else {
+    state.sequenceStreak = 0;
+    localStorage.setItem("kumarSequenceStreak", "0");
+    button.classList.add("wrong");
+    document.querySelector(`[data-sequence-choice="${state.sequenceAnswer}"]`)?.classList.add("correct");
+    $("sequenceMessage").textContent = `Sneaky one. The answer was ${state.sequenceAnswer}.`;
+  }
+  $("sequenceScore").textContent = state.sequenceStreak;
+  setTimeout(newSequencePuzzle, 900);
+}
+
+function renderArcade() {
+  if (!$("memoryGrid")) return;
+  renderBrainEnergy();
+  renderMemoryGame();
+  $("mathScore").textContent = state.mathScore;
+  $("sequenceScore").textContent = state.sequenceStreak;
+  if (state.sequenceAnswer === null) newSequencePuzzle();
+}
+
 function renderAll() {
   renderGoal();
   renderTopicFilters();
@@ -2793,8 +3709,12 @@ function renderAll() {
   renderTree();
   renderDetail();
   if (state.activeView === "today") renderToday();
+  if (state.activeView === "play") renderArcade();
   if (state.activeView === "quant") renderQuant();
   if (state.activeView === "planner") renderSchedule();
+  if (state.activeView === "gym") renderGymHub();
+  if (state.activeView === "wellness") renderWellness();
+  if (state.activeView === "focus") renderFocusHub();
   if (state.activeView === "notes") renderNotes();
   if (state.activeView === "life") renderLife();
   if (state.activeView === "insights") renderInsights();
@@ -2805,16 +3725,40 @@ function renderAll() {
 
 function wireEvents() {
   $("todayTab").addEventListener("click", () => setView("today"));
+  $("playTab").addEventListener("click", () => setView("play"));
   $("quantTab").addEventListener("click", () => setView("quant"));
   $("plannerTab").addEventListener("click", () => setView("planner"));
+  $("gymTab").addEventListener("click", () => setView("gym"));
+  $("wellnessTab").addEventListener("click", () => setView("wellness"));
+  $("focusTab").addEventListener("click", () => setView("focus"));
   $("notesTab").addEventListener("click", () => setView("notes"));
-  $("lifeTab").addEventListener("click", () => setView("life"));
-  $("insightsTab").addEventListener("click", () => setView("insights"));
   $("contestsTab").addEventListener("click", () => setView("contests"));
   $("treeTab").addEventListener("click", () => setView("tree"));
   $("sheetTab").addEventListener("click", () => setView("sheet"));
   $("statsTab").addEventListener("click", () => setView("stats"));
   $("syncButton").addEventListener("click", syncCodeforces);
+  $("memoryResetButton").addEventListener("click", resetMemoryGame);
+  $("mathStartButton").addEventListener("click", startMathGame);
+  $("mathAnswerForm").addEventListener("submit", submitMathAnswer);
+  $("sequenceNewButton").addEventListener("click", newSequencePuzzle);
+  document.querySelectorAll("[data-gym-mode]").forEach((button) => button.addEventListener("click", () => {
+    state.activeGymMode = button.dataset.gymMode;
+    renderGymHub();
+  }));
+  document.querySelectorAll("[data-focus-hub-minutes]").forEach((button) => button.addEventListener("click", () => {
+    if (state.focusRunning) return;
+    state.focusMinutes = Number(button.dataset.focusHubMinutes);
+    state.focusRemainingSeconds = state.focusMinutes * 60;
+    saveFocusTimerState();
+    renderFocusHub();
+  }));
+  $("focusHubStartButton").addEventListener("click", toggleFocusTimer);
+  $("focusHubResetButton").addEventListener("click", resetFocusTimer);
+  $("focusHubFinishButton").addEventListener("click", () => {
+    const elapsed = state.focusMinutes - state.focusRemainingSeconds / 60;
+    if (elapsed >= 1) completeFocusSession(elapsed);
+  });
+  $("focusHubLabelInput").addEventListener("input", saveFocusTimerState);
   $("cfHandleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") syncCodeforces();
   });
@@ -2872,6 +3816,10 @@ function wireEvents() {
     renderSchedule();
   });
   $("enableRemindersButton").addEventListener("click", enableReminders);
+  $("wellnessEnableRemindersButton").addEventListener("click", enableReminders);
+  $("skinRoutineForm").addEventListener("submit", addSkinRoutine);
+  $("skinProductForm").addEventListener("submit", addSkinProduct);
+  $("gymPlanForm").addEventListener("submit", addGymPlan);
   $("newNoteButton").addEventListener("click", newNote);
   $("saveNoteButton").addEventListener("click", saveCurrentNote);
   $("deleteNoteButton").addEventListener("click", deleteCurrentNote);
@@ -2935,7 +3883,7 @@ function wireEvents() {
   $("careerForm").addEventListener("submit", addCareerItem);
   $("documentForm").addEventListener("submit", addDocumentRecord);
   $("taskFilterInput").addEventListener("change", renderLife);
-  $("lifeEnableRemindersButton").addEventListener("click", enableReminders);
+  $("lifeEnableRemindersButton")?.addEventListener("click", enableReminders);
   document.querySelectorAll("[data-life-panel]").forEach((button) => {
     button.addEventListener("click", () => setLifePanel(button.dataset.lifePanel));
   });
@@ -2947,6 +3895,7 @@ function wireEvents() {
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) tickFocusTimer();
   });
+  window.addEventListener("online",()=>{if(state.offlineSavePending&&state.personal)savePersonal(false,false);});
 }
 
 async function init() {
@@ -2961,7 +3910,15 @@ async function init() {
   state.progress = await getJson("/api/progress");
   state.quantToday = await getJson("/api/quant/today");
   state.quant = await getJson("/api/quant");
-  state.personal = await getJson("/api/personal");
+  try {
+    state.personal = await getJson("/api/personal");
+    localStorage.setItem("kumarPersonalOffline",JSON.stringify(state.personal));
+  } catch (error) {
+    const cached=localStorage.getItem("kumarPersonalOffline");
+    if(!cached) throw error;
+    state.personal=JSON.parse(cached);
+    state.offlineSavePending=true;
+  }
   ensurePersonalCollections();
   state.selectedNoteId = state.personal.notes?.[0]?.id || null;
   state.spendMonth ||= localIsoDate().slice(0, 7);

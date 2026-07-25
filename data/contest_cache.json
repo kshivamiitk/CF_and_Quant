@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "generatedAt": "2026-07-25T07:42:17Z",
+  "generatedAt": "2026-07-25T12:56:34Z",
   "cacheTtlSeconds": 600,
   "lookaheadDays": 45,
   "cached": false,
@@ -20,8 +20,8 @@
       "durationSeconds": 9000,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 111162,
-      "endsInSeconds": 120162,
+      "startsInSeconds": 92305,
+      "endsInSeconds": 101305,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Codeforces%3A+Codeforces+Round+1112+%28Div.+1%29&dates=20260726T143500Z%2F20260726T170500Z&details=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2249&location=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2249"
     },
     {
@@ -36,8 +36,8 @@
       "durationSeconds": 9000,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 111162,
-      "endsInSeconds": 120162,
+      "startsInSeconds": 92305,
+      "endsInSeconds": 101305,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Codeforces%3A+Codeforces+Round+1112+%28Div.+2%29&dates=20260726T143500Z%2F20260726T170500Z&details=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2250&location=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2250"
     },
     {
@@ -52,8 +52,8 @@
       "durationSeconds": 10800,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 193662,
-      "endsInSeconds": 204462,
+      "startsInSeconds": 174805,
+      "endsInSeconds": 185605,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Monday+Munch+-+DSA+Challenge+013+%28Rated%29&dates=20260727T133000Z%2F20260727T163000Z&details=https%3A%2F%2Fwww.codechef.com%2FDSAMONDAY013&location=https%3A%2F%2Fwww.codechef.com%2FDSAMONDAY013"
     },
     {
@@ -68,8 +68,8 @@
       "durationSeconds": 7200,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 370062,
-      "endsInSeconds": 377262,
+      "startsInSeconds": 351205,
+      "endsInSeconds": 358405,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Starters+249&dates=20260729T143000Z%2F20260729T163000Z&details=https%3A%2F%2Fwww.codechef.com%2FSTART249&location=https%3A%2F%2Fwww.codechef.com%2FSTART249"
     },
     {
@@ -84,8 +84,8 @@
       "durationSeconds": 7200,
       "status": "upcoming",
       "urgency": "week",
-      "startsInSeconds": 557262,
-      "endsInSeconds": 564462,
+      "startsInSeconds": 538405,
+      "endsInSeconds": 545605,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Placement+Prep+Weekends+-+01&dates=20260731T183000Z%2F20260731T203000Z&details=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP01&location=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP01"
     },
     {
@@ -99,9 +99,9 @@
       "endTimeSeconds": 1785591300,
       "durationSeconds": 7200,
       "status": "upcoming",
-      "urgency": "later",
-      "startsInSeconds": 618762,
-      "endsInSeconds": 625962,
+      "urgency": "week",
+      "startsInSeconds": 599905,
+      "endsInSeconds": 607105,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Codeforces%3A+Codeforces+Round+%28Div.+2%29&dates=20260801T113500Z%2F20260801T133500Z&details=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2248&location=https%3A%2F%2Fcodeforces.com%2Fcontest%2F2248"
     },
     {
@@ -116,8 +116,8 @@
       "durationSeconds": 7200,
       "status": "upcoming",
       "urgency": "later",
-      "startsInSeconds": 974862,
-      "endsInSeconds": 982062,
+      "startsInSeconds": 956005,
+      "endsInSeconds": 963205,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Starters+250&dates=20260805T143000Z%2F20260805T163000Z&details=https%3A%2F%2Fwww.codechef.com%2FSTART250&location=https%3A%2F%2Fwww.codechef.com%2FSTART250"
     },
     {
@@ -132,8 +132,8 @@
       "durationSeconds": 7200,
       "status": "upcoming",
       "urgency": "later",
-      "startsInSeconds": 1162062,
-      "endsInSeconds": 1169262,
+      "startsInSeconds": 1143205,
+      "endsInSeconds": 1150405,
       "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=CodeChef%3A+Placement+Prep+Weekends+-+02&dates=20260807T183000Z%2F20260807T203000Z&details=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP02&location=https%3A%2F%2Fwww.codechef.com%2FPLACEPREP02"
     }
   ]

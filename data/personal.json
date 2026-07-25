@@ -1,7 +1,134 @@
 {
   "version": 4,
   "owner": "Kumar Shivam",
-  "schedule": [],
+  "schedule": [
+    {
+      "id": "event-contest-Codeforces-1785076500",
+      "contestKey": "contest-Codeforces-1785076500",
+      "kind": "contest",
+      "title": "Codeforces: Codeforces Round 1112 (Div. 1)",
+      "start": "2026-07-26T20:05",
+      "startUtc": "2026-07-26T14:35:00.000Z",
+      "end": "2026-07-26T22:35",
+      "endUtc": "2026-07-26T17:05:00.000Z",
+      "notes": "https://codeforces.com/contest/2249",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 60,
+      "createdAt": "2026-07-25T12:16:53.015Z",
+      "updatedAt": "2026-07-25T12:16:53.015Z"
+    },
+    {
+      "id": "event-contest-CodeChef-1785159000",
+      "contestKey": "contest-CodeChef-1785159000",
+      "kind": "contest",
+      "title": "CodeChef: Monday Munch - DSA Challenge 013 (Rated)",
+      "start": "2026-07-27T19:00",
+      "startUtc": "2026-07-27T13:30:00.000Z",
+      "end": "2026-07-27T22:00",
+      "endUtc": "2026-07-27T16:30:00.000Z",
+      "notes": "https://www.codechef.com/DSAMONDAY013",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 60,
+      "createdAt": "2026-07-25T12:16:57.393Z",
+      "updatedAt": "2026-07-25T12:16:57.393Z"
+    },
+    {
+      "id": "event-contest-CodeChef-1785335400",
+      "contestKey": "contest-CodeChef-1785335400",
+      "kind": "contest",
+      "title": "CodeChef: Starters 249",
+      "start": "2026-07-29T20:00",
+      "startUtc": "2026-07-29T14:30:00.000Z",
+      "end": "2026-07-29T22:00",
+      "endUtc": "2026-07-29T16:30:00.000Z",
+      "notes": "https://www.codechef.com/START249",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 60,
+      "createdAt": "2026-07-25T12:16:58.377Z",
+      "updatedAt": "2026-07-25T12:16:58.377Z"
+    },
+    {
+      "id": "event-contest-CodeChef-1785522600",
+      "contestKey": "contest-CodeChef-1785522600",
+      "kind": "contest",
+      "title": "CodeChef: Placement Prep Weekends - 01",
+      "start": "2026-08-01T00:00",
+      "startUtc": "2026-07-31T18:30:00.000Z",
+      "end": "2026-08-01T02:00",
+      "endUtc": "2026-07-31T20:30:00.000Z",
+      "notes": "https://www.codechef.com/PLACEPREP01",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 60,
+      "createdAt": "2026-07-25T12:16:59.126Z",
+      "updatedAt": "2026-07-25T12:16:59.126Z"
+    },
+    {
+      "id": "event-contest-Codeforces-1785584100",
+      "contestKey": "contest-Codeforces-1785584100",
+      "kind": "contest",
+      "title": "Codeforces: Codeforces Round (Div. 2)",
+      "start": "2026-08-01T17:05",
+      "startUtc": "2026-08-01T11:35:00.000Z",
+      "end": "2026-08-01T19:05",
+      "endUtc": "2026-08-01T13:35:00.000Z",
+      "notes": "https://codeforces.com/contest/2248",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 60,
+      "createdAt": "2026-07-25T12:17:00.597Z",
+      "updatedAt": "2026-07-25T12:17:00.597Z"
+    },
+    {
+      "id": "event-contest-CodeChef-1785940200",
+      "contestKey": "contest-CodeChef-1785940200",
+      "kind": "contest",
+      "title": "CodeChef: Starters 250",
+      "start": "2026-08-05T20:00",
+      "startUtc": "2026-08-05T14:30:00.000Z",
+      "end": "2026-08-05T22:00",
+      "endUtc": "2026-08-05T16:30:00.000Z",
+      "notes": "https://www.codechef.com/START250",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 60,
+      "createdAt": "2026-07-25T12:17:01.429Z",
+      "updatedAt": "2026-07-25T12:17:01.429Z"
+    },
+    {
+      "id": "event-contest-CodeChef-1786127400",
+      "contestKey": "contest-CodeChef-1786127400",
+      "kind": "contest",
+      "title": "CodeChef: Placement Prep Weekends - 02",
+      "start": "2026-08-08T00:00",
+      "startUtc": "2026-08-07T18:30:00.000Z",
+      "end": "2026-08-08T02:00",
+      "endUtc": "2026-08-07T20:30:00.000Z",
+      "notes": "https://www.codechef.com/PLACEPREP02",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 60,
+      "createdAt": "2026-07-25T12:17:02.626Z",
+      "updatedAt": "2026-07-25T12:17:02.626Z"
+    },
+    {
+      "id": "event-1784983104986",
+      "title": "Setup of IITK Webmail forwarding to personal email",
+      "start": "2026-07-26T13:00",
+      "startUtc": "2026-07-26T07:30:00.000Z",
+      "end": "2026-07-26T13:03",
+      "endUtc": "2026-07-26T07:33:00.000Z",
+      "notes": "",
+      "notify": true,
+      "completed": false,
+      "reminderMinutes": 15,
+      "createdAt": "2026-07-25T12:38:24.986Z",
+      "updatedAt": "2026-07-25T12:38:24.986Z"
+    }
+  ],
   "notes": [],
   "expenses": [],
   "incomes": [],
@@ -20,5 +147,251 @@
   "debts": [],
   "notificationState": {},
   "pushSubscriptions": [],
-  "updatedAt": null
+  "updatedAt": "2026-07-25T12:38:25Z",
+  "skinRoutines": [
+    {
+      "id": "skin-1784979655085",
+      "name": "Morning Glow",
+      "period": "morning",
+      "time": "08:00",
+      "days": [
+        0,
+        2,
+        4
+      ],
+      "steps": [
+        "Cleanser",
+        "Serum",
+        "Shampoo",
+        "conditioner",
+        "sunscream"
+      ],
+      "completions": [],
+      "createdAt": "2026-07-25T11:40:55.085Z"
+    },
+    {
+      "id": "skin-1784979695672",
+      "name": "Morning Glow",
+      "period": "morning",
+      "time": "08:00",
+      "days": [
+        1,
+        3,
+        5,
+        6
+      ],
+      "steps": [
+        {
+          "name": "Cleanser",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Serum (vitamin C)",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Sunscream",
+          "durationSeconds": 0
+        }
+      ],
+      "completions": [],
+      "completionHistory": [],
+      "createdAt": "2026-07-25T11:41:35.672Z"
+    },
+    {
+      "id": "skin-1784979730486",
+      "name": "Evening Reset",
+      "period": "evening",
+      "time": "20:00",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "steps": [
+        "Cleanser",
+        "Retinol",
+        "Moisturiser"
+      ],
+      "completions": [],
+      "createdAt": "2026-07-25T11:42:10.486Z",
+      "completionHistory": []
+    }
+  ],
+  "gymPlans": [
+    {
+      "id": "gym-1784982933722",
+      "name": "Push Day",
+      "day": "0",
+      "time": "18:00",
+      "durationMinutes": 60,
+      "exercises": [
+        {
+          "name": "Barbell Flat Bench Press",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Barbell Incline Bench Press",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Pec Deck Fly",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Barbell Overhead Press",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Dumbbell Lateral Raise",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Cable Triceps Pushdown",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Skull Crusher",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        }
+      ],
+      "completions": [],
+      "completionHistory": [],
+      "createdAt": "2026-07-25T12:35:33.722Z"
+    },
+    {
+      "id": "gym-1784983014271",
+      "name": "Pull",
+      "day": "1",
+      "time": "18:00",
+      "durationMinutes": 60,
+      "exercises": [
+        {
+          "name": "Lat Pulldown",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Close-Grip Lat Pulldown",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Pull-Up",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Machine Row",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Back Extension",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Dumbbell Curl",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Hammer Curl",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        },
+        {
+          "name": "Preacher Curl",
+          "sets": 3,
+          "reps": "8-12",
+          "weightKg": 0,
+          "durationSeconds": 0,
+          "restSeconds": 60,
+          "notes": ""
+        }
+      ],
+      "completions": [],
+      "completionHistory": [],
+      "createdAt": "2026-07-25T12:36:54.271Z"
+    }
+  ],
+  "skinStepLogs": [],
+  "gymSessions": [],
+  "customExercises": [],
+  "contestCalendar": [],
+  "skinProducts": [],
+  "dailyReflections": [],
+  "quantAttemptHistory": [],
+  "settings": {
+    "humourStyle": "playful",
+    "flexibleStreaks": true
+  }
 }
