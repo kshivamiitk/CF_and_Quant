@@ -18,6 +18,16 @@ const state = {
   quantToday: null,
   personal: null,
   personalSaveTimer: null,
+  personalSaveGeneration: 0,
+  personalSavedGeneration: 0,
+  personalSavesInFlight: 0,
+  noteSaveTimer: null,
+  noteSaveGeneration: 0,
+  noteSavedGeneration: 0,
+  noteSavesInFlight: 0,
+  notesDirtyGeneration: 0,
+  notesOfflineSavePending: false,
+  notesRefreshGeneration: 0,
   quantSearch: "",
   quantSource: "all",
   quantStatus: "all",
@@ -27,6 +37,8 @@ const state = {
   selectedNoteId: null,
   reminderConfig: null,
   notesSearch: "",
+  selectedNoteFolderId: "all",
+  noteEditorMode: "rich",
   noteSelectionRange: null,
   activeLifePanel: "tasks",
   spendMonth: localStorage.getItem("kumarSpendMonth") || "",
@@ -45,6 +57,12 @@ const state = {
   mathScore: 0,
   mathAnswer: null,
   mathPlaying: false,
+  activeTradingGame: "market",
+  tradingScenario: null,
+  tradingScenarios: {},
+  tradingRounds: { market: 0, risk: 0, calibration: 0, stopping: 0 },
+  riskSession: null,
+  calibrationSession: null,
   sequenceAnswer: null,
   sequenceStreak: Number(localStorage.getItem("kumarSequenceStreak") || 0),
   editingSkinRoutineId: null,
@@ -232,7 +250,7 @@ function localIsoDate(date = new Date()) {
 }
 
 const personalCollectionFields = [
-  "schedule", "notes", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "expenses", "incomes", "focusSessions", "tasks", "goals",
+  "schedule", "notes", "notesFolders", "noteTombstones", "noteFolderTombstones", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "expenses", "incomes", "focusSessions", "arcadeSessions", "tasks", "goals",
   "habits", "weeklyReviews", "healthLogs", "careerItems", "documents", "accounts", "budgets",
   "bills", "savingsGoals", "debts"
 ];
@@ -243,6 +261,8 @@ function ensurePersonalCollections() {
     if (!Array.isArray(state.personal[field])) state.personal[field] = [];
   });
   state.personal.settings ||= { humourStyle: "playful", flexibleStreaks: true };
+  const syncedBrainXp=(state.personal.arcadeSessions||[]).reduce((sum,session)=>sum+Number(session.xp||0),0);
+  state.brainXp=Math.max(state.brainXp,syncedBrainXp);
 }
 
 function daysBetweenDates(fromIso, toIso) {
@@ -415,11 +435,15 @@ function setView(viewName) {
   if (viewName === "sheet") renderSheet();
   if (viewName === "stats") renderStats();
   if (window.matchMedia("(max-width: 480px)").matches) {
-    requestAnimationFrame(() => $(`${viewName}Tab`)?.scrollIntoView({
-      behavior: "smooth",
-      inline: isInstalledApp ? "nearest" : "center",
-      block: isInstalledApp ? "center" : "nearest"
-    }));
+    const centerActiveTab=() => {
+      const tab=$(`${viewName}Tab`);
+      const navigation=tab?.closest(".top-actions");
+      if(!tab||!navigation)return;
+      const targetLeft=tab.offsetLeft-(navigation.clientWidth-tab.offsetWidth)/2;
+      navigation.scrollTo({left:Math.max(0,targetLeft),behavior:"auto"});
+    };
+    requestAnimationFrame(centerActiveTab);
+    setTimeout(centerActiveTab,120);
   }
 }
 
@@ -1533,14 +1557,23 @@ async function updateQuantCurrent(fields, debounced = false) {
 }
 
 async function loadPersonal() {
+  const cached = localStorage.getItem("kumarPersonalOffline");
+  const pendingNotes = localStorage.getItem("kumarNotesPending") === "1";
   try {
     state.personal = await getJson(`/api/personal?ts=${Date.now()}`);
+    if (pendingNotes && cached) {
+      const localPersonal = JSON.parse(cached);
+      ["notes", "notesFolders", "noteTombstones", "noteFolderTombstones"].forEach((field) => {
+        if (Array.isArray(localPersonal[field])) state.personal[field] = localPersonal[field];
+      });
+      state.notesOfflineSavePending = true;
+    }
     localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
   } catch (error) {
-    const cached = localStorage.getItem("kumarPersonalOffline");
     if (!cached) throw error;
     state.personal = JSON.parse(cached);
     state.offlineSavePending = true;
+    state.notesOfflineSavePending = pendingNotes;
   }
   ensurePersonalCollections();
   state.selectedScheduleDate ||= localIsoDate();
@@ -1550,26 +1583,41 @@ async function loadPersonal() {
   renderNotes();
   renderInsights();
   renderLife();
+  if (state.notesOfflineSavePending && navigator.onLine) saveNotes(false, false);
   await loadReminderStatus();
 }
 
 function savePersonal(debounced = true, rerender = true) {
+  const generation = ++state.personalSaveGeneration;
   localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
   const saveState = $("personalSaveState");
-  const notesState = $("notesSaveState");
   const wellnessState = $("wellnessSaveState");
   if (saveState) saveState.textContent = "Saving...";
-  if (notesState) notesState.textContent = "Saving...";
   if (wellnessState) wellnessState.textContent = "Saving...";
   clearTimeout(state.personalSaveTimer);
   state.personalSaveTimer = setTimeout(async () => {
+    state.personalSaveTimer = null;
+    state.personalSavesInFlight += 1;
+    const snapshot = JSON.parse(JSON.stringify(state.personal));
+    delete snapshot.notes;
+    delete snapshot.notesFolders;
+    delete snapshot.noteTombstones;
+    delete snapshot.noteFolderTombstones;
     try {
-      const result = await postJson("/api/personal", state.personal);
-      if (result.personal) state.personal = result.personal;
+      const result = await postJson("/api/personal", snapshot);
+      if (generation !== state.personalSaveGeneration) return;
+      if (result.personal) {
+        const noteCollections = Object.fromEntries(
+          ["notes", "notesFolders", "noteTombstones", "noteFolderTombstones"]
+            .map((field) => [field, state.personal[field] || []])
+        );
+        state.personal = result.personal;
+        Object.assign(state.personal, noteCollections);
+      }
+      state.personalSavedGeneration = generation;
       state.offlineSavePending = false;
       localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
       if (saveState) saveState.textContent = "Saved";
-      if (notesState) notesState.textContent = "Saved";
       if (wellnessState) wellnessState.textContent = "Saved";
       const insightsState = $("insightsSaveState");
       if (insightsState) insightsState.textContent = "Saved";
@@ -1579,20 +1627,64 @@ function savePersonal(debounced = true, rerender = true) {
         renderGymHub();
         renderWellness();
         renderFocusHub();
-        renderNotes();
         renderInsights();
         renderLife();
       }
     } catch (error) {
+      if (generation !== state.personalSaveGeneration) return;
       state.offlineSavePending = true;
       if (saveState) saveState.textContent = "Save failed";
-      if (notesState) notesState.textContent = "Save failed";
       if (wellnessState) wellnessState.textContent = "Save failed";
       const insightsState = $("insightsSaveState");
       if (insightsState) insightsState.textContent = "Save failed";
       console.error(error);
+    } finally {
+      state.personalSavesInFlight = Math.max(0, state.personalSavesInFlight - 1);
     }
   }, debounced ? 350 : 0);
+  return generation;
+}
+
+function saveNotes(debounced = true, rerender = false) {
+  const generation = ++state.noteSaveGeneration;
+  state.notesDirtyGeneration = generation;
+  localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
+  localStorage.setItem("kumarNotesPending", "1");
+  const notesState = $("notesSaveState");
+  if (notesState) notesState.textContent = "Saving...";
+  clearTimeout(state.noteSaveTimer);
+  state.noteSaveTimer = setTimeout(async () => {
+    state.noteSaveTimer = null;
+    state.noteSavesInFlight += 1;
+    const snapshot = {
+      notes: JSON.parse(JSON.stringify(state.personal.notes || [])),
+      notesFolders: JSON.parse(JSON.stringify(state.personal.notesFolders || [])),
+      noteTombstones: JSON.parse(JSON.stringify(state.personal.noteTombstones || [])),
+      noteFolderTombstones: JSON.parse(JSON.stringify(state.personal.noteFolderTombstones || []))
+    };
+    try {
+      const result = await postJson("/api/notes", snapshot);
+      if (generation !== state.noteSaveGeneration) return;
+      ["notes", "notesFolders", "noteTombstones", "noteFolderTombstones"].forEach((field) => {
+        if (Array.isArray(result[field])) state.personal[field] = result[field];
+      });
+      state.noteSavedGeneration = generation;
+      state.notesDirtyGeneration = 0;
+      state.notesOfflineSavePending = false;
+      localStorage.removeItem("kumarNotesPending");
+      localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
+      if (notesState) notesState.textContent = "Saved";
+      if (rerender && state.activeView === "notes") renderNotes();
+    } catch (error) {
+      if (generation !== state.noteSaveGeneration) return;
+      state.notesOfflineSavePending = true;
+      if (notesState) notesState.textContent = "Save failed";
+      console.error(error);
+    } finally {
+      state.noteSavesInFlight = Math.max(0, state.noteSavesInFlight - 1);
+    }
+  }, debounced ? 350 : 0);
+  return generation;
 }
 
 function eventDate(event) {
@@ -2277,11 +2369,18 @@ function renderGymHub() {
 }
 
 function newNote() {
+  ensureNoteFolders();
+  const selectedFolderExists=activeNoteFolders().some(folder=>folder.id===state.selectedNoteFolderId);
+  const folderId=state.selectedNoteFolderId==="all"||!selectedFolderExists ? "notes-default" : state.selectedNoteFolderId;
   const note = {
     id: `note-${Date.now()}`,
     title: "",
     body: "",
     contentHtml: "",
+    markdownBody: "",
+    format: "markdown",
+    editorMode: "markdown",
+    folderId,
     pinned: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -2291,17 +2390,66 @@ function newNote() {
   state.noteSelectionRange = null;
   renderNotes();
   $("notesBoard").classList.add("editing-note");
-  $("noteTitleInput").focus();
+  state.noteEditorMode="markdown";
+  $("noteMarkdownInput").focus();
+  saveNotes(true, false);
+}
+
+function noteCanonicalFormat(note) {
+  if (note?.format === "rich" || note?.format === "markdown") return note.format;
+  if (note?.editorMode === "markdown" || note?.editorMode === "preview") return "markdown";
+  if (note?.editorMode === "rich") return "rich";
+  if (note?.markdownBody) return "markdown";
+  return "rich";
+}
+
+function notePlainTextFromHtml(value) {
+  const container = document.createElement("div");
+  container.innerHTML = sanitizeNoteHtml(value);
+  return (container.innerText || container.textContent || "").replace(/\u00a0/g, " ").trim();
+}
+
+function markdownToPlainText(value) {
+  return notePlainTextFromHtml(markdownToHtml(value));
+}
+
+function normalizeNote(note) {
+  const format = noteCanonicalFormat(note);
+  note.format = format;
+  note.editorMode = format;
+  if (format === "markdown") {
+    if (typeof note.markdownBody !== "string") {
+      note.markdownBody = note.contentHtml ? richHtmlToMarkdown(note.contentHtml) : String(note.body || "");
+    }
+    note.body = markdownToPlainText(note.markdownBody);
+  } else {
+    const fallbackHtml = escapeHtml(note.body || "").replaceAll("\n", "<br>");
+    note.contentHtml = sanitizeNoteHtml(note.contentHtml || fallbackHtml);
+    note.body = notePlainTextFromHtml(note.contentHtml);
+  }
+  return note;
+}
+
+function syncCurrentNoteEditor(note) {
+  note.title = $("noteTitleInput").value.trim();
+  const format = noteCanonicalFormat(note);
+  if(format==="rich" && state.noteEditorMode==="rich") {
+    note.body = $("noteBodyInput").innerText;
+    note.contentHtml = sanitizeNoteHtml($("noteBodyInput").innerHTML);
+  } else if(format==="markdown" && state.noteEditorMode==="markdown") {
+    note.markdownBody=$("noteMarkdownInput").value;
+    note.body=markdownToPlainText(note.markdownBody);
+  }
+  note.format=format;
+  note.editorMode=format;
 }
 
 function saveCurrentNote() {
   const note = state.personal.notes.find((item) => item.id === state.selectedNoteId);
   if (!note) return;
-  note.title = $("noteTitleInput").value.trim();
-  note.body = $("noteBodyInput").innerText;
-  note.contentHtml = sanitizeNoteHtml($("noteBodyInput").innerHTML);
+  syncCurrentNoteEditor(note);
   note.updatedAt = new Date().toISOString();
-  savePersonal(false);
+  saveNotes(false, true);
   $("notesBoard").classList.remove("editing-note");
 }
 
@@ -2309,19 +2457,33 @@ function updateCurrentNoteDraft() {
   const note = state.personal.notes.find((item) => item.id === state.selectedNoteId);
   if (!note) return;
   note.title = $("noteTitleInput").value;
-  note.body = $("noteBodyInput").innerText;
-  note.contentHtml = sanitizeNoteHtml($("noteBodyInput").innerHTML);
+  const format=noteCanonicalFormat(note);
+  if(format==="rich" && state.noteEditorMode==="rich") {
+    note.body = $("noteBodyInput").innerText;
+    note.contentHtml = sanitizeNoteHtml($("noteBodyInput").innerHTML);
+  } else if(format==="markdown" && state.noteEditorMode==="markdown") {
+    note.markdownBody=$("noteMarkdownInput").value;
+    note.body=markdownToPlainText(note.markdownBody);
+  }
+  note.format=format;
+  note.editorMode=format;
   note.updatedAt = new Date().toISOString();
   $("noteEditedMeta").textContent = `Edited ${formatNoteDate(note.updatedAt)}`;
-  savePersonal(true, false);
+  saveNotes(true, false);
 }
 
 function deleteCurrentNote() {
   if (!state.selectedNoteId) return;
-  state.personal.notes = state.personal.notes.filter((note) => note.id !== state.selectedNoteId);
+  const note=state.personal.notes.find(item=>item.id===state.selectedNoteId);
+  if(!note)return;
+  const deletedAt=new Date().toISOString();
+  state.personal.noteTombstones=(state.personal.noteTombstones||[]).filter(item=>item.id!==note.id);
+  state.personal.noteTombstones.push({id:note.id,folderId:note.folderId||"notes-default",deletedAt,updatedAt:deletedAt});
+  state.personal.notes = state.personal.notes.filter((item) => item.id !== note.id);
   state.selectedNoteId = state.personal.notes[0]?.id || null;
   $("notesBoard").classList.remove("editing-note");
-  savePersonal(false);
+  renderNotes();
+  saveNotes(false, true);
 }
 
 function formatNoteDate(value) {
@@ -2339,15 +2501,293 @@ function formatNoteDate(value) {
 function sanitizeNoteHtml(value) {
   const container = document.createElement("div");
   container.innerHTML = String(value || "");
-  container.querySelectorAll("script, style, iframe, object, embed, form").forEach((element) => element.remove());
-  container.querySelectorAll("*").forEach((element) => {
-    [...element.attributes].forEach((attribute) => {
-      const name = attribute.name.toLowerCase();
-      const unsafeLink = ["href", "src"].includes(name) && /^\s*javascript:/i.test(attribute.value);
-      if (name.startsWith("on") || unsafeLink) element.removeAttribute(attribute.name);
-    });
+  container.querySelectorAll("script, style, iframe, object, embed, form, svg, math, template, link, meta, base").forEach((element) => element.remove());
+  const allowedTags = new Set([
+    "A", "B", "BLOCKQUOTE", "BR", "CODE", "DEL", "DIV", "EM", "H1", "H2", "H3", "H4", "H5", "H6",
+    "HR", "I", "LI", "OL", "P", "PRE", "S", "SPAN", "STRIKE", "STRONG", "TABLE", "TBODY", "TD",
+    "TH", "THEAD", "TR", "U", "UL"
+  ]);
+  const allowedClasses = new Set([
+    "checked", "markdown-task-list", "note-check-circle", "note-check-item",
+    "markdown-align-left", "markdown-align-center", "markdown-align-right"
+  ]);
+  [...container.querySelectorAll("*")].forEach((element) => {
+    if (!allowedTags.has(element.tagName)) {
+      element.replaceWith(...element.childNodes);
+      return;
+    }
+    const href = element.tagName === "A" ? safeNoteHref(element.getAttribute("href")) : "";
+    const classes = [...element.classList].filter((name) => allowedClasses.has(name));
+    const nonEditable = element.tagName === "SPAN" && element.getAttribute("contenteditable") === "false";
+    [...element.attributes].forEach((attribute) => element.removeAttribute(attribute.name));
+    if (classes.length) element.className = classes.join(" ");
+    if (nonEditable) element.setAttribute("contenteditable", "false");
+    if (href) {
+      element.setAttribute("href", href);
+      element.setAttribute("target", "_blank");
+      element.setAttribute("rel", "noopener noreferrer");
+    }
   });
   return container.innerHTML;
+}
+
+function safeNoteHref(value) {
+  const href=String(value||"").trim();
+  if(!href)return "";
+  if(href.startsWith("#"))return href;
+  try {
+    const parsed=new URL(href,window.location.origin);
+    return ["http:","https:","mailto:"].includes(parsed.protocol) ? href : "";
+  } catch {
+    return "";
+  }
+}
+
+function markdownInline(value) {
+  const tokens=[];
+  const token=(html)=>{const index=tokens.push(html)-1;return `\uE000${index}\uE001`;};
+  let source=String(value||"");
+  source=source.replace(/(`+)([\s\S]*?)\1/g,(_,ticks,code)=>token(`<code>${escapeHtml(code)}</code>`));
+  source=source.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(match,label,href)=>{
+    const safeHref=safeNoteHref(href);
+    return safeHref ? token(`<a href="${escapeHtml(safeHref)}" target="_blank" rel="noopener noreferrer">${markdownInline(label)}</a>`) : match;
+  });
+  source=source.replace(/\\([\\`*_[\]{}()#+\-.!|>~])/g,(_,character)=>token(escapeHtml(character)));
+  let text=escapeHtml(source);
+  text=text.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+  text=text.replace(/__([^_]+)__/g,"<strong>$1</strong>");
+  text=text.replace(/~~([^~]+)~~/g,"<s>$1</s>");
+  text=text.replace(/(^|[^*])\*([^*]+)\*/g,"$1<em>$2</em>");
+  text=text.replace(/(^|[^_])_([^_]+)_/g,"$1<em>$2</em>");
+  return text.replace(/\uE000(\d+)\uE001/g,(_,index)=>tokens[Number(index)]||"");
+}
+
+function splitMarkdownTableRow(line) {
+  let value=String(line||"").trim();
+  if(value.startsWith("|"))value=value.slice(1);
+  if(value.endsWith("|")&&!value.endsWith("\\|"))value=value.slice(0,-1);
+  const cells=[];let cell="",ticks=0,escaped=false;
+  for(const character of value) {
+    if(escaped){cell+=`\\${character}`;escaped=false;continue;}
+    if(character==="\\"){escaped=true;continue;}
+    if(character==="`"){ticks=ticks?0:1;cell+=character;continue;}
+    if(character==="|"&&!ticks){cells.push(cell.trim());cell="";continue;}
+    cell+=character;
+  }
+  if(escaped)cell+="\\";
+  cells.push(cell.trim());
+  return cells;
+}
+
+function markdownTableDelimiter(line) {
+  const cells=splitMarkdownTableRow(line);
+  if(!cells.length||!cells.every(cell=>/^:?-{3,}:?$/.test(cell.trim())))return null;
+  return cells.map(cell=>cell.startsWith(":")&&cell.endsWith(":")?"center":cell.endsWith(":")?"right":"left");
+}
+
+function markdownLineStartsBlock(lines,index) {
+  const line=lines[index]||"";
+  if(!line.trim())return true;
+  if(/^```/.test(line)||/^(#{1,6})\s+/.test(line)||/^>\s?/.test(line)||/^([-*+]\s+|\d+[.)]\s+)/.test(line)||/^---+$/.test(line.trim()))return true;
+  return index+1<lines.length && line.includes("|") && Boolean(markdownTableDelimiter(lines[index+1]));
+}
+
+function markdownToHtml(markdown) {
+  const lines=String(markdown||"").replace(/\r/g,"").split("\n");
+  let html="";
+  for(let index=0;index<lines.length;) {
+    const line=lines[index];
+    if(!line.trim()){index+=1;continue;}
+    if(/^```/.test(line)) {
+      const code=[];index+=1;
+      while(index<lines.length&&!/^```/.test(lines[index]))code.push(lines[index++]);
+      if(index<lines.length)index+=1;
+      html+=`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`;
+      continue;
+    }
+    if(index+1<lines.length&&line.includes("|")) {
+      const alignments=markdownTableDelimiter(lines[index+1]);
+      if(alignments) {
+        const headers=splitMarkdownTableRow(line);index+=2;const rows=[];
+        while(index<lines.length&&lines[index].trim()&&lines[index].includes("|"))rows.push(splitMarkdownTableRow(lines[index++]));
+        const cells=(values,tag)=>headers.map((_,cellIndex)=>`<${tag} class="markdown-align-${alignments[cellIndex]||"left"}">${markdownInline(values[cellIndex]||"")}</${tag}>`).join("");
+        html+=`<table><thead><tr>${cells(headers,"th")}</tr></thead><tbody>${rows.map(row=>`<tr>${cells(row,"td")}</tr>`).join("")}</tbody></table>`;
+        continue;
+      }
+    }
+    const heading=line.match(/^(#{1,6})\s+(.+)$/);
+    if(heading){const level=heading[1].length;html+=`<h${level}>${markdownInline(heading[2])}</h${level}>`;index+=1;continue;}
+    if(/^---+$/.test(line.trim())){html+="<hr>";index+=1;continue;}
+    if(/^>\s?/.test(line)) {
+      const quote=[];
+      while(index<lines.length&&/^>\s?/.test(lines[index]))quote.push(lines[index++].replace(/^>\s?/,""));
+      html+=`<blockquote>${quote.map(markdownInline).join("<br>")}</blockquote>`;
+      continue;
+    }
+    const task=line.match(/^[-*+]\s+\[([ xX])\]\s+(.+)$/);
+    const bullet=line.match(/^[-*+]\s+(.+)$/);
+    const ordered=line.match(/^\d+[.)]\s+(.+)$/);
+    if(task||bullet||ordered) {
+      const orderedList=Boolean(ordered),tag=orderedList?"ol":"ul",items=[];
+      while(index<lines.length) {
+        const current=lines[index];
+        const currentTask=current.match(/^[-*+]\s+\[([ xX])\]\s+(.+)$/);
+        const currentBullet=current.match(/^[-*+]\s+(.+)$/);
+        const currentOrdered=current.match(/^\d+[.)]\s+(.+)$/);
+        if(orderedList&&!currentOrdered)break;
+        if(!orderedList&&!currentTask&&!currentBullet)break;
+        if(currentTask)items.push(`<li class="${currentTask[1].trim()?"checked":""}"><span>${currentTask[1].trim()?"☑":"☐"}</span>${markdownInline(currentTask[2])}</li>`);
+        else items.push(`<li>${markdownInline((currentOrdered||currentBullet)[1])}</li>`);
+        index+=1;
+      }
+      html+=`<${tag}${!orderedList&&items.some(item=>item.includes("<span>☐")||item.includes("<span>☑"))?' class="markdown-task-list"':""}>${items.join("")}</${tag}>`;
+      continue;
+    }
+    const paragraph=[line];index+=1;
+    while(index<lines.length&&!markdownLineStartsBlock(lines,index))paragraph.push(lines[index++]);
+    html+=`<p>${paragraph.map(markdownInline).join(" ")}</p>`;
+  }
+  return sanitizeNoteHtml(html);
+}
+
+function richHtmlToMarkdown(value) {
+  const container=document.createElement("div");
+  container.innerHTML=sanitizeNoteHtml(value);
+  const render=(node,depth=0)=>{
+    if(node.nodeType===Node.TEXT_NODE)return String(node.nodeValue||"").replace(/\u00a0/g," ");
+    if(node.nodeType!==Node.ELEMENT_NODE)return "";
+    const tag=node.tagName;
+    const children=()=>[...node.childNodes].map(child=>render(child,depth)).join("");
+    if(tag==="BR")return "\n";
+    if(["B","STRONG"].includes(tag))return `**${children()}**`;
+    if(["I","EM"].includes(tag))return `*${children()}*`;
+    if(["S","STRIKE","DEL"].includes(tag))return `~~${children()}~~`;
+    if(tag==="CODE"&&node.parentElement?.tagName!=="PRE")return `\`${children().replaceAll("`","\\`")}\``;
+    if(tag==="PRE")return `\n\`\`\`\n${node.textContent||""}\n\`\`\`\n\n`;
+    if(/^H[1-6]$/.test(tag))return `${"#".repeat(Number(tag.slice(1)))} ${children().trim()}\n\n`;
+    if(tag==="P")return `${children().trim()}\n\n`;
+    if(tag==="BLOCKQUOTE")return `${children().trim().split("\n").map(line=>`> ${line}`).join("\n")}\n\n`;
+    if(tag==="HR")return "---\n\n";
+    if(tag==="A") {
+      const href=safeNoteHref(node.getAttribute("href"));
+      return href?`[${children()}](${href})`:children();
+    }
+    if(tag==="DIV"&&node.classList.contains("note-check-item")) {
+      const checked=node.querySelector(".note-check-circle")?.textContent==="●";
+      const text=[...node.childNodes].filter(child=>!(child.nodeType===Node.ELEMENT_NODE&&child.classList?.contains("note-check-circle"))).map(child=>render(child,depth)).join("").trim();
+      return `- [${checked?"x":" "}] ${text}\n`;
+    }
+    if(tag==="UL"||tag==="OL") {
+      const ordered=tag==="OL";
+      return [...node.children].filter(child=>child.tagName==="LI").map((item,itemIndex)=>{
+        const prefix=ordered?`${itemIndex+1}. `:"- ";
+        return `${"  ".repeat(depth)}${prefix}${[...item.childNodes].map(child=>render(child,depth+1)).join("").trim()}`;
+      }).join("\n")+"\n\n";
+    }
+    if(tag==="LI")return children();
+    if(tag==="TABLE") {
+      const rows=[...node.querySelectorAll("tr")].map(row=>[...row.children].filter(cell=>["TH","TD"].includes(cell.tagName)).map(cell=>(cell.textContent||"").trim().replaceAll("|","\\|")));
+      if(!rows.length)return "";
+      const width=Math.max(...rows.map(row=>row.length));
+      const normalized=rows.map(row=>Array.from({length:width},(_,index)=>row[index]||""));
+      return `| ${normalized[0].join(" | ")} |\n| ${Array(width).fill("---").join(" | ")} |\n${normalized.slice(1).map(row=>`| ${row.join(" | ")} |`).join("\n")}\n\n`;
+    }
+    if(tag==="DIV")return `${children().trim()}\n`;
+    return children();
+  };
+  return [...container.childNodes].map(node=>render(node)).join("").replace(/\n{3,}/g,"\n\n").trim();
+}
+
+function ensureNoteFolders() {
+  state.personal.notesFolders ||= [];
+  state.personal.noteTombstones ||= [];
+  state.personal.noteFolderTombstones ||= [];
+  if(!state.personal.notesFolders.some(folder=>folder.id==="notes-default")) {
+    const createdAt=new Date().toISOString();
+    state.personal.notesFolders.unshift({id:"notes-default",name:"Notes",createdAt,updatedAt:createdAt});
+  }
+  (state.personal.notes||[]).forEach(note=>{note.folderId ||= "notes-default";normalizeNote(note);});
+}
+
+function activeNoteFolders() {
+  const deletedIds=new Set((state.personal.noteFolderTombstones||[]).map(item=>item.id));
+  return (state.personal.notesFolders||[]).filter(folder=>!folder.deletedAt&&!deletedIds.has(folder.id));
+}
+
+function selectedNotesFolderName() {
+  if(state.selectedNoteFolderId==="all") return "All iCloud";
+  return activeNoteFolders().find(folder=>folder.id===state.selectedNoteFolderId)?.name||"Notes";
+}
+
+function createNotesFolder() {
+  const name=window.prompt("New folder name"); if(!name?.trim())return;
+  const createdAt=new Date().toISOString();
+  const folder={id:`notes-folder-${Date.now()}`,name:name.trim(),createdAt,updatedAt:createdAt};
+  state.personal.notesFolders.push(folder);state.selectedNoteFolderId=folder.id;saveNotes(false,true);renderNotes();
+}
+
+function deleteNotesFolder(id) {
+  if(id==="notes-default")return;
+  const folder=state.personal.notesFolders.find(item=>item.id===id);if(!folder)return;
+  const deletedAt=new Date().toISOString();
+  state.personal.notes.forEach(note=>{if(note.folderId===id){note.folderId="notes-default";note.updatedAt=deletedAt;}});
+  state.personal.noteFolderTombstones=(state.personal.noteFolderTombstones||[]).filter(item=>item.id!==id);
+  state.personal.noteFolderTombstones.push({id,name:folder.name||"",deletedAt,updatedAt:deletedAt});
+  state.personal.notesFolders=state.personal.notesFolders.filter(folder=>folder.id!==id);
+  if(state.selectedNoteFolderId===id)state.selectedNoteFolderId="all";
+  saveNotes(false,true);renderNotes();
+}
+
+function renameNotesFolder(id) {
+  const folder=state.personal.notesFolders.find(item=>item.id===id);if(!folder)return;
+  const name=window.prompt("Rename folder",folder.name);if(!name?.trim())return;
+  folder.name=name.trim();folder.updatedAt=new Date().toISOString();saveNotes(false,true);renderNotes();
+}
+
+function setNoteEditorMode(mode) {
+  const note=state.personal.notes.find(item=>item.id===state.selectedNoteId);if(!note)return;
+  const currentFormat=noteCanonicalFormat(note);
+  if(mode==="preview") {
+    state.noteEditorMode="preview";
+    renderNoteEditorMode(note);
+    return;
+  }
+  if(mode!==currentFormat) {
+    syncCurrentNoteEditor(note);
+    if(mode==="markdown") {
+      note.markdownBody=richHtmlToMarkdown(note.contentHtml||escapeHtml(note.body||"").replaceAll("\n","<br>"));
+      note.contentHtml="";
+      note.body=markdownToPlainText(note.markdownBody);
+    } else {
+      note.contentHtml=markdownToHtml(note.markdownBody||"");
+      note.markdownBody="";
+      note.body=notePlainTextFromHtml(note.contentHtml);
+    }
+    note.format=mode;
+    note.editorMode=mode;
+    note.updatedAt=new Date().toISOString();
+    state.noteEditorMode=mode;
+    renderNoteEditorMode(note);
+    saveNotes(false,false);
+    return;
+  }
+  state.noteEditorMode=mode;
+  renderNoteEditorMode(note);
+}
+
+function renderNoteEditorMode(note) {
+  const format=noteCanonicalFormat(note);
+  const mode=state.noteEditorMode==="preview"?"preview":format;
+  $("noteRichModeButton").classList.toggle("active",mode==="rich");
+  $("noteMarkdownModeButton").classList.toggle("active",mode==="markdown");
+  $("notePreviewModeButton").classList.toggle("active",mode==="preview");
+  $("noteBodyInput").classList.toggle("hidden",mode!=="rich");
+  $("noteMarkdownInput").classList.toggle("hidden",mode!=="markdown");
+  $("noteMarkdownPreview").classList.toggle("hidden",mode!=="preview");
+  document.querySelector(".notes-format-toolbar")?.classList.toggle("hidden",mode!=="rich");
+  $("noteMarkdownInput").value=note.markdownBody||"";
+  if(mode==="rich")$("noteBodyInput").innerHTML=sanitizeNoteHtml(note.contentHtml||escapeHtml(note.body||"").replaceAll("\n","<br>"));
+  if(mode==="preview")$("noteMarkdownPreview").innerHTML=format==="markdown"?markdownToHtml(note.markdownBody||""):sanitizeNoteHtml(note.contentHtml||"");
 }
 
 function toggleCurrentNotePin() {
@@ -2355,7 +2795,7 @@ function toggleCurrentNotePin() {
   if (!note) return;
   note.pinned = !note.pinned;
   note.updatedAt = new Date().toISOString();
-  savePersonal(false);
+  saveNotes(false, true);
 }
 
 function rememberNoteSelection() {
@@ -2400,9 +2840,12 @@ function addNoteLink() {
 
 function renderNotes() {
   if (!$("notesList") || !state.personal) return;
-  const allNotes = state.personal.notes || [];
+  ensureNoteFolders();
+  const deletedNoteIds=new Set((state.personal.noteTombstones||[]).map(item=>item.id));
+  const allNotes = (state.personal.notes || []).filter(note=>!note.deletedAt&&!deletedNoteIds.has(note.id));
   const query = state.notesSearch.trim().toLowerCase();
   const notes = [...allNotes]
+    .filter(note=>state.selectedNoteFolderId==="all"||note.folderId===state.selectedNoteFolderId)
     .filter((note) => !query || `${note.title || ""} ${note.body || ""}`.toLowerCase().includes(query))
     .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned))
       || String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
@@ -2416,6 +2859,9 @@ function renderNotes() {
       <p>${escapeHtml((note.body || "No additional text").replace(/\s+/g, " ").slice(0, 110))}</p>
     </button>
   `).join("") : `<div class="notes-empty">${query ? "No matching notes." : "No notes yet."}</div>`;
+  $("notesCurrentFolderTitle").textContent=selectedNotesFolderName();
+  const folderRows=[{id:"all",name:"All iCloud",system:true},...activeNoteFolders()];
+  $("notesFolderList").innerHTML=folderRows.map(folder=>{const count=folder.id==="all"?allNotes.length:allNotes.filter(note=>note.folderId===folder.id).length;return `<article class="${state.selectedNoteFolderId===folder.id?"active":""}"><button type="button" data-select-notes-folder="${escapeHtml(folder.id)}"><span>📁</span><strong>${escapeHtml(folder.name)}</strong><b>${count}</b></button>${folder.id!=="all"&&folder.id!=="notes-default"?`<div><button data-rename-notes-folder="${escapeHtml(folder.id)}" aria-label="Rename folder">✎</button><button data-delete-notes-folder="${escapeHtml(folder.id)}" aria-label="Delete folder">×</button></div>`:""}</article>`;}).join("");
 
   const selected = allNotes.find((note) => note.id === state.selectedNoteId);
   $("noteEmptyState").classList.toggle("hidden", Boolean(selected));
@@ -2428,9 +2874,13 @@ function renderNotes() {
   if (selected) {
     $("noteTitleInput").value = selected.title || "";
     $("noteEditedMeta").textContent = `Edited ${formatNoteDate(selected.updatedAt || selected.createdAt)}`;
-    const fallbackHtml = escapeHtml(selected.body || "").replaceAll("\n", "<br>");
-    $("noteBodyInput").innerHTML = sanitizeNoteHtml(selected.contentHtml || fallbackHtml);
+    state.noteEditorMode=noteCanonicalFormat(selected);
+    renderNoteEditorMode(selected);
+    $("noteFolderSelect").innerHTML=activeNoteFolders().map(folder=>`<option value="${escapeHtml(folder.id)}" ${selected.folderId===folder.id?"selected":""}>${escapeHtml(folder.name)}</option>`).join("");
   }
+  document.querySelectorAll("[data-select-notes-folder]").forEach(button=>button.addEventListener("click",()=>{state.selectedNoteFolderId=button.dataset.selectNotesFolder;state.selectedNoteId=null;$("notesBoard").classList.remove("show-folders");renderNotes();}));
+  document.querySelectorAll("[data-rename-notes-folder]").forEach(button=>button.addEventListener("click",()=>renameNotesFolder(button.dataset.renameNotesFolder)));
+  document.querySelectorAll("[data-delete-notes-folder]").forEach(button=>button.addEventListener("click",()=>deleteNotesFolder(button.dataset.deleteNotesFolder)));
   document.querySelectorAll("[data-note-id]").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedNoteId = button.dataset.noteId;
@@ -2439,6 +2889,35 @@ function renderNotes() {
       $("notesBoard").classList.add("editing-note");
     });
   });
+}
+
+async function refreshNotesAcrossDevices() {
+  if(
+    !state.personal
+    || state.notesOfflineSavePending
+    || state.notesDirtyGeneration
+    || state.noteSaveTimer
+    || state.noteSavesInFlight
+  )return;
+  const active=document.activeElement;
+  if(active===$("noteTitleInput")||active===$("noteBodyInput")||active===$("noteMarkdownInput"))return;
+  const refreshGeneration=++state.notesRefreshGeneration;
+  const saveGeneration=state.noteSaveGeneration;
+  try {
+    const remote=await getJson(`/api/notes?notesSync=${Date.now()}`);
+    if(
+      refreshGeneration!==state.notesRefreshGeneration
+      || saveGeneration!==state.noteSaveGeneration
+      || state.notesDirtyGeneration
+      || state.noteSaveTimer
+      || state.noteSavesInFlight
+    )return;
+    ["notes","notesFolders","noteTombstones","noteFolderTombstones"].forEach(field=>{
+      if(Array.isArray(remote[field]))state.personal[field]=remote[field];
+    });
+    localStorage.setItem("kumarPersonalOffline",JSON.stringify(state.personal));
+    if(state.activeView==="notes")renderNotes();
+  } catch {}
 }
 
 function nextRecurringValue(value, recurrence) {
@@ -2836,10 +3315,13 @@ async function loadReminderStatus() {
   const installed = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
   const permission = "Notification" in window ? Notification.permission : "unsupported";
   const ready = state.reminderConfig.configured && permission === "granted";
+  let diagnostics=null;
+  if(ready){try{diagnostics=await getJson("/api/push/diagnostics");}catch{}}
   $("enableRemindersButton").textContent = ready ? "Send test" : "Enable reminders";
   $("reminderStatus").className = `reminder-status ${ready ? "ready" : ""}`;
+  const nextReminder=diagnostics?.nextCalendarReminders?.[0];
   $("reminderStatus").innerHTML = ready
-    ? `<strong>Reminders are on</strong><span>Calendar work, quant practice, skin care, workouts, and contests can reach this iPhone while the app is closed.</span>`
+    ? `<strong>${diagnostics?.subscriptionCount ? "Reminders are on" : "Reconnect this device"}</strong><span>${nextReminder?`Next: ${escapeHtml(nextReminder.title)} · ${escapeHtml(formatLocalDateTime(nextReminder.reminderAt))}`:"Calendar work, quant practice, skin care, workouts, and contests can reach this device while the app is closed."}${diagnostics?.scheduler&&!diagnostics.scheduler.ok?` · Scheduler error: ${escapeHtml(diagnostics.scheduler.error||"unknown")}`:""}</span>`
     : `<strong>${installed ? "Turn on notifications" : "Install on your Home Screen first"}</strong><span>${escapeHtml(state.reminderConfig.message || "Tap Enable reminders after opening the installed app.")}</span>`;
 }
 
@@ -3723,6 +4205,383 @@ function answerSequence(value, button) {
   setTimeout(newSequencePuzzle, 900);
 }
 
+function randomBetween(min,max) { return min+Math.floor(Math.random()*(max-min+1)); }
+
+function tradingId(type) {
+  const suffix=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `arcade-${type}-${suffix}`;
+}
+
+function clampScore(value) {
+  return Math.max(0,Math.min(100,Number.isFinite(value)?value:0));
+}
+
+function recordArcadeSession(gameType,score,metrics={},options={}) {
+  state.personal.arcadeSessions ||= [];
+  const id=options.sessionId||tradingId(gameType);
+  if(state.personal.arcadeSessions.some(session=>session.id===id)) return false;
+  const safeScore=clampScore(score),xp=Math.max(2,Math.round(safeScore/10));
+  state.personal.arcadeSessions.unshift({
+    id,
+    gameType,
+    score:Math.round(safeScore),
+    xp,
+    rounds:Math.max(1,Number(options.rounds)||1),
+    startedAt:options.startedAt||new Date().toISOString(),
+    completedAt:new Date().toISOString(),
+    metrics
+  });
+  state.personal.arcadeSessions=state.personal.arcadeSessions.slice(0,250);
+  addBrainXp(xp);
+  savePersonal(true,false);
+  return true;
+}
+
+function optimalContinuationValue(remaining,cost) {
+  let value=50.5;
+  for(let step=1;step<remaining;step+=1) value=Array.from({length:100},(_,i)=>Math.max(i+1,value-cost)).reduce((a,b)=>a+b,0)/100;
+  return value-cost;
+}
+
+function createRiskSession() {
+  return {
+    id:tradingId("risk-session"),
+    startedAt:new Date().toISOString(),
+    totalDeals:12,
+    bankroll:1000,
+    peakBankroll:1000,
+    maxDrawdown:0,
+    maxDrawdownPct:0,
+    deals:[],
+    completed:false
+  };
+}
+
+function createCalibrationSession() {
+  return {
+    id:tradingId("calibration-session"),
+    startedAt:new Date().toISOString(),
+    totalEvents:10,
+    forecasts:[],
+    completed:false
+  };
+}
+
+function newTradingScenario(type=state.activeTradingGame) {
+  const startedAt=new Date().toISOString();
+  let scenario;
+  if(type==="risk") {
+    if(!state.riskSession||state.riskSession.completed) state.riskSession=createRiskSession();
+    const session=state.riskSession;
+    const p=randomBetween(25,78)/100,multiple=randomBetween(7,35)/10;
+    scenario={
+      id:tradingId(type),
+      type,
+      startedAt,
+      answered:false,
+      round:session.deals.length+1,
+      p,
+      multiple,
+      ev:p*multiple-(1-p),
+      kelly:Math.max(0,(p*multiple-(1-p))/multiple)
+    };
+  } else if(type==="calibration") {
+    if(!state.calibrationSession||state.calibrationSession.completed) state.calibrationSession=createCalibrationSession();
+    const session=state.calibrationSession,dice=randomBetween(1,6),target=randomBetween(1,6);
+    scenario={
+      id:tradingId(type),
+      type,
+      startedAt,
+      answered:false,
+      round:session.forecasts.length+1,
+      dice,
+      target,
+      probability:1-Math.pow(5/6,dice)
+    };
+  } else {
+    state.tradingRounds[type]=(state.tradingRounds[type]||0)+1;
+    if(type==="market") {
+      const dice=randomBetween(2,4),sides=[6,8,10][randomBetween(0,2)],multiplier=[5,10][randomBetween(0,1)];
+      scenario={
+        id:tradingId(type),
+        type,
+        startedAt,
+        answered:false,
+        round:state.tradingRounds[type],
+        dice,
+        sides,
+        multiplier,
+        fair:dice*(sides+1)/2*multiplier
+      };
+    } else {
+      const current=randomBetween(1,100),remaining=randomBetween(1,3),cost=randomBetween(2,8);
+      scenario={
+        id:tradingId(type),
+        type,
+        startedAt,
+        answered:false,
+        round:state.tradingRounds[type],
+        current,
+        remaining,
+        initialRedraws:remaining,
+        cost,
+        totalCost:0,
+        decisions:[],
+        continuation:optimalContinuationValue(remaining,cost)
+      };
+    }
+  }
+  state.tradingScenarios[type]=scenario;
+  state.tradingScenario=scenario;
+  renderTradingGame();
+}
+
+function lockedAttribute(s) {
+  return s.answered?" disabled":"";
+}
+
+function marketGameMarkup(s) {
+  const locked=lockedAttribute(s);
+  return `<div class="trading-scenario"><span class="lab-kicker">MARKET MAKING · ROUND ${s.round}</span><h3>Quote this contract</h3><p>Settlement equals <strong>${s.multiplier} × the sum of ${s.dice} independent d${s.sides} dice</strong>. Prices trade in 0.5-point ticks and the spread must be at least 0.5.</p><div class="quote-entry"><label>Bid<input id="marketBidInput" type="number" step=".5" inputmode="decimal" required${locked}></label><span>—</span><label>Ask<input id="marketAskInput" type="number" step=".5" inputmode="decimal" required${locked}></label></div><button id="submitMarketQuote" class="lab-action" type="button"${locked}>Send two-sided market</button><div id="tradingFeedback" aria-live="polite">${s.feedbackHtml||""}</div></div><aside class="lab-principle"><strong>What this trains</strong><p>Fair-value estimation, spread discipline, adverse selection, and making a tradable market under uncertainty.</p></aside>`;
+}
+
+function riskGameMarkup(s) {
+  const session=state.riskSession,locked=lockedAttribute(s);
+  const drawdown=(session?.maxDrawdownPct||0)*100;
+  return `<div class="trading-scenario"><span class="lab-kicker">POSITION SIZING · DEAL ${s.round} OF ${session.totalDeals}</span><h3>Size the risk, not the excitement</h3><p>A bet wins <strong>${s.multiple.toFixed(1)}× profit</strong> with probability <strong>${Math.round(s.p*100)}%</strong>; otherwise the stake is lost.</p><div class="lab-session-stats"><span><strong>₹${Math.round(session.bankroll)}</strong> bankroll</span><span><strong>${drawdown.toFixed(1)}%</strong> max drawdown</span></div><label class="risk-slider">Stake <strong id="riskStakeValue">0%</strong><input id="riskStakeInput" type="range" min="0" max="25" value="0"${locked}></label><button id="submitRiskStake" class="lab-action" type="button"${locked}>Lock decision</button><div id="tradingFeedback" aria-live="polite">${s.feedbackHtml||""}</div></div><aside class="lab-principle"><strong>Scoring</strong><p>Decision quality is scored against capped Kelly sizing. Bankroll and drawdown track luck separately across all 12 deals.</p></aside>`;
+}
+
+function calibrationGameMarkup(s) {
+  const session=state.calibrationSession,locked=lockedAttribute(s);
+  return `<div class="trading-scenario"><span class="lab-kicker">PROBABILITY CALIBRATION · EVENT ${s.round} OF ${session.totalEvents}</span><h3>Forecast before reality answers</h3><p>What is the probability of seeing <strong>at least one ${s.target}</strong> when rolling ${s.dice} fair six-sided ${s.dice===1?"die":"dice"}?</p><div class="probability-entry"><input id="calibrationInput" type="number" min="0" max="100" step=".1" inputmode="decimal" placeholder="Probability" required${locked}><span>%</span></div><button id="submitCalibration" class="lab-action" type="button"${locked}>Submit forecast</button><div id="tradingFeedback" aria-live="polite">${s.feedbackHtml||""}</div></div><aside class="lab-principle"><strong>Interview habit</strong><p>Ten resolved forecasts produce both probability-estimation accuracy and a proper Brier score.</p></aside>`;
+}
+
+function stoppingGameMarkup(s) {
+  const locked=lockedAttribute(s),decision=s.decisions.length+1;
+  return `<div class="trading-scenario"><span class="lab-kicker">OPTIMAL STOPPING · ROUND ${s.round} · DECISION ${decision}</span><h3>Take ${s.current}, or pay ${s.cost} to redraw?</h3><p>You have <strong>${s.remaining} redraw${s.remaining===1?"":"s"}</strong> remaining. Every new offer is uniformly drawn from 1–100. You have spent ${s.totalCost} so far.</p><div class="stop-actions"><button data-stop-choice="take" data-stop-step="${s.decisions.length}" type="button"${locked}>Take ${s.current}</button><button data-stop-choice="redraw" data-stop-step="${s.decisions.length}" type="button"${locked}>Pay ${s.cost} & redraw</button></div><div id="tradingFeedback" aria-live="polite">${s.feedbackHtml||""}</div></div><aside class="lab-principle"><strong>What matters</strong><p>Compare the offer to continuation value. Redraws continue until you take an offer or exhaust the available draws.</p></aside>`;
+}
+
+function showTradingFeedback(html) {
+  if(!state.tradingScenario) return;
+  state.tradingScenario.feedbackHtml=html;
+  if($("tradingFeedback")) $("tradingFeedback").innerHTML=html;
+  wireTradingFeedback();
+}
+
+function disableTradingControls() {
+  document.querySelectorAll("#tradingGameStage input, #tradingGameStage .lab-action, #tradingGameStage [data-stop-choice]").forEach(control=>{control.disabled=true;});
+}
+
+function halfTick(value) {
+  return Math.abs(value*2-Math.round(value*2))<1e-8;
+}
+
+function answerMarketGame() {
+  const s=state.tradingScenario;
+  if(!s||s.type!=="market"||s.answered) return;
+  const bidRaw=$("marketBidInput")?.value.trim()||"",askRaw=$("marketAskInput")?.value.trim()||"";
+  const bid=Number(bidRaw),ask=Number(askRaw),width=ask-bid;
+  if(!bidRaw||!askRaw||!Number.isFinite(bid)||!Number.isFinite(ask)) {
+    showTradingFeedback(`<p class="lab-error">Enter both a numeric bid and ask.</p>`);
+    return;
+  }
+  if(!halfTick(bid)||!halfTick(ask)) {
+    showTradingFeedback(`<p class="lab-error">Bid and ask must use 0.5-point ticks.</p>`);
+    return;
+  }
+  if(bid>=ask||width<.5) {
+    showTradingFeedback(`<p class="lab-error">A valid market needs bid &lt; ask and a spread of at least 0.5.</p>`);
+    return;
+  }
+  s.answered=true;
+  disableTradingControls();
+  const rolls=Array.from({length:s.dice},()=>randomBetween(1,s.sides));
+  const settlement=rolls.reduce((sum,value)=>sum+value,0)*s.multiplier;
+  const clientValue=s.fair+(settlement-s.fair)*.65+randomBetween(-10,10);
+  const mid=(bid+ask)/2,midError=Math.abs(mid-s.fair);
+  let trade="No trade",pnl=0;
+  if(clientValue>ask) {
+    trade=`Client bought at ${ask}`;
+    pnl=ask-settlement;
+  } else if(clientValue<bid) {
+    trade=`Client sold at ${bid}`;
+    pnl=settlement-bid;
+  }
+  const score=clampScore(100-midError*2.2-width*.8);
+  recordArcadeSession("market",score,{fair:s.fair,bid,ask,spread:width,midError,rolls,settlement,trade,pnl},{sessionId:s.id,startedAt:s.startedAt});
+  showTradingFeedback(`<div class="lab-result"><strong>Settlement: ${settlement.toFixed(1)}</strong><span>Rolls ${rolls.join(" + ")} · fair value ${s.fair.toFixed(1)}</span><span>${trade} · realized P&amp;L ${pnl>=0?"+":""}${pnl.toFixed(1)}</span><p>Mid error ${midError.toFixed(1)}; spread ${width.toFixed(1)}. Decision score ${Math.round(score)}/100.</p><button data-next-trading type="button">Next market →</button></div>`);
+}
+
+function answerRiskGame() {
+  const s=state.tradingScenario,session=state.riskSession;
+  if(!s||s.type!=="risk"||s.answered||!session||session.completed) return;
+  const stake=Number($("riskStakeInput")?.value)/100;
+  if(!Number.isFinite(stake)||stake<0||stake>.25) {
+    showTradingFeedback(`<p class="lab-error">Choose a stake between 0% and 25%.</p>`);
+    return;
+  }
+  s.answered=true;
+  disableTradingControls();
+  const opt=Math.min(.25,s.kelly),won=Math.random()<s.p;
+  const score=clampScore(100-Math.abs(stake-opt)*400);
+  const bankrollBefore=session.bankroll;
+  const amount=bankrollBefore*stake;
+  const outcome=won?amount*s.multiple:-amount;
+  session.bankroll=Math.max(0,bankrollBefore+outcome);
+  session.peakBankroll=Math.max(session.peakBankroll,session.bankroll);
+  const currentDrawdown=session.peakBankroll-session.bankroll;
+  const currentDrawdownPct=session.peakBankroll?currentDrawdown/session.peakBankroll:0;
+  session.maxDrawdown=Math.max(session.maxDrawdown,currentDrawdown);
+  session.maxDrawdownPct=Math.max(session.maxDrawdownPct,currentDrawdownPct);
+  session.deals.push({
+    probability:s.p,
+    multiple:s.multiple,
+    ev:s.ev,
+    stake,
+    optimal:opt,
+    score,
+    won,
+    outcome,
+    bankrollBefore,
+    bankrollAfter:session.bankroll
+  });
+  const complete=session.deals.length>=session.totalDeals;
+  session.completed=complete;
+  if(complete) {
+    const decisionScore=session.deals.reduce((sum,deal)=>sum+deal.score,0)/session.deals.length;
+    const returnPct=(session.bankroll/1000-1)*100;
+    const drawdownPct=session.maxDrawdownPct*100;
+    recordArcadeSession("risk",decisionScore,{
+      startingBankroll:1000,
+      endingBankroll:session.bankroll,
+      peakBankroll:session.peakBankroll,
+      returnPct,
+      maxDrawdown:session.maxDrawdown,
+      maxDrawdownPct:drawdownPct,
+      decisionScore,
+      deals:session.deals
+    },{sessionId:session.id,startedAt:session.startedAt,rounds:session.deals.length});
+    showTradingFeedback(`<div class="lab-result"><strong>12-deal session complete · ₹${Math.round(session.bankroll)}</strong><span>Return ${returnPct>=0?"+":""}${returnPct.toFixed(1)}% · max drawdown ${drawdownPct.toFixed(1)}%</span><p>Decision score ${Math.round(decisionScore)}/100. This score measures sizing quality; bankroll shows the luck you experienced.</p><button data-next-trading type="button">Start another session →</button></div>`);
+    return;
+  }
+  showTradingFeedback(`<div class="lab-result"><strong>EV per ₹1: ${s.ev>=0?"+":""}${s.ev.toFixed(2)}</strong><span>Capped Kelly ${Math.round(opt*100)}% · outcome ${outcome>=0?"+":""}₹${Math.round(outcome)} · bankroll ₹${Math.round(session.bankroll)}</span><p>Decision score ${Math.round(score)}/100. ${s.ev<0?"Passing was the disciplined trade.":"Size follows edge; it does not create edge."}</p><button data-next-trading type="button">Next deal →</button></div>`);
+}
+
+function answerCalibrationGame() {
+  const s=state.tradingScenario,session=state.calibrationSession;
+  if(!s||s.type!=="calibration"||s.answered||!session||session.completed) return;
+  const raw=$("calibrationInput")?.value.trim()||"",forecast=Number(raw)/100;
+  if(!raw||!Number.isFinite(forecast)||forecast<0||forecast>1) {
+    showTradingFeedback(`<p class="lab-error">Enter a probability from 0% to 100%.</p>`);
+    return;
+  }
+  s.answered=true;
+  disableTradingControls();
+  const rolls=Array.from({length:s.dice},()=>randomBetween(1,6));
+  const outcome=rolls.includes(s.target)?1:0;
+  const error=Math.abs(forecast-s.probability);
+  const brier=(forecast-outcome)**2;
+  const score=clampScore(100-error*200);
+  session.forecasts.push({forecast,trueProbability:s.probability,outcome,brier,error,rolls,target:s.target,score});
+  const complete=session.forecasts.length>=session.totalEvents;
+  session.completed=complete;
+  if(complete) {
+    const meanError=session.forecasts.reduce((sum,item)=>sum+item.error,0)/session.forecasts.length;
+    const meanBrier=session.forecasts.reduce((sum,item)=>sum+item.brier,0)/session.forecasts.length;
+    const decisionScore=session.forecasts.reduce((sum,item)=>sum+item.score,0)/session.forecasts.length;
+    recordArcadeSession("calibration",decisionScore,{
+      meanAbsoluteError:meanError,
+      brierScore:meanBrier,
+      forecasts:session.forecasts
+    },{sessionId:session.id,startedAt:session.startedAt,rounds:session.forecasts.length});
+    showTradingFeedback(`<div class="lab-result"><strong>Calibration set complete · Brier ${meanBrier.toFixed(3)}</strong><span>Mean probability error ${(meanError*100).toFixed(1)} points</span><p>Estimation score ${Math.round(decisionScore)}/100. Lower Brier scores are better and reward probabilities that match resolved outcomes.</p><button data-next-trading type="button">Start another set →</button></div>`);
+    return;
+  }
+  showTradingFeedback(`<div class="lab-result"><strong>Exact probability: ${(s.probability*100).toFixed(1)}%</strong><span>Rolls ${rolls.join(", ")} · event ${outcome?"occurred":"did not occur"} · Brier ${brier.toFixed(3)}</span><p>Use 1 − (5/6)<sup>${s.dice}</sup>. Absolute error ${(error*100).toFixed(1)} points · score ${Math.round(score)}/100.</p><button data-next-trading type="button">Next forecast →</button></div>`);
+}
+
+function stoppingDecisionScore(current,continuation,choice) {
+  const optimal=current>=continuation?"take":"redraw";
+  return {optimal,score:choice===optimal?100:clampScore(100-Math.abs(current-continuation)*6)};
+}
+
+function finishStoppingGame(s,reason) {
+  s.answered=true;
+  disableTradingControls();
+  const score=s.decisions.length?s.decisions.reduce((sum,item)=>sum+item.score,0)/s.decisions.length:100;
+  const realized=s.current-s.totalCost;
+  recordArcadeSession("stopping",score,{
+    initialRedraws:s.initialRedraws,
+    costPerRedraw:s.cost,
+    totalCost:s.totalCost,
+    acceptedOffer:s.current,
+    realized,
+    decisions:s.decisions,
+    finishReason:reason
+  },{sessionId:s.id,startedAt:s.startedAt,rounds:Math.max(1,s.decisions.length)});
+  showTradingFeedback(`<div class="lab-result"><strong>${reason==="take"?"Offer accepted":"No redraws left"} · net ${realized}</strong><span>Offer ${s.current} − costs ${s.totalCost}</span><p>Decision score ${Math.round(score)}/100 across ${s.decisions.length} choice${s.decisions.length===1?"":"s"}. Outcome luck does not change the decision score.</p><button data-next-trading type="button">New stopping round →</button></div>`);
+}
+
+function answerStoppingGame(choice,expectedStep) {
+  const s=state.tradingScenario;
+  if(!s||s.type!=="stopping"||s.answered||!["take","redraw"].includes(choice)||Number(expectedStep)!==s.decisions.length) return;
+  const {optimal,score}=stoppingDecisionScore(s.current,s.continuation,choice);
+  s.decisions.push({
+    choice,
+    optimal,
+    score,
+    offer:s.current,
+    continuation:s.continuation,
+    remainingBefore:s.remaining
+  });
+  if(choice==="take") {
+    finishStoppingGame(s,"take");
+    return;
+  }
+  s.totalCost+=s.cost;
+  s.remaining-=1;
+  s.current=randomBetween(1,100);
+  if(s.remaining<=0) {
+    finishStoppingGame(s,"exhausted");
+    return;
+  }
+  s.continuation=optimalContinuationValue(s.remaining,s.cost);
+  s.feedbackHtml="";
+  state.tradingScenarios.stopping=s;
+  renderTradingGame();
+}
+
+function wireTradingFeedback() {
+  const button=document.querySelector("[data-next-trading]");
+  const scenarioId=state.tradingScenario?.id;
+  button?.addEventListener("click",()=>{
+    const current=state.tradingScenarios[state.activeTradingGame];
+    if(!current?.answered||current.id!==scenarioId) return;
+    button.disabled=true;
+    newTradingScenario(state.activeTradingGame);
+  });
+}
+
+function renderTradingGame() {
+  if(!$("tradingGameStage"))return;
+  const sessions=state.personal?.arcadeSessions||[],recent=sessions.slice(0,20);
+  $("tradingLabScore").innerHTML=`<strong>${recent.length?Math.round(recent.reduce((sum,x)=>sum+Number(x.score||0),0)/recent.length):"—"}</strong><span>decision rating</span>`;
+  document.querySelectorAll("[data-trading-game]").forEach(button=>button.classList.toggle("active",button.dataset.tradingGame===state.activeTradingGame));
+  state.tradingScenario=state.tradingScenarios[state.activeTradingGame]||null;
+  if(!state.tradingScenario) {
+    newTradingScenario(state.activeTradingGame);
+    return;
+  }
+  const s=state.tradingScenario;
+  $("tradingGameStage").innerHTML=s.type==="market"?marketGameMarkup(s):s.type==="risk"?riskGameMarkup(s):s.type==="calibration"?calibrationGameMarkup(s):stoppingGameMarkup(s);
+  $("submitMarketQuote")?.addEventListener("click",answerMarketGame);
+  $("submitRiskStake")?.addEventListener("click",answerRiskGame);
+  $("submitCalibration")?.addEventListener("click",answerCalibrationGame);
+  $("riskStakeInput")?.addEventListener("input",()=>{$("riskStakeValue").textContent=`${$("riskStakeInput").value}%`;});
+  document.querySelectorAll("[data-stop-choice]").forEach(button=>button.addEventListener("click",()=>answerStoppingGame(button.dataset.stopChoice,button.dataset.stopStep)));
+  wireTradingFeedback();
+}
+
 function renderArcade() {
   if (!$("memoryGrid")) return;
   renderBrainEnergy();
@@ -3730,6 +4589,7 @@ function renderArcade() {
   $("mathScore").textContent = state.mathScore;
   $("sequenceScore").textContent = state.sequenceStreak;
   if (state.sequenceAnswer === null) newSequencePuzzle();
+  renderTradingGame();
 }
 
 function renderAll() {
@@ -3771,6 +4631,7 @@ function wireEvents() {
   $("mathStartButton").addEventListener("click", startMathGame);
   $("mathAnswerForm").addEventListener("submit", submitMathAnswer);
   $("sequenceNewButton").addEventListener("click", newSequencePuzzle);
+  document.querySelectorAll("[data-trading-game]").forEach(button=>button.addEventListener("click",()=>{state.activeTradingGame=button.dataset.tradingGame;state.tradingScenario=state.tradingScenarios[state.activeTradingGame]||null;renderTradingGame();}));
   document.querySelectorAll("[data-gym-mode]").forEach((button) => button.addEventListener("click", () => {
     state.activeGymMode = button.dataset.gymMode;
     renderGymHub();
@@ -3856,9 +4717,19 @@ function wireEvents() {
   $("pinNoteButton").addEventListener("click", toggleCurrentNotePin);
   $("notesBackButton").addEventListener("click", () => $("notesBoard").classList.remove("editing-note"));
   $("notesFolderButton").addEventListener("click", () => {
-    state.notesSearch = "";
-    $("notesSearchInput").value = "";
-    renderNotes();
+    $("notesBoard").classList.add("show-folders");
+  });
+  $("closeFoldersButton").addEventListener("click",()=>$("notesBoard").classList.remove("show-folders"));
+  $("newNotesFolderButton").addEventListener("click",createNotesFolder);
+  $("noteRichModeButton").addEventListener("click",()=>setNoteEditorMode("rich"));
+  $("noteMarkdownModeButton").addEventListener("click",()=>setNoteEditorMode("markdown"));
+  $("notePreviewModeButton").addEventListener("click",()=>setNoteEditorMode("preview"));
+  $("noteMarkdownInput").addEventListener("input",updateCurrentNoteDraft);
+  $("noteFolderSelect").addEventListener("change",()=>{
+    const note=state.personal.notes.find(item=>item.id===state.selectedNoteId);if(!note)return;
+    note.folderId=$("noteFolderSelect").value;
+    note.updatedAt=new Date().toISOString();
+    saveNotes(false,true);
   });
   $("notesSearchInput").addEventListener("input", () => {
     state.notesSearch = $("notesSearchInput").value;
@@ -3923,9 +4794,13 @@ function wireEvents() {
     renderInsights();
   });
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) tickFocusTimer();
+    if (!document.hidden) { tickFocusTimer(); refreshNotesAcrossDevices(); }
   });
-  window.addEventListener("online",()=>{if(state.offlineSavePending&&state.personal)savePersonal(false,false);});
+  window.addEventListener("focus",refreshNotesAcrossDevices);
+  window.addEventListener("online",()=>{
+    if(state.offlineSavePending&&state.personal)savePersonal(false,false);
+    if(state.notesOfflineSavePending&&state.personal)saveNotes(false,false);
+  });
 }
 
 async function init() {
@@ -3940,14 +4815,23 @@ async function init() {
   state.progress = await getJson("/api/progress");
   state.quantToday = await getJson("/api/quant/today");
   state.quant = await getJson("/api/quant");
+  const cachedPersonal = localStorage.getItem("kumarPersonalOffline");
+  const pendingNotes = localStorage.getItem("kumarNotesPending") === "1";
   try {
     state.personal = await getJson("/api/personal");
+    if (pendingNotes && cachedPersonal) {
+      const localPersonal = JSON.parse(cachedPersonal);
+      ["notes", "notesFolders", "noteTombstones", "noteFolderTombstones"].forEach((field) => {
+        if (Array.isArray(localPersonal[field])) state.personal[field] = localPersonal[field];
+      });
+      state.notesOfflineSavePending = true;
+    }
     localStorage.setItem("kumarPersonalOffline",JSON.stringify(state.personal));
   } catch (error) {
-    const cached=localStorage.getItem("kumarPersonalOffline");
-    if(!cached) throw error;
-    state.personal=JSON.parse(cached);
+    if(!cachedPersonal) throw error;
+    state.personal=JSON.parse(cachedPersonal);
     state.offlineSavePending=true;
+    state.notesOfflineSavePending=pendingNotes;
   }
   ensurePersonalCollections();
   state.selectedNoteId = state.personal.notes?.[0]?.id || null;
@@ -3962,6 +4846,7 @@ async function init() {
   updateYearRunway();
   setView(state.activeView);
   if (initialNewNote && state.activeView === "notes") newNote();
+  if (state.notesOfflineSavePending && navigator.onLine) saveNotes(false, false);
   await loadReminderStatus();
   await loadContests(false);
   startContestTimers();

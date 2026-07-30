@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
@@ -65,6 +66,37 @@ def supabase_request(table: str, method: str = "GET", query: str = "", payload=N
     with urlopen(request, timeout=20) as response:
         raw = response.read().decode("utf-8")
         return json.loads(raw) if raw else None
+
+
+def supabase_sync_notes_normalized(payload: dict) -> None:
+    owner = os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam")
+    now = tracker.isoformat_utc(tracker.utc_now())
+    folder_rows = [{
+        "owner_id": owner,
+        "id": str(item.get("id")),
+        "name": item.get("name") or "Notes",
+        "created_at": item.get("createdAt") or now,
+        "updated_at": item.get("updatedAt") or item.get("createdAt") or now,
+    } for item in payload.get("notesFolders", []) if item.get("id")]
+    note_rows = [{
+        "owner_id": owner,
+        "id": str(item.get("id")),
+        "folder_id": item.get("folderId") or "notes-default",
+        "title": item.get("title") or "",
+        "plain_text": item.get("body") or "",
+        "content_html": item.get("contentHtml") or "",
+        "markdown_body": item.get("markdownBody") or "",
+        "editor_mode": item.get("format") or item.get("editorMode") or "rich",
+        "pinned": bool(item.get("pinned")),
+        "created_at": item.get("createdAt") or now,
+        "updated_at": item.get("updatedAt") or now,
+    } for item in payload.get("notes", []) if item.get("id")]
+    supabase_request("notes", "DELETE", f"owner_id=eq.{quote(owner)}")
+    supabase_request("note_folders", "DELETE", f"owner_id=eq.{quote(owner)}")
+    if folder_rows:
+        supabase_request("note_folders", "POST", payload=folder_rows, prefer="resolution=merge-duplicates")
+    if note_rows:
+        supabase_request("notes", "POST", payload=note_rows, prefer="resolution=merge-duplicates")
 
 
 def supabase_sync_normalized(name: str, payload) -> None:
@@ -220,9 +252,15 @@ def supabase_sync_normalized(name: str, payload) -> None:
             "step_index": int(item.get("stepIndex") or 0), "completed_on": item.get("date"),
             "completed_at": item.get("completedAt") or now,
         } for item in payload.get("skinStepLogs", [])]
+        arcade_rows = [{
+            "owner_id": owner, "id": str(item.get("id")), "game_type": item.get("gameType") or "",
+            "score": float(item.get("score") or 0), "xp": int(item.get("xp") or 0),
+            "rounds": int(item.get("rounds") or 0), "metrics": item.get("metrics") or {},
+            "started_at": item.get("startedAt") or now, "completed_at": item.get("completedAt") or now,
+        } for item in payload.get("arcadeSessions", [])]
         # Children must be removed before their parent rows because the schema
         # intentionally enforces referential integrity.
-        for table in ("skincare_step_logs", "skincare_steps", "gym_exercises", "workout_set_logs", "workout_sessions", "routine_completions", "skincare_routines", "gym_plans", "schedule_events", "focus_sessions", "contest_calendar_entries", "skincare_products", "daily_reflections", "quant_attempt_history"):
+        for table in ("arcade_game_sessions", "skincare_step_logs", "skincare_steps", "gym_exercises", "workout_set_logs", "workout_sessions", "routine_completions", "skincare_routines", "gym_plans", "schedule_events", "focus_sessions", "contest_calendar_entries", "skincare_products", "daily_reflections", "quant_attempt_history"):
             supabase_request(table, "DELETE", f"owner_id=eq.{quote(owner)}")
         for table, rows in (
             ("skincare_routines", skin_rows), ("skincare_steps", skin_steps),
@@ -232,9 +270,11 @@ def supabase_sync_normalized(name: str, payload) -> None:
             ("focus_sessions", focus_rows), ("contest_calendar_entries", contest_rows),
             ("skincare_products", skin_product_rows), ("daily_reflections", reflection_rows),
             ("quant_attempt_history", quant_attempt_rows), ("skincare_step_logs", skin_log_rows),
+            ("arcade_game_sessions", arcade_rows),
         ):
             if rows:
                 supabase_request(table, "POST", payload=rows, prefer="resolution=merge-duplicates")
+        supabase_sync_notes_normalized(payload)
 
 
 def redis_request(command: list):
@@ -297,6 +337,164 @@ def vercel_read_json(path: Path, default):
     return json.loads(raw)
 
 
+def supabase_write_personal_cas(payload: dict, attempts: int = 5) -> dict:
+    """Persist the personal document without losing concurrent note updates."""
+    owner = os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam")
+    candidate = deepcopy(payload)
+    for _attempt in range(attempts):
+        rows = supabase_request(
+            "tracker_documents",
+            query=(
+                f"owner_id=eq.{quote(owner)}"
+                "&document_key=eq.personal"
+                "&select=payload,updated_at"
+            ),
+        )
+        if not rows:
+            supabase_request(
+                "tracker_documents",
+                "POST",
+                payload={
+                    "owner_id": owner,
+                    "document_key": "personal",
+                    "payload": candidate,
+                    "updated_at": datetime.now(timezone.utc).isoformat(timespec="microseconds"),
+                },
+                prefer="resolution=merge-duplicates",
+            )
+            return candidate
+
+        current_payload = rows[0].get("payload")
+        current_payload = current_payload if isinstance(current_payload, dict) else {}
+        merged = deepcopy(candidate)
+        # The incoming request owns the other personal collections, while
+        # Notes are merged record-by-record using updatedAt and tombstones.
+        tracker.merge_personal_notes(merged, current_payload)
+        current_notification_state = current_payload.get("notificationState")
+        merged_notification_state = merged.get("notificationState")
+        if isinstance(current_notification_state, dict):
+            combined_notification_state = dict(current_notification_state)
+            if isinstance(merged_notification_state, dict):
+                combined_notification_state.update(merged_notification_state)
+            merged["notificationState"] = combined_notification_state
+
+        previous_updated_at = rows[0].get("updated_at")
+        next_updated_at = datetime.now(timezone.utc).isoformat(timespec="microseconds")
+        updated = supabase_request(
+            "tracker_documents",
+            "PATCH",
+            query=(
+                f"owner_id=eq.{quote(owner)}"
+                "&document_key=eq.personal"
+                f"&updated_at=eq.{quote(str(previous_updated_at), safe='')}"
+            ),
+            payload={"payload": merged, "updated_at": next_updated_at},
+            prefer="return=representation",
+        )
+        if updated:
+            return merged
+        candidate = merged
+    raise RuntimeError("Personal data changed repeatedly; please retry the save")
+
+
+def supabase_write_notes_cas(payload: dict, attempts: int = 5) -> dict:
+    """Atomically merge Notes while preserving every non-Notes collection."""
+    owner = os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam")
+    for _attempt in range(attempts):
+        rows = supabase_request(
+            "tracker_documents",
+            query=(
+                f"owner_id=eq.{quote(owner)}"
+                "&document_key=eq.personal"
+                "&select=payload,updated_at"
+            ),
+        )
+        if not rows:
+            raise RuntimeError("Personal data has not been initialized")
+        current = rows[0].get("payload")
+        current = deepcopy(current) if isinstance(current, dict) else tracker.default_personal()
+        tracker.merge_personal_notes(current, payload)
+        current["version"] = 5
+        current["updatedAt"] = tracker.isoformat_utc(tracker.utc_now())
+        next_updated_at = datetime.now(timezone.utc).isoformat(timespec="microseconds")
+        updated = supabase_request(
+            "tracker_documents",
+            "PATCH",
+            query=(
+                f"owner_id=eq.{quote(owner)}"
+                "&document_key=eq.personal"
+                f"&updated_at=eq.{quote(str(rows[0].get('updated_at')), safe='')}"
+            ),
+            payload={"payload": current, "updated_at": next_updated_at},
+            prefer="return=representation",
+        )
+        if updated:
+            return current
+    raise RuntimeError("Notes changed repeatedly; please retry the save")
+
+
+def supabase_write_notification_cas(
+    notification_state: dict,
+    diagnostics: dict,
+    subscriptions: list,
+    removed_endpoints: set[str],
+    attempts: int = 5,
+) -> dict:
+    """Atomically update reminder-owned fields and preserve user edits."""
+    owner = os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam")
+    for _attempt in range(attempts):
+        rows = supabase_request(
+            "tracker_documents",
+            query=(
+                f"owner_id=eq.{quote(owner)}"
+                "&document_key=eq.personal"
+                "&select=payload,updated_at"
+            ),
+        )
+        if not rows:
+            raise RuntimeError("Personal data has not been initialized")
+        current = rows[0].get("payload")
+        current = deepcopy(current) if isinstance(current, dict) else tracker.default_personal()
+        current_state = current.get("notificationState")
+        current_state = dict(current_state) if isinstance(current_state, dict) else {}
+        current_state.update(notification_state)
+        dated_keys = [key for key in current_state if ":" in key and key != "dailyDigest"]
+        if len(dated_keys) > 600:
+            for key in dated_keys[:-600]:
+                current_state.pop(key, None)
+        current["notificationState"] = current_state
+        current["notificationDiagnostics"] = diagnostics
+
+        merged_subscriptions = []
+        seen_endpoints = set()
+        for item in [*(current.get("pushSubscriptions") or []), *subscriptions]:
+            if not valid_push_subscription(item):
+                continue
+            endpoint = item.get("endpoint")
+            if endpoint in removed_endpoints or endpoint in seen_endpoints:
+                continue
+            seen_endpoints.add(endpoint)
+            merged_subscriptions.append(clean_push_subscription(item))
+        current["pushSubscriptions"] = merged_subscriptions[-20:]
+        current["updatedAt"] = tracker.isoformat_utc(tracker.utc_now())
+
+        next_updated_at = datetime.now(timezone.utc).isoformat(timespec="microseconds")
+        updated = supabase_request(
+            "tracker_documents",
+            "PATCH",
+            query=(
+                f"owner_id=eq.{quote(owner)}"
+                "&document_key=eq.personal"
+                f"&updated_at=eq.{quote(str(rows[0].get('updated_at')), safe='')}"
+            ),
+            payload={"payload": current, "updated_at": next_updated_at},
+            prefer="return=representation",
+        )
+        if updated:
+            return current
+    raise RuntimeError("Reminder data changed repeatedly; retry on the next dispatch")
+
+
 def vercel_write_json(path: Path, payload) -> None:
     key = storage_key(path)
     if not key:
@@ -305,11 +503,14 @@ def vercel_write_json(path: Path, payload) -> None:
     name = MUTABLE_PATH_KEYS[path]
     if supabase_configured():
         try:
-            supabase_request("tracker_documents", "POST", payload={
-                "owner_id": os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam"),
-                "document_key": name, "payload": payload,
-                "updated_at": tracker.isoformat_utc(tracker.utc_now()),
-            }, prefer="resolution=merge-duplicates")
+            if name == "personal" and isinstance(payload, dict):
+                payload = supabase_write_personal_cas(payload)
+            else:
+                supabase_request("tracker_documents", "POST", payload={
+                    "owner_id": os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam"),
+                    "document_key": name, "payload": payload,
+                    "updated_at": tracker.isoformat_utc(tracker.utc_now()),
+                }, prefer="resolution=merge-duplicates")
             try:
                 supabase_sync_normalized(name, payload)
             except (HTTPError, URLError, RuntimeError, ValueError):
@@ -335,51 +536,164 @@ def push_configured() -> bool:
     )
 
 
+def app_timezone() -> ZoneInfo:
+    """Return the configured local timezone without letting a typo stop dispatch."""
+    try:
+        return ZoneInfo(os.environ.get("APP_TIMEZONE", "Asia/Kolkata"))
+    except (KeyError, ValueError):
+        return ZoneInfo("Asia/Kolkata")
+
+
 def app_base_url() -> str:
+    # A preview deployment can recreate the shared QStash schedule. Always point
+    # that schedule at the stable production alias when Vercel provides one,
+    # rather than pinning reminders to an old deployment-specific APP_BASE_URL.
+    production_host = os.environ.get("VERCEL_PROJECT_PRODUCTION_URL", "").strip().rstrip("/")
+    if production_host:
+        return production_host if production_host.startswith(("http://", "https://")) else f"https://{production_host}"
     configured = os.environ.get("APP_BASE_URL", "").rstrip("/")
     if configured:
         return configured
-    host = os.environ.get("VERCEL_PROJECT_PRODUCTION_URL") or os.environ.get("VERCEL_URL")
+    host = os.environ.get("VERCEL_URL")
     return f"https://{host}" if host else ""
 
 
-def push_config_payload() -> dict:
-    qstash_ready = bool(os.environ.get("QSTASH_TOKEN") and os.environ.get("REMINDER_DISPATCH_SECRET"))
-    configured = push_configured() and qstash_ready and bool(app_base_url())
-    if configured:
-        message = "Install the app on your Home Screen, then enable notifications."
-    else:
-        message = "Add the VAPID, QStash, reminder secret, and APP_BASE_URL environment variables in Vercel."
-    return {
-        "configured": configured,
-        "publicKey": os.environ.get("VAPID_PUBLIC_KEY", "") if configured else "",
-        "message": message,
-    }
+def qstash_api_urls() -> list[str]:
+    """Return QStash regions in a deterministic fallback order.
+
+    QStash tokens are region-specific. Older installations used the EU alias
+    unconditionally, which makes a valid US token fail with a misleading 404.
+    """
+    configured = os.environ.get("QSTASH_URL", "").strip().rstrip("/")
+    region = os.environ.get("QSTASH_REGION", "").strip().upper().replace("-", "_")
+    regional = {
+        "US_EAST_1": "https://qstash-us-east-1.upstash.io",
+        "EU_CENTRAL_1": "https://qstash-eu-central-1.upstash.io",
+    }.get(region)
+    candidates = [
+        configured,
+        regional or "",
+        "https://qstash-us-east-1.upstash.io",
+        "https://qstash-eu-central-1.upstash.io",
+    ]
+    result = []
+    for candidate in candidates:
+        if candidate and candidate not in result:
+            result.append(candidate)
+    return result
 
 
-def ensure_reminder_schedule() -> None:
+def ensure_reminder_schedule() -> dict:
     token = os.environ.get("QSTASH_TOKEN", "")
     secret = os.environ.get("REMINDER_DISPATCH_SECRET", "")
     base_url = app_base_url()
     if not token or not secret or not base_url:
-        raise RuntimeError("QStash reminder scheduler is not configured")
+        return {
+            "ok": False,
+            "error": "QStash reminder scheduler is not configured",
+            "destination": f"{base_url}/api/push/dispatch" if base_url else "",
+        }
+
     destination = f"{base_url}/api/push/dispatch"
-    request = Request(
-        f"https://qstash.upstash.io/v2/schedules/{quote(destination, safe='')}",
-        data=b'{"source":"kumar-quant-calendar"}',
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-            "Upstash-Cron": "* * * * *",
-            "Upstash-Schedule-Id": "kumar-quant-reminders",
-            "Upstash-Retries": "1",
-            "Upstash-Forward-X-Reminder-Secret": secret,
-        },
-        method="POST",
+    last_status = None
+    for qstash_url in qstash_api_urls():
+        request = Request(
+            # QStash expects the nested destination to retain its http(s)
+            # scheme. Encoding ':' and '/' makes it reject the URL as invalid.
+            f"{qstash_url}/v2/schedules/{quote(destination, safe=':/')}",
+            data=b'{"source":"kumar-quant-calendar","version":2}',
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "Upstash-Cron": "* * * * *",
+                "Upstash-Schedule-Id": "kumar-quant-reminders",
+                "Upstash-Method": "POST",
+                "Upstash-Timeout": "30s",
+                "Upstash-Retries": "3",
+                "Upstash-Forward-X-Reminder-Secret": secret,
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=15) as response:
+                raw = response.read().decode("utf-8")
+                payload = json.loads(raw) if raw else {}
+                return {
+                    "ok": True,
+                    "scheduleId": payload.get("scheduleId", "kumar-quant-reminders"),
+                    "destination": destination,
+                    "region": urlparse(qstash_url).hostname,
+                    "cron": "* * * * *",
+                }
+        except HTTPError as exc:
+            last_status = exc.code
+            # A token from the other QStash region returns 401/403/404. Try the
+            # remaining regional endpoint, but do not mask request-shape errors.
+            if exc.code not in {401, 403, 404}:
+                break
+        except URLError:
+            last_status = "network"
+            continue
+    return {
+        "ok": False,
+        "error": (
+            f"QStash rejected the scheduler request (HTTP {last_status})"
+            if isinstance(last_status, int)
+            else "Could not reach QStash"
+        ),
+        "destination": destination,
+    }
+
+
+def valid_push_subscription(subscription: dict) -> bool:
+    if not isinstance(subscription, dict):
+        return False
+    endpoint = subscription.get("endpoint")
+    keys = subscription.get("keys")
+    return bool(
+        isinstance(endpoint, str)
+        and endpoint.startswith("https://")
+        and isinstance(keys, dict)
+        and isinstance(keys.get("p256dh"), str)
+        and keys.get("p256dh")
+        and isinstance(keys.get("auth"), str)
+        and keys.get("auth")
     )
-    with urlopen(request, timeout=15) as response:
-        if response.status >= 300:
-            raise RuntimeError("Could not configure reminder schedule")
+
+
+def clean_push_subscription(subscription: dict) -> dict:
+    return {
+        "endpoint": subscription["endpoint"],
+        "expirationTime": subscription.get("expirationTime"),
+        "keys": {
+            "p256dh": subscription["keys"]["p256dh"],
+            "auth": subscription["keys"]["auth"],
+        },
+    }
+
+
+def push_config_payload(ensure_scheduler: bool = False) -> dict:
+    qstash_ready = bool(os.environ.get("QSTASH_TOKEN") and os.environ.get("REMINDER_DISPATCH_SECRET"))
+    configured = push_configured() and qstash_ready and bool(app_base_url())
+    scheduler = ensure_reminder_schedule() if configured and ensure_scheduler else None
+    if configured:
+        message = (
+            "Install the app on your Home Screen, then enable notifications."
+            if not scheduler or scheduler.get("ok")
+            else "Push is configured, but the background scheduler needs attention."
+        )
+    else:
+        message = "Add the VAPID, QStash, reminder secret, and APP_BASE_URL environment variables in Vercel."
+    payload = {
+        "configured": configured,
+        "publicKey": os.environ.get("VAPID_PUBLIC_KEY", "") if configured else "",
+        "message": message,
+        "timezone": getattr(app_timezone(), "key", "Asia/Kolkata"),
+        "destination": f"{app_base_url()}/api/push/dispatch" if app_base_url() else "",
+    }
+    if scheduler is not None:
+        payload["scheduler"] = scheduler
+    return payload
 
 
 def send_push(subscription: dict, payload: dict) -> bool:
@@ -399,7 +713,9 @@ def send_push(subscription: dict, payload: dict) -> bool:
         return True
     except WebPushException as exc:
         status = getattr(getattr(exc, "response", None), "status_code", None)
-        if status in {404, 410}:
+        # 404/410 are expired endpoints. A 400 means the stored endpoint/keys
+        # are malformed and retrying it forever cannot recover it.
+        if status in {400, 404, 410}:
             return False
         raise
 
@@ -408,83 +724,208 @@ def subscribe_push(payload: dict) -> dict:
     if not push_config_payload()["configured"]:
         raise RuntimeError("Push reminders are not configured")
     subscription = payload.get("subscription")
-    if not isinstance(subscription, dict) or not subscription.get("endpoint"):
-        raise ValueError("A valid push subscription is required")
+    if not valid_push_subscription(subscription):
+        raise ValueError("A complete push subscription with endpoint and keys is required")
+    subscription = clean_push_subscription(subscription)
     personal = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
-    subscriptions = personal.setdefault("pushSubscriptions", [])
+    subscriptions = [
+        item for item in personal.setdefault("pushSubscriptions", [])
+        if valid_push_subscription(item)
+    ]
     endpoint = subscription["endpoint"]
     subscriptions = [item for item in subscriptions if item.get("endpoint") != endpoint]
     subscriptions.append(subscription)
-    personal["pushSubscriptions"] = subscriptions[-5:]
+    # Keep enough room for an iPhone, iPad, desktop, and reinstalled web apps.
+    personal["pushSubscriptions"] = subscriptions[-20:]
     tracker.write_json(tracker.PERSONAL_PATH, personal)
-    ensure_reminder_schedule()
-    return {"ok": True, "subscriptionCount": len(personal["pushSubscriptions"])}
+    scheduler = ensure_reminder_schedule()
+    return {
+        "ok": True,
+        "subscriptionCount": len(personal["pushSubscriptions"]),
+        "scheduler": scheduler,
+    }
 
 
 def send_test_push() -> dict:
     personal = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
-    local_zone = ZoneInfo(os.environ.get("APP_TIMEZONE", "Asia/Kolkata"))
+    local_zone = app_timezone()
     local_today = datetime.now(local_zone).date()
     app_badge = (datetime(local_today.year + 1, 1, 1, tzinfo=local_zone).date() - local_today).days
     active = []
     sent = 0
+    transient_failures = 0
+    removed = 0
     for subscription in personal.get("pushSubscriptions", []):
-        if send_push(subscription, {
-            "title": "Reminders are ready",
-            "body": "Calendar tasks, daily plans, and contest alerts can now reach this iPhone.",
-            "tag": "reminder-test",
-            "url": "/?view=planner",
-            "appBadge": max(0, app_badge),
-        }):
+        if not valid_push_subscription(subscription):
+            removed += 1
+            continue
+        try:
+            delivered = send_push(subscription, {
+                "title": "Reminders are ready",
+                "body": "Calendar tasks, daily plans, and contest alerts can now reach this device.",
+                "tag": "reminder-test",
+                "url": "/?view=planner",
+                "appBadge": max(0, app_badge),
+            })
+        except Exception:
+            active.append(subscription)
+            transient_failures += 1
+            continue
+        if delivered:
             active.append(subscription)
             sent += 1
-    personal["pushSubscriptions"] = active
-    tracker.write_json(tracker.PERSONAL_PATH, personal)
-    return {"ok": True, "sent": sent}
+        else:
+            removed += 1
+    if active != personal.get("pushSubscriptions", []):
+        personal["pushSubscriptions"] = active
+        tracker.write_json(tracker.PERSONAL_PATH, personal)
+    return {
+        "ok": True,
+        "sent": sent,
+        "transientFailures": transient_failures,
+        "removedSubscriptions": removed,
+        "subscriptionCount": len(active),
+    }
 
 
-def event_start_utc(event: dict) -> datetime | None:
-    raw = event.get("startUtc")
-    if raw:
-        return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).astimezone(timezone.utc)
-    local_value = event.get("start")
-    if not local_value:
+def parse_datetime_utc(raw, naive_zone) -> datetime | None:
+    if raw is None or raw == "":
         return None
-    local_time = datetime.fromisoformat(str(local_value))
-    return local_time.replace(tzinfo=ZoneInfo(os.environ.get("APP_TIMEZONE", "Asia/Kolkata"))).astimezone(timezone.utc)
+    try:
+        if isinstance(raw, (int, float)):
+            # Accommodate both Unix seconds and JavaScript milliseconds.
+            timestamp = float(raw)
+            if abs(timestamp) > 10_000_000_000:
+                timestamp /= 1000
+            return datetime.fromtimestamp(timestamp, timezone.utc)
+        value = str(raw).strip()
+        if value.isdigit():
+            return parse_datetime_utc(int(value), naive_zone)
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=naive_zone)
+        return parsed.astimezone(timezone.utc)
+    except (OverflowError, OSError, TypeError, ValueError):
+        return None
+
+
+def event_start_utc(event: dict, local_zone=None) -> datetime | None:
+    local_zone = local_zone or app_timezone()
+    # startUtc is authoritative when valid, but a corrupt legacy value should
+    # fall back to the visible local datetime rather than dropping the event.
+    for field in ("startUtc", "startsAt", "starts_at"):
+        parsed = parse_datetime_utc(event.get(field), timezone.utc)
+        if parsed:
+            return parsed
+    for field in ("start", "dateTime", "datetime", "date"):
+        parsed = parse_datetime_utc(event.get(field), local_zone)
+        if parsed:
+            return parsed
+    return None
+
+
+def reminder_minutes(item: dict, default: int = 0) -> int:
+    try:
+        return max(0, min(30 * 24 * 60, int(float(item.get("reminderMinutes", default) or 0))))
+    except (TypeError, ValueError):
+        return max(0, default)
+
+
+def reminder_diagnostics() -> dict:
+    personal = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
+    local_zone = app_timezone()
+    now = datetime.now(timezone.utc)
+    upcoming = []
+    invalid = 0
+    enabled = 0
+    for event in personal.get("schedule", []):
+        if event.get("notify") is False or event.get("completed"):
+            continue
+        enabled += 1
+        start = event_start_utc(event, local_zone)
+        if not start:
+            invalid += 1
+            continue
+        reminder_at = start - timedelta(minutes=reminder_minutes(event))
+        if start + timedelta(minutes=30) >= now:
+            upcoming.append({
+                "id": str(event.get("id", "event")),
+                "title": event.get("title") or "Scheduled task",
+                "startAt": start.isoformat(),
+                "reminderAt": reminder_at.isoformat(),
+            })
+    upcoming.sort(key=lambda item: item["reminderAt"])
+    subscriptions = personal.get("pushSubscriptions", [])
+    return {
+        "ok": True,
+        "configured": push_config_payload()["configured"],
+        "timezone": getattr(local_zone, "key", "Asia/Kolkata"),
+        "destination": f"{app_base_url()}/api/push/dispatch" if app_base_url() else "",
+        "scheduler": ensure_reminder_schedule(),
+        "subscriptionCount": len([item for item in subscriptions if valid_push_subscription(item)]),
+        "invalidSubscriptionCount": len([item for item in subscriptions if not valid_push_subscription(item)]),
+        "enabledCalendarEvents": enabled,
+        "invalidCalendarEvents": invalid,
+        "nextCalendarReminders": upcoming[:5],
+        "lastDispatch": personal.get("notificationDiagnostics"),
+    }
 
 
 def dispatch_due_reminders(now: datetime | None = None) -> dict:
     personal = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
     subscriptions = personal.get("pushSubscriptions", [])
-    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    local_zone = ZoneInfo(os.environ.get("APP_TIMEZONE", "Asia/Kolkata"))
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    now = now.astimezone(timezone.utc)
+    local_zone = app_timezone()
     local_now = now.astimezone(local_zone)
     sent = 0
     changed = False
-    active_subscriptions = list(subscriptions)
+    active_subscriptions = [item for item in subscriptions if valid_push_subscription(item)]
+    removed_subscriptions = len(subscriptions) - len(active_subscriptions)
+    transient_failures = 0
+    delivery_attempts = 0
+    notification_count = 0
+    events_scanned = 0
+    invalid_events = 0
+    due_calendar_events = 0
+    next_calendar_reminders = []
+    if removed_subscriptions:
+        changed = True
     notification_state = personal.setdefault("notificationState", {})
+    heartbeat_bucket = now.strftime("%Y-%m-%dT%H")
+    if notification_state.get("schedulerHeartbeatHour") != heartbeat_bucket:
+        notification_state["schedulerHeartbeatHour"] = heartbeat_bucket
+        changed = True
     year_end = datetime(local_now.year + 1, 1, 1, tzinfo=local_zone)
     app_badge = max(0, (year_end.date() - local_now.date()).days)
 
     def broadcast(payload: dict) -> int:
-        nonlocal active_subscriptions, sent, changed
+        nonlocal active_subscriptions, sent, changed, transient_failures
+        nonlocal delivery_attempts, removed_subscriptions, notification_count
         payload["appBadge"] = app_badge
         next_subscriptions = []
         delivered = 0
         for subscription in active_subscriptions:
+            delivery_attempts += 1
             try:
                 if send_push(subscription, payload):
                     next_subscriptions.append(subscription)
                     sent += 1
                     delivered += 1
+                else:
+                    removed_subscriptions += 1
             except Exception:
                 # Keep subscriptions after transient push-provider failures. Only
-                # explicit 404/410 responses remove an expired subscription.
+                # explicit permanent responses remove an expired subscription.
                 next_subscriptions.append(subscription)
+                transient_failures += 1
         if next_subscriptions != active_subscriptions:
             changed = True
         active_subscriptions = next_subscriptions
+        if delivered:
+            notification_count += 1
         return delivered
 
     def mark_after_delivery(key: str, delivered: int) -> bool:
@@ -500,30 +941,39 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
         return f"{prefix}:{item_id}:{local_now.date().isoformat()}:{bucket_hour:02d}"
 
     for event in personal.get("schedule", []):
+        events_scanned += 1
         if event.get("notify") is False or event.get("completed"):
             continue
-        start = event_start_utc(event)
+        start = event_start_utc(event, local_zone)
         if not start:
+            invalid_events += 1
             continue
-        reminder_time = start - timedelta(minutes=max(0, int(event.get("reminderMinutes") or 0)))
+        reminder_time = start - timedelta(minutes=reminder_minutes(event))
         event_id = str(event.get("id", "event"))
         due_key = f"calendar-due:{event_id}:{reminder_time.isoformat()}"
         event_local_date = start.astimezone(local_zone).date()
-        # A delayed minute job may still deliver the original alert for up to
-        # six hours, instead of losing it after the old two-minute window.
-        if reminder_time <= now < reminder_time + timedelta(hours=6) and not notification_state.get(due_key):
+        if reminder_time > now:
+            next_calendar_reminders.append(reminder_time)
+        # Catch up a delayed advance reminder until shortly after the event
+        # begins. This works for 15-minute and multi-day reminder lead times.
+        catch_up_deadline = start + timedelta(minutes=30)
+        if reminder_time <= now < catch_up_deadline and not notification_state.get(due_key):
+            due_calendar_events += 1
+            notes = str(event.get("notes") or "").strip()
             delivered = broadcast({
                 "title": event.get("title") or "Scheduled task",
-                "body": event.get("notes") or "It is time for your scheduled work.",
+                "body": notes if notes and not notes.startswith(("http://", "https://")) else "It is time for your scheduled work.",
                 "tag": f"calendar-{event_id}-due",
-                "url": f"/?view=planner&date={str(event.get('start', ''))[:10]}",
+                "url": f"/?view=planner&date={event_local_date.isoformat()}",
             })
             mark_after_delivery(due_key, delivered)
 
         # Keep nudging unfinished work every two hours during daytime on the
-        # scheduled day, starting after the event itself begins.
-        if start <= now and event_local_date == local_now.date() and 9 <= local_now.hour < 22:
-            repeat_key = reminder_bucket("calendar-open", event_id)
+        # scheduled day. Waiting two hours avoids a duplicate at the due time.
+        repeat_after = start + timedelta(hours=2)
+        if repeat_after <= now and event_local_date == local_now.date() and 9 <= local_now.hour < 22:
+            repeat_number = int((now - repeat_after).total_seconds() // (2 * 3600))
+            repeat_key = f"calendar-open:{event_id}:{event_local_date.isoformat()}:{repeat_number}"
             if not notification_state.get(repeat_key):
                 delivered = broadcast({
                     "title": "Still on today’s schedule",
@@ -532,6 +982,20 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
                     "url": f"/?view=planner&date={event_local_date.isoformat()}",
                 })
                 mark_after_delivery(repeat_key, delivered)
+
+        # A missed non-contest item remains visible once a day for one week,
+        # instead of disappearing forever at midnight.
+        overdue_days = (local_now.date() - event_local_date).days
+        if event.get("kind") != "contest" and 1 <= overdue_days <= 7 and 9 <= local_now.hour < 21:
+            overdue_key = f"calendar-overdue:{event_id}:{local_now.date().isoformat()}"
+            if not notification_state.get(overdue_key):
+                delivered = broadcast({
+                    "title": "Calendar task still incomplete",
+                    "body": f"{event.get('title') or 'A scheduled task'} was due {overdue_days} day{'s' if overdue_days != 1 else ''} ago.",
+                    "tag": f"calendar-{event_id}-overdue",
+                    "url": f"/?view=planner&date={event_local_date.isoformat()}",
+                })
+                mark_after_delivery(overdue_key, delivered)
 
     # Tasks can alert at their due time, while urgent tasks alert once per day
     # until completed so they cannot quietly disappear in a long list.
@@ -551,22 +1015,16 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
                 mark_after_delivery(urgent_key, delivered)
         due = task.get("dueUtc")
         if due:
-            try:
-                due_time = datetime.fromisoformat(str(due).replace("Z", "+00:00")).astimezone(timezone.utc)
-            except ValueError:
-                due_time = None
+            due_time = parse_datetime_utc(due, timezone.utc)
         elif task.get("due"):
-            try:
-                due_time = datetime.fromisoformat(str(task["due"])).replace(tzinfo=local_zone).astimezone(timezone.utc)
-            except ValueError:
-                due_time = None
+            due_time = parse_datetime_utc(task.get("due"), local_zone)
         else:
             due_time = None
         if not due_time:
             continue
-        reminder_time = due_time - timedelta(minutes=max(0, int(task.get("reminderMinutes") or 0)))
+        reminder_time = due_time - timedelta(minutes=reminder_minutes(task))
         reminder_key = f"task-due:{task_id}:{reminder_time.isoformat()}"
-        if notification_state.get(reminder_key) or not reminder_time <= now < reminder_time + timedelta(hours=6):
+        if notification_state.get(reminder_key) or not reminder_time <= now < due_time + timedelta(hours=6):
             continue
         delivered = broadcast({
             "title": "Task due" if task.get("priority") != "urgent" else "Urgent task due",
@@ -590,9 +1048,14 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
             return len(completed_this_week) < 3
         return True
 
-    local_hhmm = local_now.strftime("%H:%M")
     for habit in personal.get("habits", []):
-        if not habit.get("reminderTime") or str(habit.get("reminderTime"))[:5] != local_hhmm:
+        reminder_value = str(habit.get("reminderTime") or "")
+        try:
+            hour, minute = [int(part) for part in reminder_value.split(":")[:2]]
+            habit_due = local_now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        except (TypeError, ValueError):
+            continue
+        if not habit_due <= local_now < habit_due + timedelta(hours=6):
             continue
         if not habit_due_today(habit):
             continue
@@ -656,7 +1119,9 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
         local_date = local_now.date().isoformat()
         today_events = [
             event for event in personal.get("schedule", [])
-            if str(event.get("start") or "")[:10] == local_date
+            if not event.get("completed")
+            and (event_start := event_start_utc(event, local_zone))
+            and event_start.astimezone(local_zone).date().isoformat() == local_date
         ]
         open_tasks = [task for task in personal.get("tasks", []) if not task.get("completed")]
         today_tasks = [task for task in open_tasks if str(task.get("due") or "")[:10] == local_date]
@@ -755,13 +1220,13 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
                 continue
             item_id = str(item.get("id", kind))
             due_key = f"{kind}-due:{item_id}:{local_date}"
-            if local_now < due_local + timedelta(minutes=45) and not notification_state.get(due_key):
+            if local_now < due_local + timedelta(hours=2) and not notification_state.get(due_key):
                 title = "Time for your skin care" if kind == "skin" else "Your workout is ready"
                 delivered = broadcast({
                     "title": title,
                     "body": item.get("name") or ("Complete today’s routine." if kind == "skin" else "Start today’s training plan."),
                     "tag": f"{kind}-{item_id}-due",
-                    "url": "/?view=wellness",
+                    "url": "/?view=wellness" if kind == "skin" else "/?view=gym",
                 })
                 mark_after_delivery(due_key, delivered)
             # Begin repeat nudges two hours after the configured start time.
@@ -773,7 +1238,7 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
                         "title": title,
                         "body": item.get("name") or "Open Wellness and finish today’s routine.",
                         "tag": f"{kind}-{item_id}-open",
-                        "url": "/?view=wellness",
+                        "url": "/?view=wellness" if kind == "skin" else "/?view=gym",
                     })
                     mark_after_delivery(repeat_key, delivered)
 
@@ -786,8 +1251,17 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
     except Exception:
         contests = []
     for contest in contests:
-        start = datetime.fromtimestamp(contest.get("startTimeSeconds", 0), timezone.utc)
-        end = datetime.fromtimestamp(contest.get("endTimeSeconds", 0), timezone.utc)
+        try:
+            start_seconds = float(contest.get("startTimeSeconds") or 0)
+            end_seconds = float(contest.get("endTimeSeconds") or 0)
+            if end_seconds <= start_seconds:
+                end_seconds = start_seconds + max(0, float(contest.get("durationSeconds") or 0))
+            if start_seconds <= 0 or end_seconds <= start_seconds:
+                continue
+            start = datetime.fromtimestamp(start_seconds, timezone.utc)
+            end = datetime.fromtimestamp(end_seconds, timezone.utc)
+        except (OverflowError, OSError, TypeError, ValueError):
+            continue
         starts_in = (start - now).total_seconds()
         if starts_in <= 0 < (end - now).total_seconds():
             bucket = "live"
@@ -802,9 +1276,16 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
         contest_key = f"contest:{contest.get('platform')}:{contest.get('startTimeSeconds')}:{bucket}"
         if notification_state.get(contest_key):
             continue
-        title = f"{contest.get('platform', 'Programming')} contest is live" if bucket == "live" else (
-            f"{contest.get('platform', 'Programming')} contest in {bucket}"
-        )
+        if bucket == "live":
+            title = f"{contest.get('platform', 'Programming')} contest is live"
+        else:
+            minutes_left = max(1, int((starts_in + 59) // 60))
+            time_left = (
+                f"{minutes_left} min"
+                if minutes_left < 60
+                else f"{max(1, round(minutes_left / 60))} hr"
+            )
+            title = f"{contest.get('platform', 'Programming')} contest in {time_left}"
         delivered = broadcast({
             "title": title,
             "body": contest.get("title") or "Open the contest radar for details.",
@@ -819,13 +1300,81 @@ def dispatch_due_reminders(now: datetime | None = None) -> dict:
         for key in dated_keys[:-600]:
             notification_state.pop(key, None)
         changed = True
-    if active_subscriptions != subscriptions:
-        personal["pushSubscriptions"] = active_subscriptions
+    subscriptions_changed = active_subscriptions != subscriptions
+    if subscriptions_changed:
         changed = True
     if changed:
-        personal["updatedAt"] = tracker.isoformat_utc(tracker.utc_now())
-        tracker.write_json(tracker.PERSONAL_PATH, personal)
-    return {"ok": True, "sent": sent, "checkedAt": now.isoformat()}
+        diagnostics = {
+            "lastDispatchAt": now.isoformat(),
+            "lastDispatchLocal": local_now.isoformat(),
+            "sent": sent,
+            "notifications": notification_count,
+            "deliveryAttempts": delivery_attempts,
+            "transientFailures": transient_failures,
+            "removedSubscriptions": removed_subscriptions,
+            "eventsScanned": events_scanned,
+            "invalidEvents": invalid_events,
+            "dueCalendarEvents": due_calendar_events,
+        }
+        active_endpoints = {
+            item.get("endpoint") for item in active_subscriptions
+            if valid_push_subscription(item)
+        }
+        removed_endpoints = {
+            item.get("endpoint") for item in subscriptions
+            if valid_push_subscription(item) and item.get("endpoint") not in active_endpoints
+        }
+        if supabase_configured():
+            # This compare-and-swap changes reminder-owned fields only. A note,
+            # schedule, or workout save that lands concurrently is preserved.
+            supabase_write_notification_cas(
+                notification_state,
+                diagnostics,
+                active_subscriptions,
+                removed_endpoints,
+            )
+        else:
+            # Local fallback: re-read after slow network delivery, then merge
+            # only reminder-owned state into the newest document.
+            latest = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
+            latest_state = latest.get("notificationState")
+            latest_state = dict(latest_state) if isinstance(latest_state, dict) else {}
+            latest_state.update(notification_state)
+            latest["notificationState"] = latest_state
+            latest["notificationDiagnostics"] = diagnostics
+            merged_subscriptions = []
+            seen_endpoints = set()
+            for item in [*(latest.get("pushSubscriptions") or []), *active_subscriptions]:
+                if not valid_push_subscription(item):
+                    continue
+                endpoint = item.get("endpoint")
+                if endpoint in removed_endpoints or endpoint in seen_endpoints:
+                    continue
+                seen_endpoints.add(endpoint)
+                merged_subscriptions.append(clean_push_subscription(item))
+            latest["pushSubscriptions"] = merged_subscriptions[-20:]
+            latest["updatedAt"] = tracker.isoformat_utc(tracker.utc_now())
+            tracker.write_json(tracker.PERSONAL_PATH, latest)
+    return {
+        "ok": True,
+        "sent": sent,
+        "notifications": notification_count,
+        "deliveryAttempts": delivery_attempts,
+        "transientFailures": transient_failures,
+        "removedSubscriptions": removed_subscriptions,
+        "subscriptionCount": len(active_subscriptions),
+        "eventsScanned": events_scanned,
+        "invalidEvents": invalid_events,
+        "dueCalendarEvents": due_calendar_events,
+        "nextCalendarReminderAt": (
+            min(next_calendar_reminders).isoformat()
+            if next_calendar_reminders
+            else None
+        ),
+        "timezone": getattr(local_zone, "key", "Asia/Kolkata"),
+        "checkedAt": now.isoformat(),
+        "localCheckedAt": local_now.isoformat(),
+    }
 
 
 def json_response(payload, status=200):
@@ -879,8 +1428,13 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
             return json_response(tracker.build_quant_today_payload())
         if path == "/api/personal":
             return json_response(tracker.public_personal(tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())))
+        if path == "/api/notes":
+            return json_response(tracker.public_notes(tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())))
         if path == "/api/push/config":
-            return json_response(push_config_payload())
+            # Opening the app also repairs a missing/stale minute schedule.
+            return json_response(push_config_payload(ensure_scheduler=True))
+        if path == "/api/push/diagnostics":
+            return json_response(reminder_diagnostics())
         if path == "/api/contests":
             force_refresh = "refresh=1" in parsed.query
             try:
@@ -902,6 +1456,7 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
             "/api/sync-codeforces",
             "/api/quant/progress",
             "/api/personal",
+            "/api/notes",
             "/api/push/subscribe",
             "/api/push/test",
             "/api/push/dispatch",
@@ -957,24 +1512,46 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
             except Exception as exc:
                 return json_response({"error": str(exc)}, 500)
 
+        if path == "/api/notes":
+            if not isinstance(payload, dict):
+                return json_response({"error": "Notes payload must be an object"}, 400)
+            try:
+                if supabase_configured():
+                    stored = supabase_write_notes_cas(payload)
+                    try:
+                        supabase_sync_notes_normalized(stored)
+                    except (HTTPError, URLError, RuntimeError, ValueError):
+                        pass
+                else:
+                    existing = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
+                    tracker.merge_personal_notes(existing, payload)
+                    existing["updatedAt"] = tracker.isoformat_utc(tracker.utc_now())
+                    existing["version"] = 5
+                    tracker.write_json(tracker.PERSONAL_PATH, existing)
+                    stored = tracker.read_json(tracker.PERSONAL_PATH, existing)
+                return json_response({"ok": True, **tracker.public_notes(stored)})
+            except Exception as exc:
+                return json_response({"error": str(exc)}, 500)
+
         if path == "/api/personal":
             existing = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
             if not isinstance(payload, dict):
                 return json_response({"error": "Personal payload must be an object"}, 400)
             existing["owner"] = tracker.OWNER_NAME
             existing["schedule"] = payload.get("schedule", existing.get("schedule", []))
-            existing["notes"] = payload.get("notes", existing.get("notes", []))
+            tracker.merge_personal_notes(existing, payload)
             existing["expenses"] = payload.get("expenses", existing.get("expenses", []))
             existing["incomes"] = payload.get("incomes", existing.get("incomes", []))
             existing["focusSessions"] = payload.get("focusSessions", existing.get("focusSessions", []))
-            for field in ("skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
+            for field in ("arcadeSessions", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
                           "accounts", "budgets", "bills", "savingsGoals", "debts"):
                 existing[field] = payload.get(field, existing.get(field, []))
             existing["settings"] = payload.get("settings", existing.get("settings", {}))
             existing["updatedAt"] = tracker.isoformat_utc(tracker.utc_now())
-            existing["version"] = 4
+            existing["version"] = 5
             tracker.write_json(tracker.PERSONAL_PATH, existing)
-            return json_response({"ok": True, "personal": tracker.public_personal(existing)})
+            stored = tracker.read_json(tracker.PERSONAL_PATH, existing)
+            return json_response({"ok": True, "personal": tracker.public_personal(stored)})
 
         if not isinstance(payload, dict) or "items" not in payload:
             return json_response({"error": "Progress payload must contain items"}, 400)

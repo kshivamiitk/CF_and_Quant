@@ -107,10 +107,13 @@ def default_quant_progress():
 
 def default_personal():
     return {
-        "version": 4,
+        "version": 5,
         "owner": OWNER_NAME,
         "schedule": [],
         "notes": [],
+        "notesFolders": [],
+        "noteTombstones": [],
+        "noteFolderTombstones": [],
         "skinRoutines": [],
         "skinStepLogs": [],
         "gymPlans": [],
@@ -123,6 +126,7 @@ def default_personal():
         "expenses": [],
         "incomes": [],
         "focusSessions": [],
+        "arcadeSessions": [],
         "tasks": [],
         "goals": [],
         "habits": [],
@@ -137,17 +141,22 @@ def default_personal():
         "debts": [],
         "settings": {"humourStyle": "playful", "flexibleStreaks": True},
         "notificationState": {},
+        "notificationDiagnostics": None,
         "pushSubscriptions": [],
         "updatedAt": None
     }
 
 
 def public_personal(personal):
+    ensure_default_notes_folder(personal)
     return {
-        "version": personal.get("version", 4),
+        "version": personal.get("version", 5),
         "owner": personal.get("owner", OWNER_NAME),
         "schedule": personal.get("schedule", []),
         "notes": personal.get("notes", []),
+        "notesFolders": personal.get("notesFolders", []),
+        "noteTombstones": personal.get("noteTombstones", []),
+        "noteFolderTombstones": personal.get("noteFolderTombstones", []),
         "skinRoutines": personal.get("skinRoutines", []),
         "skinStepLogs": personal.get("skinStepLogs", []),
         "gymPlans": personal.get("gymPlans", []),
@@ -160,6 +169,7 @@ def public_personal(personal):
         "expenses": personal.get("expenses", []),
         "incomes": personal.get("incomes", []),
         "focusSessions": personal.get("focusSessions", []),
+        "arcadeSessions": personal.get("arcadeSessions", []),
         "tasks": personal.get("tasks", []),
         "goals": personal.get("goals", []),
         "habits": personal.get("habits", []),
@@ -175,6 +185,116 @@ def public_personal(personal):
         "settings": personal.get("settings", {"humourStyle": "playful", "flexibleStreaks": True}),
         "updatedAt": personal.get("updatedAt"),
     }
+
+
+def _record_changed_at(record: dict, tombstone: bool = False) -> dt.datetime:
+    fields = ("deletedAt", "updatedAt", "createdAt") if tombstone else ("updatedAt", "createdAt")
+    for field in fields:
+        parsed = parse_datetime(record.get(field))
+        if parsed:
+            return parsed
+    return dt.datetime.fromtimestamp(0, dt.timezone.utc)
+
+
+def merge_timestamped_records(existing, incoming, tombstones) -> list[dict]:
+    """Merge independent note records without letting a stale device erase peers."""
+    records: dict[str, dict] = {}
+    order: list[str] = []
+    for collection in (existing, incoming):
+        if not isinstance(collection, list):
+            continue
+        for raw in collection:
+            if not isinstance(raw, dict) or not raw.get("id"):
+                continue
+            record_id = str(raw["id"])
+            if record_id not in records:
+                order.append(record_id)
+            current = records.get(record_id)
+            if current is None or _record_changed_at(raw) >= _record_changed_at(current):
+                records[record_id] = dict(raw)
+
+    deleted = {
+        str(item["id"]): item
+        for item in tombstones
+        if isinstance(item, dict) and item.get("id")
+    }
+    return [
+        records[record_id]
+        for record_id in order
+        if record_id in records
+        and (
+            record_id not in deleted
+            or _record_changed_at(records[record_id]) > _record_changed_at(deleted[record_id], tombstone=True)
+        )
+    ]
+
+
+def merge_tombstones(existing, incoming, limit: int = 1000) -> list[dict]:
+    merged: dict[str, dict] = {}
+    for collection in (existing, incoming):
+        if not isinstance(collection, list):
+            continue
+        for raw in collection:
+            if not isinstance(raw, dict) or not raw.get("id"):
+                continue
+            record_id = str(raw["id"])
+            current = merged.get(record_id)
+            if current is None or _record_changed_at(raw, tombstone=True) >= _record_changed_at(current, tombstone=True):
+                merged[record_id] = dict(raw)
+    return sorted(
+        merged.values(),
+        key=lambda item: _record_changed_at(item, tombstone=True),
+        reverse=True,
+    )[:limit]
+
+
+def merge_personal_notes(existing: dict, payload: dict) -> None:
+    """Merge Notes independently; tombstones make deletes sync safely."""
+    note_tombstones = merge_tombstones(
+        existing.get("noteTombstones", []),
+        payload.get("noteTombstones", []),
+    )
+    folder_tombstones = merge_tombstones(
+        existing.get("noteFolderTombstones", []),
+        payload.get("noteFolderTombstones", []),
+    )
+    existing["notes"] = merge_timestamped_records(
+        existing.get("notes", []),
+        payload.get("notes", []),
+        note_tombstones,
+    )
+    existing["notesFolders"] = merge_timestamped_records(
+        existing.get("notesFolders", []),
+        payload.get("notesFolders", []),
+        folder_tombstones,
+    )
+    existing["noteTombstones"] = note_tombstones
+    existing["noteFolderTombstones"] = folder_tombstones
+    ensure_default_notes_folder(existing)
+
+
+def public_notes(personal: dict) -> dict:
+    ensure_default_notes_folder(personal)
+    return {
+        "notes": personal.get("notes", []),
+        "notesFolders": personal.get("notesFolders", []),
+        "noteTombstones": personal.get("noteTombstones", []),
+        "noteFolderTombstones": personal.get("noteFolderTombstones", []),
+        "updatedAt": personal.get("updatedAt"),
+    }
+
+
+def ensure_default_notes_folder(personal: dict) -> None:
+    folders = personal.setdefault("notesFolders", [])
+    if any(isinstance(folder, dict) and folder.get("id") == "notes-default" for folder in folders):
+        return
+    created_at = isoformat_utc(utc_now())
+    folders.insert(0, {
+        "id": "notes-default",
+        "name": "Notes",
+        "createdAt": created_at,
+        "updatedAt": created_at,
+    })
 
 
 def flatten_nodes(nodes):
@@ -900,11 +1020,30 @@ class TrackerHandler(BaseHTTPRequestHandler):
             return self.send_json(build_quant_today_payload())
         if path == "/api/personal":
             return self.send_json(public_personal(read_json(PERSONAL_PATH, default_personal())))
+        if path == "/api/notes":
+            return self.send_json(public_notes(read_json(PERSONAL_PATH, default_personal())))
         if path == "/api/push/config":
             return self.send_json({
                 "configured": False,
                 "publicKey": "",
-                "message": "Push reminders are available after Vercel environment variables are configured.",
+                "timezone": os.environ.get("APP_TIMEZONE", "Asia/Kolkata"),
+                "message": "Background push runs from the deployed app; localhost cannot receive QStash callbacks.",
+            })
+        if path == "/api/push/diagnostics":
+            personal = read_json(PERSONAL_PATH, default_personal())
+            enabled_events = [
+                event for event in personal.get("schedule", [])
+                if event.get("notify") is not False and not event.get("completed")
+            ]
+            return self.send_json({
+                "ok": True,
+                "configured": False,
+                "environment": "localhost",
+                "timezone": os.environ.get("APP_TIMEZONE", "Asia/Kolkata"),
+                "enabledCalendarEvents": len(enabled_events),
+                "subscriptionCount": len(personal.get("pushSubscriptions", [])),
+                "lastDispatch": personal.get("notificationDiagnostics"),
+                "message": "Use the deployed Home Screen app for background reminders.",
             })
         if path == "/api/contests":
             query = urlparse(self.path).query
@@ -931,7 +1070,7 @@ class TrackerHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        if parsed.path not in {"/api/progress", "/api/sync-codeforces", "/api/quant/progress", "/api/personal"}:
+        if parsed.path not in {"/api/progress", "/api/sync-codeforces", "/api/quant/progress", "/api/personal", "/api/notes"}:
             return self.send_text("Not found\n", 404)
         if not self.require_api_auth():
             return
@@ -964,22 +1103,32 @@ class TrackerHandler(BaseHTTPRequestHandler):
             except Exception as exc:
                 return self.send_json({"error": str(exc)}, 500)
 
+        if parsed.path == "/api/notes":
+            existing = read_json(PERSONAL_PATH, default_personal())
+            if not isinstance(payload, dict):
+                return self.send_json({"error": "Notes payload must be an object"}, 400)
+            merge_personal_notes(existing, payload)
+            existing["updatedAt"] = isoformat_utc(utc_now())
+            existing["version"] = 5
+            write_json(PERSONAL_PATH, existing)
+            return self.send_json({"ok": True, **public_notes(existing)})
+
         if parsed.path == "/api/personal":
             existing = read_json(PERSONAL_PATH, default_personal())
             if not isinstance(payload, dict):
                 return self.send_json({"error": "Personal payload must be an object"}, 400)
             existing["owner"] = OWNER_NAME
             existing["schedule"] = payload.get("schedule", existing.get("schedule", []))
-            existing["notes"] = payload.get("notes", existing.get("notes", []))
+            merge_personal_notes(existing, payload)
             existing["expenses"] = payload.get("expenses", existing.get("expenses", []))
             existing["incomes"] = payload.get("incomes", existing.get("incomes", []))
             existing["focusSessions"] = payload.get("focusSessions", existing.get("focusSessions", []))
-            for field in ("skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
+            for field in ("arcadeSessions", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
                           "accounts", "budgets", "bills", "savingsGoals", "debts"):
                 existing[field] = payload.get(field, existing.get(field, []))
             existing["settings"] = payload.get("settings", existing.get("settings", {}))
             existing["updatedAt"] = isoformat_utc(utc_now())
-            existing["version"] = 4
+            existing["version"] = 5
             write_json(PERSONAL_PATH, existing)
             return self.send_json({"ok": True, "personal": public_personal(existing)})
 

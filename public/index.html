@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Kumar Quant">
     <link rel="apple-touch-icon" href="/cf2000_tracker_icon_1024.png">
-    <link rel="stylesheet" href="/styles.css?v=20">
+    <link rel="stylesheet" href="/styles.css?v=21">
   </head>
   <body>
     <div class="app-shell">
@@ -34,10 +34,10 @@
           <button id="playTab" class="tab-button play-tab" type="button" data-icon="☻">Brain Arcade</button>
           <button id="quantTab" class="tab-button" type="button" data-icon="Q">Quant</button>
           <button id="plannerTab" class="tab-button" type="button" data-icon="□">Schedule</button>
+          <button id="notesTab" class="tab-button" type="button" data-icon="≡">Notes</button>
           <button id="gymTab" class="tab-button" type="button" data-icon="◫">Gym</button>
           <button id="wellnessTab" class="tab-button" type="button" data-icon="✦">Wellness</button>
           <button id="focusTab" class="tab-button" type="button" data-icon="◎">Focus</button>
-          <button id="notesTab" class="tab-button" type="button" data-icon="≡">Notes</button>
           <button id="contestsTab" class="tab-button contest-tab" type="button">
             <span>Contests</span>
             <span id="contestAlertBadge" class="alert-badge hidden">0</span>
@@ -133,6 +133,19 @@
                   </div>
                 </section>
               </div>
+              <section class="trading-lab">
+                <header class="trading-lab-header">
+                  <div><span class="arcade-sticker">ORIGINAL INTERVIEW SIMULATIONS</span><h2>Trading Decision Lab</h2><p>Train judgment, not trivia: price uncertainty, size risk, calibrate probabilities, and stop optimally.</p></div>
+                  <div id="tradingLabScore" class="trading-lab-score"></div>
+                </header>
+                <nav class="trading-lab-tabs" aria-label="Trading games">
+                  <button class="active" type="button" data-trading-game="market">↔ <span>Quote Lab</span></button>
+                  <button type="button" data-trading-game="risk">◒ <span>Risk Room</span></button>
+                  <button type="button" data-trading-game="calibration">◎ <span>Calibration</span></button>
+                  <button type="button" data-trading-game="stopping">◇ <span>Optimal Stop</span></button>
+                </nav>
+                <div id="tradingGameStage" class="trading-game-stage"></div>
+              </section>
             </div>
           </section>
 
@@ -399,11 +412,16 @@
 
           <section id="notesView" class="view">
             <div id="notesBoard" class="notes-board">
+              <aside class="notes-folders-pane">
+                <div class="notes-folders-title"><div><span>iCloud</span><h2>Folders</h2></div><button id="closeFoldersButton" type="button" aria-label="Close folders">×</button></div>
+                <div id="notesFolderList" class="notes-folder-list"></div>
+                <button id="newNotesFolderButton" class="new-notes-folder" type="button"><span>＋</span> New Folder</button>
+              </aside>
               <aside class="notes-sidebar">
                 <div class="notes-sidebar-header">
                   <div>
                     <button id="notesFolderButton" class="notes-folder-button" type="button"><span>‹</span> Folders</button>
-                    <h2>All iCloud</h2>
+                    <h2 id="notesCurrentFolderTitle">All iCloud</h2>
                   </div>
                   <button id="newNoteButton" class="notes-compose-button" type="button" aria-label="New note">□<span>↗</span></button>
                 </div>
@@ -418,6 +436,7 @@
                   <button id="notesBackButton" class="notes-back-button" type="button" aria-label="Back to notes">‹ <span>Notes</span></button>
                   <span id="notesSaveState" class="save-state">Saved</span>
                   <div class="notes-top-actions">
+                    <select id="noteFolderSelect" class="note-folder-select" aria-label="Move note to folder"></select>
                     <button id="pinNoteButton" class="notes-icon-button" type="button" aria-label="Pin note" title="Pin note">⌖</button>
                     <button id="deleteNoteButton" class="notes-icon-button danger-button" type="button" aria-label="Delete note" title="Delete note">⌫</button>
                     <button id="saveNoteButton" class="notes-done-button" type="button">Done</button>
@@ -430,7 +449,14 @@
                 <div id="noteEditorFields" class="note-editor-fields hidden">
                   <input id="noteTitleInput" class="note-title-input" type="text" placeholder="Title">
                   <div id="noteEditedMeta" class="note-edited-meta"></div>
+                  <div class="note-mode-switch" aria-label="Editor mode">
+                    <button id="noteRichModeButton" class="active" type="button">Rich text</button>
+                    <button id="noteMarkdownModeButton" type="button">Markdown</button>
+                    <button id="notePreviewModeButton" type="button">Preview</button>
+                  </div>
                   <div id="noteBodyInput" class="note-body-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Start writing..."></div>
+                  <textarea id="noteMarkdownInput" class="note-markdown-input hidden" spellcheck="true" placeholder="# Start writing in Markdown&#10;&#10;- Lists&#10;- **Bold** and *italic*&#10;- [ ] Tasks&#10;- Tables and code blocks"></textarea>
+                  <article id="noteMarkdownPreview" class="note-markdown-preview hidden"></article>
                   <div class="notes-format-toolbar" aria-label="Note formatting">
                     <select id="noteBlockFormat" aria-label="Text style">
                       <option value="p">Body</option>
@@ -874,6 +900,6 @@
       <div id="drawerContent"></div>
     </aside>
 
-    <script src="/app.js?v=20"></script>
+    <script src="/app.js?v=21"></script>
   </body>
 </html>

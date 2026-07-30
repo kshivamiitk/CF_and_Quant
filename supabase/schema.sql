@@ -186,6 +186,25 @@ create table if not exists public.skincare_step_logs (
   completed_on date not null, completed_at timestamptz not null default now(), primary key(owner_id,id)
 );
 
+create table if not exists public.note_folders (
+  owner_id text not null, id text not null, name text not null,
+  created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
+  primary key(owner_id,id)
+);
+alter table public.note_folders add column if not exists updated_at timestamptz not null default now();
+create table if not exists public.notes (
+  owner_id text not null, id text not null, folder_id text not null default 'notes-default',
+  title text not null default '', plain_text text not null default '', content_html text not null default '',
+  markdown_body text not null default '', editor_mode text not null default 'rich', pinned boolean not null default false,
+  created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
+  primary key(owner_id,id)
+);
+create table if not exists public.arcade_game_sessions (
+  owner_id text not null, id text not null, game_type text not null, score numeric not null default 0,
+  xp integer not null default 0, rounds integer not null default 1, metrics jsonb not null default '{}'::jsonb,
+  started_at timestamptz, completed_at timestamptz not null default now(), primary key(owner_id,id)
+);
+
 create index if not exists quant_progress_status_idx on public.quant_question_progress(owner_id, status);
 create index if not exists routine_completion_date_idx on public.routine_completions(owner_id, completed_on desc);
 create index if not exists activity_log_time_idx on public.activity_log(owner_id, occurred_at desc);
@@ -208,6 +227,9 @@ alter table public.skincare_products enable row level security;
 alter table public.daily_reflections enable row level security;
 alter table public.quant_attempt_history enable row level security;
 alter table public.skincare_step_logs enable row level security;
+alter table public.note_folders enable row level security;
+alter table public.notes enable row level security;
+alter table public.arcade_game_sessions enable row level security;
 
 -- Access is server-only through SUPABASE_SERVICE_ROLE_KEY. RLS remains enabled
 -- as defense in depth, and the browser-facing anon role gets no table access.
@@ -219,7 +241,8 @@ begin
     'skincare_steps', 'gym_plans', 'gym_exercises', 'routine_completions',
     'workout_sessions', 'workout_set_logs',
     'schedule_events', 'activity_log', 'focus_sessions', 'contest_calendar_entries',
-    'skincare_products', 'daily_reflections', 'quant_attempt_history', 'skincare_step_logs'
+    'skincare_products', 'daily_reflections', 'quant_attempt_history', 'skincare_step_logs',
+    'note_folders', 'notes', 'arcade_game_sessions'
   ]
   loop
     execute format('drop policy if exists single_owner_access on public.%I', table_name);
