@@ -8,7 +8,7 @@ import mimetypes
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import quote, unquote, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 
@@ -19,7 +19,67 @@ PERSONAL_PATH = DATA / "personal.json"
 OWNER_NAME = "Kumar Shivam"
 
 
+def supabase_configured() -> bool:
+    return bool(os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY"))
+
+
+def supabase_request(method: str, path: str, payload=None):
+    base_url = os.environ["SUPABASE_URL"].rstrip("/")
+    service_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+    body = None if payload is None else json.dumps(payload, ensure_ascii=True).encode("utf-8")
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json",
+    }
+    if method in {"POST", "PATCH"}:
+        headers["Prefer"] = "return=representation,resolution=merge-duplicates"
+    request = Request(f"{base_url}/rest/v1/{path}", data=body, headers=headers, method=method)
+    with urlopen(request, timeout=15) as response:
+        raw = response.read().decode("utf-8")
+        return json.loads(raw) if raw else None
+
+
+def supabase_document_key(path: Path) -> str | None:
+    return "personal" if path == PERSONAL_PATH else None
+
+
+def supabase_read_json(path: Path, default):
+    document_key = supabase_document_key(path)
+    if not document_key or not supabase_configured():
+        return None
+    owner_id = os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam")
+    query = urlencode({"owner_id": f"eq.{owner_id}", "document_key": f"eq.{document_key}", "select": "payload"})
+    rows = supabase_request("GET", f"tracker_documents?{query}")
+    if rows:
+        return rows[0].get("payload", default)
+    supabase_request("POST", "tracker_documents", {
+        "owner_id": owner_id,
+        "document_key": document_key,
+        "payload": default,
+    })
+    return default
+
+
+def supabase_write_json(path: Path, payload) -> bool:
+    document_key = supabase_document_key(path)
+    if not document_key or not supabase_configured():
+        return False
+    owner_id = os.environ.get("SUPABASE_OWNER_ID", "kumar-shivam")
+    query = urlencode({"owner_id": f"eq.{owner_id}", "document_key": f"eq.{document_key}"})
+    supabase_request("PATCH", f"tracker_documents?{query}", {
+        "payload": payload,
+        "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+    })
+    return True
+
+
 def read_json(path: Path, default):
+    if supabase_configured() and supabase_document_key(path):
+        try:
+            return supabase_read_json(path, default)
+        except Exception as exc:
+            print(f"Supabase read failed; using local storage: {exc}")
     if not path.exists():
         return default
     with path.open("r", encoding="utf-8") as file:
@@ -27,6 +87,12 @@ def read_json(path: Path, default):
 
 
 def write_json(path: Path, payload) -> None:
+    if supabase_configured() and supabase_document_key(path):
+        try:
+            if supabase_write_json(path, payload):
+                return
+        except Exception as exc:
+            print(f"Supabase write failed; using local storage: {exc}")
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     with tmp.open("w", encoding="utf-8") as file:

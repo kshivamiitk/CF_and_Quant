@@ -57,6 +57,8 @@ def storage_key(path: Path) -> str | None:
 
 
 def vercel_read_json(path: Path, default):
+    if os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
+        return ORIGINAL_READ_JSON(path, default)
     key = storage_key(path)
     if not key:
         return ORIGINAL_READ_JSON(path, default)
@@ -73,6 +75,9 @@ def vercel_read_json(path: Path, default):
 
 
 def vercel_write_json(path: Path, payload) -> None:
+    if os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
+        ORIGINAL_WRITE_JSON(path, payload)
+        return
     key = storage_key(path)
     if not key:
         ORIGINAL_WRITE_JSON(path, payload)
