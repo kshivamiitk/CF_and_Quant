@@ -1,14 +1,15 @@
 {
-  "name": "Kumar Quant Tracker",
-  "short_name": "Kumar Quant",
+  "name": "Kumar Life",
+  "short_name": "Kumar",
   "id": "/",
-  "description": "Private quant interview, Codeforces, schedule, and notes tracker for Kumar Shivam.",
+  "description": "Personal life tracker — schedule, gym, wellness, focus, notes.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f7f7f2",
   "theme_color": "#f5b800",
-  "categories": ["productivity", "education", "finance"],
+  "categories": ["productivity", "health", "finance"],
   "shortcuts": [
     {
       "name": "Today",
@@ -16,19 +17,19 @@
       "url": "/?view=today"
     },
     {
+      "name": "Gym",
+      "short_name": "Gym",
+      "url": "/?view=gym"
+    },
+    {
+      "name": "Wellness",
+      "short_name": "Wellness",
+      "url": "/?view=wellness"
+    },
+    {
       "name": "New note",
       "short_name": "Note",
       "url": "/?view=notes&new=1"
-    },
-    {
-      "name": "Focus & Spending",
-      "short_name": "Insights",
-      "url": "/?view=insights"
-    },
-    {
-      "name": "Tasks & Reminders",
-      "short_name": "Tasks",
-      "url": "/?view=life"
     }
   ],
   "icons": [

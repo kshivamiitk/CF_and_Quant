@@ -1,12 +1,12 @@
 {
   "version": 1,
   "owner": "Kumar Shivam",
-  "activeQuestionId": "quant-guide-q0002",
+  "activeQuestionId": "quant-guide-q0001",
   "items": {
     "quant-guide-q0001": {
-      "status": "todo",
-      "assignedAt": "2026-07-23T17:46:34Z",
-      "lastUpdated": "2026-07-25T11:50:24Z",
+      "status": "doing",
+      "assignedAt": "2026-10-17T07:25:12Z",
+      "lastUpdated": "2026-10-17T07:25:12Z",
       "solvedAt": "2026-07-25T11:37:53Z",
       "solutionRevealed": true
     },
@@ -21,5 +21,6 @@
       "id": "quant-guide-q0001",
       "solvedAt": "2026-07-25T11:37:53Z"
     }
-  ]
+  ],
+  "activeSelection": "automatic"
 }

@@ -1,26 +1,7 @@
 const state = {
-  roadmap: null,
-  progress: null,
-  flat: [],
-  byId: new Map(),
-  selectedId: null,
-  activeTopic: "all",
   activeView: "today",
-  saveTimer: null,
-  quantSaveTimer: null,
-  drawerOpen: false,
-  contestPayload: null,
-  contests: [],
-  contestTickTimer: null,
-  contestPollTimer: null,
-  contestNotices: new Set(),
-  quant: null,
-  quantToday: null,
   personal: null,
   personalSaveTimer: null,
-  quantSearch: "",
-  quantSource: "all",
-  quantStatus: "all",
   calendarMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   selectedScheduleDate: null,
   editingEventId: null,
@@ -35,18 +16,6 @@ const state = {
   focusRunning: false,
   focusStartedAt: null,
   focusTimer: null,
-  brainXp: Number(localStorage.getItem("kumarBrainXp") || 0),
-  memoryCards: [],
-  memoryOpen: [],
-  memoryMatched: new Set(),
-  memoryMoves: 0,
-  memoryLocked: false,
-  mathRound: 0,
-  mathScore: 0,
-  mathAnswer: null,
-  mathPlaying: false,
-  sequenceAnswer: null,
-  sequenceStreak: Number(localStorage.getItem("kumarSequenceStreak") || 0),
   editingSkinRoutineId: null,
   editingGymPlanId: null,
   activeGymMode: "today",
@@ -62,11 +31,10 @@ const initialParams = new URLSearchParams(window.location.search);
 const initialView = initialParams.get("view");
 const initialDate = initialParams.get("date");
 const initialNewNote = initialParams.get("new") === "1";
-if (["today", "play", "quant", "planner", "gym", "wellness", "focus", "notes", "tree", "contests", "sheet", "stats"].includes(initialView)) {
+if (["today", "planner", "gym", "wellness", "focus", "notes"].includes(initialView)) {
   state.activeView = initialView;
 }
 if (/^\d{4}-\d{2}-\d{2}$/.test(initialDate || "")) state.selectedScheduleDate = initialDate;
-localStorage.removeItem("kumarQuantToken");
 if (initialParams.has("token") || initialView || initialNewNote) window.history.replaceState({}, document.title, window.location.pathname);
 
 function authHeaders(extra = {}) {
@@ -98,62 +66,10 @@ async function postJson(url, payload) {
   return response.json();
 }
 
-function flattenRoadmap(roadmap) {
-  const flat = [];
-  const byId = new Map();
-
-  function visit(node, topic, parentId, depth) {
-    const item = {
-      ...node,
-      topicId: topic.id,
-      topicTitle: topic.title,
-      parentId,
-      depth,
-      childrenIds: (node.children || []).map((child) => child.id)
-    };
-    delete item.children;
-    flat.push(item);
-    byId.set(item.id, item);
-    (node.children || []).forEach((child) => visit(child, topic, item.id, depth + 1));
-  }
-
-  roadmap.topics.forEach((topic) => {
-    (topic.nodes || []).forEach((node) => visit(node, topic, null, 0));
-  });
-
-  state.flat = flat;
-  state.byId = byId;
-}
-
-function itemProgress(id) {
-  if (!state.progress.items[id]) {
-    state.progress.items[id] = {
-      status: "todo",
-      comments: "",
-      learnings: "",
-      mistakes: "",
-      nextAction: "",
-      attempts: 0,
-      lastUpdated: null
-    };
-  }
-  return state.progress.items[id];
-}
 
 function formatUnixTime(seconds) {
   if (!seconds) return "None";
   return new Date(seconds * 1000).toLocaleString();
-}
-
-function formatContestTime(seconds) {
-  if (!seconds) return "Unknown";
-  return new Date(seconds * 1000).toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
 }
 
 function formatDuration(seconds) {
@@ -163,16 +79,6 @@ function formatDuration(seconds) {
   if (hours && minutes) return `${hours}h ${minutes}m`;
   if (hours) return `${hours}h`;
   return `${minutes}m`;
-}
-
-function formatCountdown(seconds) {
-  const value = Math.max(0, Math.floor(seconds));
-  const days = Math.floor(value / 86400);
-  const hours = Math.floor((value % 86400) / 3600);
-  const minutes = Math.floor((value % 3600) / 60);
-  if (days) return `${days}d ${hours}h`;
-  if (hours) return `${hours}h ${minutes}m`;
-  return `${Math.max(1, minutes)}m`;
 }
 
 function formatLocalDateTime(value) {
@@ -201,7 +107,7 @@ function updateYearRunway() {
   const days = daysRemainingInYear();
   const mark = $("yearAppMark");
   if (mark) mark.innerHTML = `<strong>${days}</strong><small>days</small>`;
-  document.title = `${days} days left · CF 2000`;
+  document.title = `${days} days left`;
   const card = $("yearCountdownCard");
   if (card) {
     const year = new Date().getFullYear();
@@ -232,7 +138,7 @@ function localIsoDate(date = new Date()) {
 }
 
 const personalCollectionFields = [
-  "schedule", "notes", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "quantAttemptHistory", "expenses", "incomes", "focusSessions", "tasks", "goals",
+  "schedule", "notes", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "expenses", "incomes", "focusSessions", "tasks", "goals",
   "habits", "weeklyReviews", "healthLogs", "careerItems", "documents", "accounts", "budgets",
   "bills", "savingsGoals", "debts"
 ];
@@ -284,48 +190,6 @@ function todayLabel() {
   });
 }
 
-function contestTiming(contest) {
-  const now = Math.floor(Date.now() / 1000);
-  const startsIn = contest.startTimeSeconds - now;
-  const endsIn = contest.endTimeSeconds - now;
-  const live = startsIn <= 0 && endsIn > 0;
-  let urgency = "later";
-  if (live) urgency = "live";
-  else if (startsIn <= 6 * 3600) urgency = "critical";
-  else if (startsIn <= 24 * 3600) urgency = "soon";
-  else if (startsIn <= 7 * 24 * 3600) urgency = "week";
-  return { startsIn, endsIn, live, urgency };
-}
-
-function contestStatusText(contest) {
-  const timing = contestTiming(contest);
-  if (timing.live) return `Live, ends in ${formatCountdown(timing.endsIn)}`;
-  if (timing.startsIn <= 0) return "Finished";
-  return `Starts in ${formatCountdown(timing.startsIn)}`;
-}
-
-function visibleContests() {
-  const now = Math.floor(Date.now() / 1000);
-  return state.contests
-    .filter((contest) => contest.endTimeSeconds > now)
-    .sort((a, b) => a.startTimeSeconds - b.startTimeSeconds || a.platform.localeCompare(b.platform));
-}
-
-function urgentContests() {
-  return visibleContests().filter((contest) => {
-    const timing = contestTiming(contest);
-    return timing.live || timing.startsIn <= 24 * 3600;
-  });
-}
-
-function primaryContestAlert() {
-  const contests = urgentContests();
-  return contests.find((contest) => contestTiming(contest).live)
-    || contests.find((contest) => contestTiming(contest).startsIn <= 6 * 3600)
-    || contests[0]
-    || null;
-}
-
 function notificationStateText() {
   if (!("Notification" in window)) return "Unavailable";
   if (Notification.permission === "granted") return "Enabled";
@@ -333,77 +197,14 @@ function notificationStateText() {
   return "Off";
 }
 
-function loadContestNoticeStore() {
-  try {
-    const raw = localStorage.getItem("cf2000ContestNotices");
-    state.contestNotices = new Set(raw ? JSON.parse(raw) : []);
-  } catch {
-    state.contestNotices = new Set();
-  }
-}
-
-function saveContestNoticeStore() {
-  try {
-    localStorage.setItem("cf2000ContestNotices", JSON.stringify([...state.contestNotices].slice(-500)));
-  } catch {
-    // Notification deduplication is best effort only.
-  }
-}
-
-function statusOf(id) {
-  return itemProgress(id).status || "todo";
-}
-
-function isDone(id) {
-  return statusOf(id) === "done";
-}
-
-function displayStatus(id) {
-  if (isDone(id)) return "done";
-  if (!isUnlocked(id)) return "locked";
-  return statusOf(id);
-}
-
-function isUnlocked(id) {
-  const item = state.byId.get(id);
-  if (!item || !item.parentId) return true;
-  return isDone(item.parentId);
-}
-
-function prerequisiteText(item) {
-  if (!item.parentId) return "None";
-  const parent = state.byId.get(item.parentId);
-  return parent ? parent.title : item.parentId;
-}
-
-function visibleItems() {
-  const query = $("searchInput").value.trim().toLowerCase();
-  return state.flat.filter((item) => {
-    const topicOk = state.activeTopic === "all" || item.topicId === state.activeTopic;
-    if (!topicOk) return false;
-    if (!query) return true;
-    const haystack = [
-      item.title,
-      item.topicTitle,
-      item.rating,
-      item.focus,
-      ...(item.tags || [])
-    ].join(" ").toLowerCase();
-    return haystack.includes(query);
-  });
-}
-
 function setView(viewName) {
   state.activeView = viewName;
   document.body.dataset.view = viewName;
-  document.body.classList.toggle("code-view", ["tree", "sheet", "stats"].includes(viewName));
-  ["today", "play", "quant", "planner", "gym", "wellness", "focus", "notes", "tree", "contests", "sheet", "stats"].forEach((name) => {
+  ["today", "planner", "gym", "wellness", "focus", "notes"].forEach((name) => {
     $(`${name}View`)?.classList.toggle("active", name === viewName);
     $(`${name}Tab`)?.classList.toggle("active", name === viewName);
   });
   if (viewName === "today") renderToday();
-  if (viewName === "play") renderArcade();
-  if (viewName === "quant") renderQuant();
   if (viewName === "planner") renderSchedule();
   if (viewName === "gym") renderGymHub();
   if (viewName === "wellness") renderWellness();
@@ -411,9 +212,6 @@ function setView(viewName) {
   if (viewName === "notes") renderNotes();
   if (viewName === "life") renderLife();
   if (viewName === "insights") renderInsights();
-  if (viewName === "contests") renderContestsView();
-  if (viewName === "sheet") renderSheet();
-  if (viewName === "stats") renderStats();
   if (window.matchMedia("(max-width: 480px)").matches) {
     requestAnimationFrame(() => $(`${viewName}Tab`)?.scrollIntoView({
       behavior: "smooth",
@@ -423,869 +221,23 @@ function setView(viewName) {
   }
 }
 
-function renderGoal() {
-  const goal = state.progress.goal || {};
-  $("goalText").textContent = `${goal.currentRating || 1700} -> ${goal.targetRating || 2000} by ${goal.deadline || "2026-12-31"}`;
-  $("cfHandleInput").value = state.progress.profile?.codeforcesHandle || "";
-}
-
-function renderTopicFilters() {
-  const topics = state.roadmap.topics || [];
-  const buttons = [
-    `<button class="topic-pill ${state.activeTopic === "all" ? "active" : ""}" data-topic="all" type="button">All</button>`
-  ];
-  topics.forEach((topic) => {
-    buttons.push(
-      `<button class="topic-pill ${state.activeTopic === topic.id ? "active" : ""}" data-topic="${escapeHtml(topic.id)}" type="button">${escapeHtml(topic.title)}</button>`
-    );
-  });
-  $("topicFilters").innerHTML = buttons.join("");
-  document.querySelectorAll(".topic-pill").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.activeTopic = button.dataset.topic;
-      renderAll();
-    });
-  });
-}
-
-function renderTree() {
-  renderTopicCards();
-  renderGraph();
-}
-
-function renderTopicCards() {
-  const cards = (state.roadmap.topics || []).map((topic) => {
-    const items = state.flat.filter((item) => item.topicId === topic.id);
-    const done = items.filter((item) => displayStatus(item.id) === "done").length;
-    const pct = items.length ? Math.round((done * 100) / items.length) : 0;
-    return `
-      <button class="topic-card ${state.activeTopic === topic.id ? "active" : ""}" data-topic-card="${escapeHtml(topic.id)}" type="button">
-        <h3>${escapeHtml(topic.title)}</h3>
-        <div class="mini-progress"><span style="width:${pct}%"></span></div>
-        <p>${done}/${items.length} solved</p>
-      </button>
-    `;
-  }).join("");
-  $("treePanel").innerHTML = cards;
-  document.querySelectorAll("[data-topic-card]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.activeTopic = button.dataset.topicCard;
-      const first = state.flat.find((item) => item.topicId === state.activeTopic && isUnlocked(item.id) && displayStatus(item.id) !== "done")
-        || state.flat.find((item) => item.topicId === state.activeTopic);
-      if (first) state.selectedId = first.id;
-      renderAll();
-    });
-  });
-}
-
-function topicItems(topicId) {
-  const query = $("searchInput").value.trim().toLowerCase();
-  let items = state.flat.filter((item) => topicId === "all" || item.topicId === topicId);
-  if (!query) return items;
-
-  const matched = new Set();
-  items.forEach((item) => {
-    const haystack = [
-      item.title,
-      item.topicTitle,
-      item.rating,
-      item.focus,
-      item.contestName,
-      item.date,
-      ...(item.tags || [])
-    ].join(" ").toLowerCase();
-    if (haystack.includes(query)) {
-      let current = item;
-      while (current) {
-        matched.add(current.id);
-        current = current.parentId ? state.byId.get(current.parentId) : null;
-      }
-      item.childrenIds.forEach((childId) => matched.add(childId));
-    }
-  });
-  return items.filter((item) => matched.has(item.id));
-}
-
-function buildLayout(items, offsetY, topicTitle) {
-  const itemSet = new Set(items.map((item) => item.id));
-  const roots = items.filter((item) => !item.parentId || !itemSet.has(item.parentId));
-  const children = new Map();
-  items.forEach((item) => {
-    const visibleChildren = item.childrenIds.filter((id) => itemSet.has(id));
-    children.set(item.id, visibleChildren);
-  });
-
-  let leafCursor = 0;
-  const positions = new Map();
-  const depthGap = 150;
-  const leafGap = 150;
-  const leftPad = 130;
-  const topPad = offsetY + 96;
-
-  function place(id, depth) {
-    const childIds = children.get(id) || [];
-    let x;
-    if (!childIds.length) {
-      x = leftPad + leafCursor * leafGap;
-      leafCursor += 1;
-    } else {
-      const xs = childIds.map((childId) => place(childId, depth + 1));
-      x = xs.reduce((sum, value) => sum + value, 0) / xs.length;
-    }
-    positions.set(id, { x, y: topPad + depth * depthGap, depth });
-    return x;
-  }
-
-  roots.forEach((root) => place(root.id, 0));
-  const maxDepth = Math.max(0, ...Array.from(positions.values()).map((pos) => pos.depth));
-  const width = Math.max(980, leftPad * 2 + Math.max(1, leafCursor) * leafGap);
-  const height = topPad + maxDepth * depthGap + 150 - offsetY;
-  return { positions, width, height, topicTitle, offsetY };
-}
-
-function renderGraph() {
-  const selectedTopic = state.activeTopic === "all"
-    ? null
-    : (state.roadmap.topics || []).find((topic) => topic.id === state.activeTopic);
-  const topicsToRender = selectedTopic ? [selectedTopic] : (state.roadmap.topics || []);
-  const layouts = [];
-  let offsetY = 0;
-  let maxWidth = 980;
-
-  topicsToRender.forEach((topic) => {
-    const items = topicItems(topic.id);
-    if (!items.length) return;
-    const layout = buildLayout(items, offsetY, topic.title);
-    layouts.push({ ...layout, items, topic });
-    offsetY += layout.height + 54;
-    maxWidth = Math.max(maxWidth, layout.width);
-  });
-
-  const canvasHeight = Math.max(680, offsetY + 20);
-  const canvas = $("graphCanvas");
-  canvas.style.width = `${maxWidth}px`;
-  canvas.style.height = `${canvasHeight}px`;
-  $("edgeLayer").setAttribute("width", maxWidth);
-  $("edgeLayer").setAttribute("height", canvasHeight);
-  $("edgeLayer").setAttribute("viewBox", `0 0 ${maxWidth} ${canvasHeight}`);
-
-  const edges = [];
-  const nodes = [];
-  let ordinal = 1;
-
-  layouts.forEach((layout) => {
-    nodes.push(`<div class="graph-topic-title" style="top:${layout.offsetY + 18}px">${escapeHtml(layout.topicTitle)}</div>`);
-    const itemSet = new Set(layout.items.map((item) => item.id));
-    layout.items.forEach((item) => {
-      const pos = layout.positions.get(item.id);
-      if (!pos) return;
-      if (item.parentId && itemSet.has(item.parentId)) {
-        const parent = layout.positions.get(item.parentId);
-        if (parent) {
-          edges.push(`<line class="edge-line ${isDone(item.id) ? "done" : ""}" x1="${parent.x}" y1="${parent.y}" x2="${pos.x}" y2="${pos.y}"></line>`);
-        }
-      }
-      const unlocked = isUnlocked(item.id);
-      const status = displayStatus(item.id);
-      const selected = state.selectedId === item.id ? "selected" : "";
-      const lockText = unlocked ? "" : "Locked. Finish prerequisite first.";
-      nodes.push(`
-        <div class="graph-node-wrap" style="left:${pos.x}px;top:${pos.y}px">
-          <button class="graph-node ${escapeHtml(status)} ${selected}" data-id="${escapeHtml(item.id)}" title="${escapeHtml(item.title)} ${lockText}" type="button">
-            <span>
-              <span class="graph-number">${ordinal}</span>
-              <span class="graph-rating">${escapeHtml(item.rating)}</span>
-            </span>
-          </button>
-          <div class="graph-label">${escapeHtml(item.title)}</div>
-        </div>
-      `);
-      ordinal += 1;
-    });
-  });
-
-  $("roadmapTitle").textContent = selectedTopic ? selectedTopic.title : "All Topic Trees";
-  $("roadmapSubtitle").textContent = selectedTopic
-    ? `${selectedTopic.goal} Yellow nodes are pending; green nodes are solved.`
-    : `All ${state.flat.length} Codeforces practice problems, grouped into topic trees.`;
-  $("edgeLayer").innerHTML = edges.join("");
-  $("graphNodes").innerHTML = nodes.join("") || `<div class="empty-state">No matching problems.</div>`;
-
-  document.querySelectorAll(".graph-node").forEach((button) => {
-    button.addEventListener("click", () => selectProblem(button.dataset.id));
-  });
-}
-
-function selectProblem(id) {
-  state.selectedId = id;
-  renderTree();
-  renderDetail();
-  openProblemDrawer();
-}
-
-function statusBadge(status, unlocked) {
-  if (!unlocked) return `<span class="status-badge">Locked</span>`;
-  const label = status === "done" ? "Done" : status === "doing" ? "Doing" : "Todo";
-  return `<span class="status-badge">${label}</span>`;
-}
-
-function renderDetail() {
-  if (!state.selectedId && state.flat.length) {
-    state.selectedId = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done")?.id || state.flat[0].id;
-  }
-
-  const item = state.byId.get(state.selectedId);
-  if (!item) {
-    $("problemDetail").innerHTML = `<div class="empty-state">Select a problem.</div>`;
-    return;
-  }
-
-  const progress = itemProgress(item.id);
-  const unlocked = isUnlocked(item.id);
-  const tags = (item.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
-  const childCount = item.childrenIds.length;
-  const childrenDone = item.childrenIds.filter((id) => isDone(id)).length;
-  const lockedReason = unlocked || progress.status === "done" ? "" : `<div class="lock-banner">Locked until: ${escapeHtml(prerequisiteText(item))}</div>`;
-  const problemLinkClass = "primary-link";
-
-  $("problemDetail").innerHTML = `
-    <div class="detail-header">
-      <div>
-        <h2>${escapeHtml(item.title)}</h2>
-        <div class="detail-meta">
-          <span class="rating-badge">${escapeHtml(item.rating)}</span>
-          ${statusBadge(displayStatus(item.id), unlocked || progress.status === "done")}
-          <span class="status-badge">${escapeHtml(item.topicTitle)}</span>
-          <span class="status-badge">${escapeHtml(item.date || "")}</span>
-        </div>
-        ${lockedReason}
-      </div>
-      <div class="detail-actions">
-        <a class="${problemLinkClass}" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">Open Problem</a>
-        <button id="nextButton" class="secondary-button" type="button">Next</button>
-      </div>
-    </div>
-    <div class="detail-body">
-      <aside>
-        <div class="field-group">
-          <label>Status</label>
-          <select id="statusSelect" ${unlocked ? "" : "disabled"}>
-            <option value="todo" ${progress.status === "todo" ? "selected" : ""}>Todo</option>
-            <option value="doing" ${progress.status === "doing" ? "selected" : ""}>Doing</option>
-            <option value="done" ${progress.status === "done" ? "selected" : ""}>Done</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label>Attempts</label>
-          <select id="attemptSelect" ${unlocked ? "" : "disabled"}>
-            ${[0, 1, 2, 3, 4, 5].map((num) => `<option value="${num}" ${Number(progress.attempts || 0) === num ? "selected" : ""}>${num}</option>`).join("")}
-          </select>
-        </div>
-        <div class="field-group">
-          <label>Prerequisite</label>
-          <div class="readonly-box">${escapeHtml(prerequisiteText(item))}</div>
-        </div>
-        <div class="field-group">
-          <label>Unlocks</label>
-          <div class="readonly-box">${childCount ? `${childrenDone}/${childCount} completed below` : "No child problems"}</div>
-        </div>
-        <div class="field-group">
-          <label>Focus</label>
-          <div class="readonly-box">${escapeHtml(item.focus || "")}</div>
-        </div>
-        <div class="field-group">
-          <label>Contest</label>
-          <div class="readonly-box">${escapeHtml(item.contestName || "")}</div>
-        </div>
-        <div class="field-group">
-          <label>Tags</label>
-          <div class="tag-list">${tags}</div>
-        </div>
-        <div id="saveState" class="save-state"></div>
-      </aside>
-      <section class="note-grid">
-        <div class="field-group">
-          <label>Comments</label>
-          <textarea id="commentsInput">${escapeHtml(progress.comments || "")}</textarea>
-        </div>
-        <div class="field-group">
-          <label>Learnings</label>
-          <textarea id="learningsInput">${escapeHtml(progress.learnings || "")}</textarea>
-        </div>
-        <div class="field-group">
-          <label>Mistakes</label>
-          <textarea id="mistakesInput">${escapeHtml(progress.mistakes || "")}</textarea>
-        </div>
-        <div class="field-group">
-          <label>Next action</label>
-          <textarea id="nextActionInput">${escapeHtml(progress.nextAction || "")}</textarea>
-        </div>
-      </section>
-    </div>
-  `;
-
-  $("nextButton").addEventListener("click", selectNextUnlocked);
-  if (unlocked) {
-    $("statusSelect").addEventListener("change", () => updateCurrent("status", $("statusSelect").value));
-    $("attemptSelect").addEventListener("change", () => updateCurrent("attempts", Number($("attemptSelect").value)));
-  }
-  ["comments", "learnings", "mistakes", "nextAction"].forEach((field) => {
-    $(`${field}Input`).addEventListener("input", () => updateCurrent(field, $(`${field}Input`).value, true));
-  });
-}
-
-function updateCurrent(field, value, debounced = false) {
-  if (!state.selectedId) return;
-  const noteField = ["comments", "learnings", "mistakes", "nextAction"].includes(field);
-  if (!noteField && !isUnlocked(state.selectedId)) return;
-  const progress = itemProgress(state.selectedId);
-  const previousValue = progress[field];
-  progress[field] = value;
-  if (state.personal && ["status", "attempts"].includes(field) && previousValue !== value) {
-    state.personal.quantAttemptHistory ||= [];
-    state.personal.quantAttemptHistory.unshift({
-      id: `quant-attempt-${Date.now()}`,
-      questionId: state.selectedId,
-      title: state.byId.get(state.selectedId)?.title || state.selectedId,
-      field,
-      from: previousValue ?? "",
-      to: value,
-      occurredAt: new Date().toISOString()
-    });
-    savePersonal(true, false);
-  }
-  if (field === "status") {
-    progress.statusSource = "manual";
-  }
-  progress.lastUpdated = new Date().toISOString();
-  if (field === "status") {
-    renderTree();
-    renderSheet();
-    if (state.drawerOpen) renderDrawer();
-  }
-  scheduleSave(debounced);
-}
-
-function quantAttemptTimeline(questionId) {
-  const entries=(state.personal?.quantAttemptHistory||[]).filter(item=>item.questionId===questionId).slice(0,6);
-  return entries.length?`<div class="quant-attempt-timeline"><strong>Attempt history</strong>${entries.map(item=>`<span>${escapeHtml(formatLocalDateTime(item.occurredAt))} · ${escapeHtml(item.field)}: ${escapeHtml(item.from)} → ${escapeHtml(item.to)}</span>`).join("")}</div>`:"";
-}
-
-function openProblemDrawer() {
-  state.drawerOpen = true;
-  renderDrawer();
-  $("drawerBackdrop").classList.remove("hidden");
-  $("problemDrawer").classList.remove("hidden");
-  $("problemDrawer").setAttribute("aria-hidden", "false");
-}
-
-function closeProblemDrawer() {
-  state.drawerOpen = false;
-  $("drawerBackdrop").classList.add("hidden");
-  $("problemDrawer").classList.add("hidden");
-  $("problemDrawer").setAttribute("aria-hidden", "true");
-}
-
-function renderDrawer() {
-  const item = state.byId.get(state.selectedId);
-  if (!item) return;
-
-  const progress = itemProgress(item.id);
-  const unlocked = isUnlocked(item.id);
-  const status = progress.status || "todo";
-  const tags = (item.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
-  const lockedReason = unlocked ? "" : `<div class="lock-banner">Manual status is locked until: ${escapeHtml(prerequisiteText(item))}. Notes and the Codeforces link are still available.</div>`;
-  const cfInfo = progress.statusSource === "codeforces"
-    ? `Synced from Codeforces. Attempts: ${progress.cfAttempts || progress.attempts || 0}. Last submission: ${formatUnixTime(progress.lastCfSubmissionAt)}.`
-    : "Not synced from Codeforces yet.";
-
-  $("drawerContent").innerHTML = `
-    <div class="drawer-header">
-      <div class="drawer-title-row">
-        <div>
-          <h2>${escapeHtml(item.title)}</h2>
-          <div class="detail-meta">
-            <span class="rating-badge">${escapeHtml(item.rating)}</span>
-            ${statusBadge(status, unlocked || status === "done")}
-            <span class="status-badge">${escapeHtml(item.topicTitle)}</span>
-            <span class="status-badge">${escapeHtml(item.date || "")}</span>
-          </div>
-          ${lockedReason}
-        </div>
-        <button id="drawerClose" class="drawer-close" type="button" aria-label="Close">x</button>
-      </div>
-      <div class="drawer-action-row">
-        <a class="primary-link" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">Open Codeforces</a>
-        <button id="drawerNextButton" class="secondary-button" type="button">Next unlocked</button>
-      </div>
-    </div>
-    <div class="drawer-body">
-      <div class="drawer-grid">
-        <aside>
-          <div class="field-group">
-            <label>Status</label>
-            <select id="drawerStatusSelect" ${unlocked ? "" : "disabled"}>
-              <option value="todo" ${status === "todo" ? "selected" : ""}>Todo</option>
-              <option value="doing" ${status === "doing" ? "selected" : ""}>Doing</option>
-              <option value="done" ${status === "done" ? "selected" : ""}>Done</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label>Attempts</label>
-            <select id="drawerAttemptSelect" ${unlocked ? "" : "disabled"}>
-              ${[0, 1, 2, 3, 4, 5].map((num) => `<option value="${num}" ${Number(progress.attempts || 0) === num ? "selected" : ""}>${num}</option>`).join("")}
-            </select>
-          </div>
-          <div class="field-group">
-            <label>Prerequisite</label>
-            <div class="readonly-box">${escapeHtml(prerequisiteText(item))}</div>
-          </div>
-          <div class="field-group">
-            <label>Codeforces sync</label>
-            <div class="readonly-box cf-sync-note">${escapeHtml(cfInfo)}</div>
-          </div>
-          <div class="field-group">
-            <label>Contest</label>
-            <div class="readonly-box">${escapeHtml(item.contestName || "")}</div>
-          </div>
-          <div class="field-group">
-            <label>Focus</label>
-            <div class="readonly-box">${escapeHtml(item.focus || "")}</div>
-          </div>
-          <div class="field-group">
-            <label>Tags</label>
-            <div class="tag-list">${tags}</div>
-          </div>
-          <div id="drawerSaveState" class="save-state"></div>
-        </aside>
-        <section class="note-grid">
-          <div class="field-group">
-            <label>Comments</label>
-            <textarea id="drawerCommentsInput">${escapeHtml(progress.comments || "")}</textarea>
-          </div>
-          <div class="field-group">
-            <label>Learnings</label>
-            <textarea id="drawerLearningsInput">${escapeHtml(progress.learnings || "")}</textarea>
-          </div>
-          <div class="field-group">
-            <label>Mistakes</label>
-            <textarea id="drawerMistakesInput">${escapeHtml(progress.mistakes || "")}</textarea>
-          </div>
-          <div class="field-group">
-            <label>Next action</label>
-            <textarea id="drawerNextActionInput">${escapeHtml(progress.nextAction || "")}</textarea>
-          </div>
-        </section>
-      </div>
-    </div>
-  `;
-
-  $("drawerClose").addEventListener("click", closeProblemDrawer);
-  $("drawerNextButton").addEventListener("click", selectNextUnlocked);
-  if (unlocked) {
-    $("drawerStatusSelect").addEventListener("change", () => updateCurrent("status", $("drawerStatusSelect").value));
-    $("drawerAttemptSelect").addEventListener("change", () => updateCurrent("attempts", Number($("drawerAttemptSelect").value)));
-  }
-  [
-    ["comments", "drawerCommentsInput"],
-    ["learnings", "drawerLearningsInput"],
-    ["mistakes", "drawerMistakesInput"],
-    ["nextAction", "drawerNextActionInput"]
-  ].forEach(([field, inputId]) => {
-    $(inputId).addEventListener("input", () => updateCurrent(field, $(inputId).value, true));
-  });
-}
-
-function scheduleSave(debounced) {
-  const saveState = $("saveState");
-  if (saveState) saveState.textContent = "Saving...";
-  const drawerSaveState = $("drawerSaveState");
-  if (drawerSaveState) drawerSaveState.textContent = "Saving...";
-  clearTimeout(state.saveTimer);
-  state.saveTimer = setTimeout(saveProgress, debounced ? 450 : 0);
-}
-
-async function saveProgress() {
-  try {
-    const result = await postJson("/api/progress", state.progress);
-    if (result.progress) state.progress = result.progress;
-    const saveState = $("saveState");
-    if (saveState) saveState.textContent = "Saved";
-    const drawerSaveState = $("drawerSaveState");
-    if (drawerSaveState) drawerSaveState.textContent = "Saved";
-    if (state.activeView === "stats") renderStats();
-  } catch (error) {
-    const saveState = $("saveState");
-    if (saveState) saveState.textContent = "Save failed";
-    const drawerSaveState = $("drawerSaveState");
-    if (drawerSaveState) drawerSaveState.textContent = "Save failed";
-    console.error(error);
-  }
-}
-
-async function syncCodeforces() {
-  const handle = $("cfHandleInput").value.trim();
-  if (!handle) {
-    $("syncStatus").textContent = "Enter handle";
-    return;
-  }
-  $("syncButton").disabled = true;
-  $("syncStatus").textContent = "Syncing...";
-  try {
-    const result = await postJson("/api/sync-codeforces", { handle });
-    state.progress = await getJson(`/api/progress?ts=${Date.now()}`);
-    $("syncStatus").textContent = `${result.acceptedProblems} AC, ${result.attemptedWithoutAccepted} trying`;
-    state.selectedId = state.flat.find((item) => displayStatus(item.id) !== "done" && isUnlocked(item.id))?.id || state.selectedId;
-    renderAll();
-    if (state.drawerOpen) renderDrawer();
-  } catch (error) {
-    $("syncStatus").textContent = "Sync failed";
-    console.error(error);
-  } finally {
-    $("syncButton").disabled = false;
-  }
-}
-
-function selectNextUnlocked() {
-  const next = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done");
-  if (next) {
-    setView("tree");
-    selectProblem(next.id);
-  }
-}
-
-function contestNoticeBucket(contest) {
-  const timing = contestTiming(contest);
-  if (timing.live) return "live";
-  if (timing.startsIn <= 15 * 60) return "15m";
-  if (timing.startsIn <= 60 * 60) return "1h";
-  if (timing.startsIn <= 6 * 3600) return "6h";
-  if (timing.startsIn <= 24 * 3600) return "24h";
-  return null;
-}
-
-function maybeNotifyContest(contest, force = false) {
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
-  const bucket = contestNoticeBucket(contest);
-  if (!bucket) return;
-  const key = `${contest.id}:${bucket}`;
-  if (!force && state.contestNotices.has(key)) return;
-
-  const timing = contestTiming(contest);
-  const title = timing.live
-    ? `${contest.platform} contest is live`
-    : `${contest.platform} contest starts in ${formatCountdown(timing.startsIn)}`;
-  const body = `${contest.title} | ${formatContestTime(contest.startTimeSeconds)}`;
-  try {
-    new Notification(title, {
-      body,
-      tag: key,
-      icon: "/alert-icon.svg",
-      requireInteraction: timing.live || timing.startsIn <= 15 * 60
-    });
-    state.contestNotices.add(key);
-    saveContestNoticeStore();
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function maybeNotifyUrgentContests(force = false) {
-  urgentContests().forEach((contest) => maybeNotifyContest(contest, force));
-}
-
-async function enableContestNotifications() {
-  if (!("Notification" in window)) {
-    renderContestAlerts();
-    renderContestsView();
-    return;
-  }
-  if ("serviceWorker" in navigator && "PushManager" in window) {
-    try {
-      await enableReminders();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  if (Notification.permission === "default") {
-    await Notification.requestPermission();
-  }
-  if (Notification.permission === "granted") {
-    maybeNotifyUrgentContests(true);
-  }
-  renderContestAlerts();
-  renderContestsView();
-}
-
-async function loadContests(force = false) {
-  const query = new URLSearchParams({ ts: Date.now().toString() });
-  if (force) query.set("refresh", "1");
-  try {
-    state.contestPayload = await getJson(`/api/contests?${query.toString()}`);
-    state.contests = state.contestPayload.contests || [];
-    renderContestAlerts();
-    renderContestsView();
-    maybeNotifyUrgentContests();
-  } catch (error) {
-    console.error(error);
-    state.contestPayload = { ok: false, error: error.message, contests: [] };
-    state.contests = [];
-    renderContestAlerts();
-    renderContestsView();
-  }
-}
-
-function contestPlatformCounts(contests) {
-  return contests.reduce((counts, contest) => {
-    counts[contest.platform] = (counts[contest.platform] || 0) + 1;
-    return counts;
-  }, {});
-}
-
-function renderContestAlerts() {
-  const badge = $("contestAlertBadge");
-  const tab = $("contestsTab");
-  const banner = $("contestEmergencyBanner");
-  if (!badge || !tab || !banner) return;
-
-  const upcoming = visibleContests();
-  const urgent = urgentContests();
-  const primary = primaryContestAlert();
-  const strongest = primary ? contestTiming(primary).urgency : "calm";
-
-  tab.classList.remove("live", "critical", "soon", "calm");
-  tab.classList.add(strongest);
-  badge.classList.toggle("hidden", upcoming.length === 0);
-  badge.textContent = urgent.length ? String(urgent.length) : String(upcoming.length);
-
-  if (!primary) {
-    banner.classList.add("hidden");
-    return;
-  }
-
-  const timing = contestTiming(primary);
-  banner.classList.remove("hidden", "live", "critical", "soon");
-  banner.classList.add(timing.urgency === "live" ? "live" : timing.urgency === "critical" ? "critical" : "soon");
-  $("contestEmergencyTitle").textContent = timing.live
-    ? `${primary.platform} is live: ${primary.title}`
-    : `${primary.platform} starts in ${formatCountdown(timing.startsIn)}: ${primary.title}`;
-  $("contestEmergencyMeta").textContent = `${formatContestTime(primary.startTimeSeconds)} | duration ${formatDuration(primary.durationSeconds)} | notifications ${notificationStateText()}`;
-}
-
-function contestCard(contest) {
-  const timing = contestTiming(contest);
-  const urgency = timing.urgency;
-  const added = (state.personal?.contestCalendar || []).some((item) => item.platform === contest.platform && Number(item.startTimeSeconds) === Number(contest.startTimeSeconds));
-  return `
-    <article class="contest-card ${escapeHtml(urgency)}">
-      <div class="contest-card-main">
-        <div class="contest-platform">${escapeHtml(contest.platform)}</div>
-        <h3>${escapeHtml(contest.title)}</h3>
-        <div class="contest-meta">
-          <span>${escapeHtml(contestStatusText(contest))}</span>
-          <span>${escapeHtml(formatContestTime(contest.startTimeSeconds))}</span>
-          <span>${escapeHtml(formatDuration(contest.durationSeconds))}</span>
-        </div>
-      </div>
-      <div class="contest-card-actions">
-        <a class="primary-link" href="${escapeHtml(contest.url)}" target="_blank" rel="noreferrer">Open</a>
-        <button class="secondary-button ${added ? "added" : ""}" data-add-contest-calendar="${escapeHtml(contest.platform)}:${escapeHtml(contest.startTimeSeconds)}" type="button">${added ? "Added ✓" : "Add to my calendar"}</button>
-      </div>
-    </article>
-  `;
-}
-
-function renderContestsView() {
-  const list = $("contestList");
-  if (!list) return;
-
-  const contests = visibleContests();
-  const counts = contestPlatformCounts(contests);
-  const next = contests[0];
-  const sourceErrors = state.contestPayload?.sourceErrors || [];
-  const statusParts = [];
-  if (state.contestPayload?.cached) statusParts.push(state.contestPayload.stale ? "using stale cache" : "cached");
-  if (sourceErrors.length) statusParts.push(sourceErrors.map((entry) => `${entry.platform} failed`).join(", "));
-  $("contestFeedStatus").textContent = statusParts.length
-    ? statusParts.join(" | ")
-    : `Tracking ${contests.length} upcoming contests across Codeforces and CodeChef.`;
-
-  $("contestSummaryCards").innerHTML = `
-    <div class="contest-summary-card">
-      <strong>${counts.Codeforces || 0}</strong>
-      <span>Codeforces</span>
-    </div>
-    <div class="contest-summary-card">
-      <strong>${counts.CodeChef || 0}</strong>
-      <span>CodeChef</span>
-    </div>
-    <div class="contest-summary-card ${primaryContestAlert() ? "urgent" : ""}">
-      <strong>${urgentContests().length}</strong>
-      <span>within 24h/live</span>
-    </div>
-    <div class="contest-summary-card">
-      <strong>${notificationStateText()}</strong>
-      <span>notifications</span>
-    </div>
-  `;
-
-  list.innerHTML = contests.length
-    ? contests.map(contestCard).join("")
-    : `<div class="empty-state">No upcoming contests found in the next 45 days.</div>`;
-  document.querySelectorAll("[data-add-contest-calendar]").forEach((button) => button.addEventListener("click", () => {
-    const [platform, start] = button.dataset.addContestCalendar.split(":");
-    addContestToInternalCalendar(platform, Number(start));
-  }));
-
-  if (next && !primaryContestAlert()) {
-    $("contestEmergencyBanner").classList.add("hidden");
-  }
-}
-
-function addContestToInternalCalendar(platform, startTimeSeconds) {
-  const contest = (state.contests || []).find((item) => item.platform === platform && Number(item.startTimeSeconds) === startTimeSeconds);
-  if (!contest) return;
-  state.personal.contestCalendar ||= [];
-  const existing = state.personal.contestCalendar.find((item) => item.platform === platform && Number(item.startTimeSeconds) === startTimeSeconds);
-  if (existing) {
-    state.personal.contestCalendar = state.personal.contestCalendar.filter((item) => item !== existing);
-    state.personal.schedule = state.personal.schedule.filter((event) => event.contestKey !== existing.id);
-  } else {
-    const id = `contest-${platform}-${startTimeSeconds}`;
-    state.personal.contestCalendar.push({ id, platform, title: contest.title, url: contest.url, startTimeSeconds, durationSeconds: contest.durationSeconds, status: "interested", addedAt: new Date().toISOString() });
-    const start = new Date(startTimeSeconds * 1000);
-    const end = new Date((startTimeSeconds + Number(contest.durationSeconds || 7200)) * 1000);
-    state.personal.schedule.push({
-      id: `event-${id}`, contestKey: id, kind: "contest", title: `${platform}: ${contest.title}`,
-      start: dateTimeInputValue(start), startUtc: start.toISOString(), end: dateTimeInputValue(end), endUtc: end.toISOString(),
-      notes: contest.url, notify: true, completed: false, reminderMinutes: 60,
-      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
-    });
-  }
-  savePersonal(false);
-  renderContestsView();
-  renderSchedule();
-}
-
-function startContestTimers() {
-  clearInterval(state.contestTickTimer);
-  clearInterval(state.contestPollTimer);
-  state.contestTickTimer = setInterval(() => {
-    renderContestAlerts();
-    if (state.activeView === "contests") renderContestsView();
-    maybeNotifyUrgentContests();
-  }, 60 * 1000);
-  state.contestPollTimer = setInterval(() => loadContests(false), 10 * 60 * 1000);
-}
-
-async function loadQuant() {
-  state.quantToday = await getJson(`/api/quant/today?ts=${Date.now()}`);
-  state.quant = await getJson(`/api/quant?ts=${Date.now()}`);
-  renderToday();
-  renderQuant();
-}
-
-function quantProgressText() {
-  const stats = state.quant?.stats || state.quantToday?.stats;
-  if (!stats) return "Loading quant bank.";
-  return `${stats.done}/${stats.total} solved | ${stats.remaining} remaining | ${stats.progressPercent}% complete`;
-}
-
-function sourceLabel(sourceId) {
-  return sourceId === "green-book" ? "Green Book" : "Quant Guide";
-}
-
-function difficultyLabel(value) {
-  const raw = String(value || "unknown");
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
-}
-
-function currentQuantCard(compact = false) {
-  const current = state.quantToday?.current;
-  if (!current) {
-    return `
-      <div class="quant-current empty-current">
-        <h3>Quant bank complete</h3>
-        <p>All imported quant questions are marked done.</p>
-      </div>
-    `;
-  }
-  const stats = state.quantToday?.stats || state.quant?.stats || {};
-  const solutionImages = current.solutionImages || [];
-  const solution = solutionImages.length
-    ? `<div class="solution-panel solution-images">${solutionImages.map((image, index) => `
-        <img src="${escapeHtml(image)}" alt="Solution to question ${escapeHtml(current.number)}, page ${index + 1}" loading="lazy">
-      `).join("")}</div>`
-    : `<div class="solution-lock">Solution unlocks after you mark this problem solved.</div>`;
-  const actions = current.status === "done"
-    ? `<button id="quantNextButton" class="primary-link" type="button">Load Next Problem</button>`
-    : `
-        <button id="quantWorkingButton" class="secondary-button" type="button">Still Working</button>
-        <button id="quantSolvedButton" class="primary-link" type="button">Solved, Show Solution</button>
-      `;
-  return `
-    <article class="quant-current">
-      <div class="quant-current-header">
-        <div class="question-kicker">
-          <span>${escapeHtml(sourceLabel(current.sourceId))}</span>
-          <span>${escapeHtml(current.topic || "general")}</span>
-          <span>${escapeHtml(difficultyLabel(current.difficulty))}</span>
-        </div>
-        <strong class="status-pill ${escapeHtml(current.status)}">${escapeHtml(current.status)}</strong>
-      </div>
-      <div class="question-title-row">
-        <span class="question-number">Q${escapeHtml(current.number)}</span>
-        <h3>${escapeHtml(current.title)}</h3>
-      </div>
-      ${compact ? `
-        <div class="daily-meter" aria-label="Quant progress">
-          <div><strong>${stats.done || 0}</strong><span>Solved</span></div>
-          <div><strong>${stats.remaining || 0}</strong><span>Remaining</span></div>
-          <div><strong>${stats.progressPercent || 0}%</strong><span>Complete</span></div>
-        </div>
-      ` : ""}
-      <pre class="question-prompt">${escapeHtml(current.prompt || "")}</pre>
-      ${compact ? "" : `
-        <div class="quant-work-grid">
-          <div class="field-group">
-            <label>Your solution <span id="quantAnswerSaveState" class="inline-save-state">Saved</span></label>
-            <textarea id="quantUserSolutionInput">${escapeHtml(current.userSolution || "")}</textarea>
-          </div>
-          <div class="field-group">
-            <label>Notes</label>
-            <textarea id="quantNotesInput">${escapeHtml(current.notes || "")}</textarea>
-          </div>
-        </div>
-      `}
-      <div class="quant-actions">${actions}</div>
-      ${compact ? "" : quantAttemptTimeline(current.id)}
-      ${solution}
-    </article>
-  `;
-}
 
 function renderToday() {
   const panel = $("todayPanel");
   if (!panel) return;
-  const stats = state.quantToday?.stats || {};
-  const total = stats.total || 0;
-  const done = stats.done || 0;
-  const progressWidth = total ? Math.min(100, Math.max(0, (done / total) * 100)) : 0;
   const todaysEvents = (state.personal?.schedule || [])
     .filter((event) => String(event.start || "").slice(0, 10) === localIsoDate())
     .sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")))
     .slice(0, 4);
-  const nextCf = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done");
-  const nextContest = visibleContests()[0];
   const todaySkinRoutines = (state.personal?.skinRoutines || []).filter((item) => routineRunsToday(item, "skin"));
   const todayGymPlans = (state.personal?.gymPlans || []).filter((item) => routineRunsToday(item, "gym"));
   const todayFocusSessions = (state.personal?.focusSessions || []).filter((item) => sessionDate(item) === localIsoDate());
   const todayFocusMinutes = todayFocusSessions.reduce((sum, item) => sum + Number(item.minutes || 0), 0);
-  const humour=state.personal?.settings?.humourStyle||"playful";
-  const coachMessage=todaysEvents.some(item=>!item.completed)
-    ? (humour==="direct"?"Finish the next calendar item before adding more.":humour==="gentle"?"One unfinished calendar item is enough for your next small win.":"Your calendar has unfinished business. It has hired me as collection agent.")
-    : todayFocusMinutes<25
-      ? (humour==="direct"?"Log one focused session today.":humour==="gentle"?"A short focus session would be a kind next step.":"Your focus timer is looking suspiciously well-rested.")
+  const humour = state.personal?.settings?.humourStyle || "playful";
+  const coachMessage = todaysEvents.some(item => !item.completed)
+    ? (humour === "direct" ? "Finish the next calendar item before adding more." : humour === "gentle" ? "One unfinished calendar item is enough for your next small win." : "Your calendar has unfinished business. It has hired me as collection agent.")
+    : todayFocusMinutes < 25
+      ? (humour === "direct" ? "Log one focused session today." : humour === "gentle" ? "A short focus session would be a kind next step." : "Your focus timer is looking suspiciously well-rested.")
       : "Today has evidence of progress. Keep the landing clean.";
 
   panel.innerHTML = `
@@ -1294,18 +246,9 @@ function renderToday() {
         <div>
           <span class="section-eyebrow">${escapeHtml(todayLabel())}</span>
           <h2>${escapeHtml(todayHeading())}</h2>
-          <p>Your focused practice desk. Finish the active problem before moving forward.</p>
         </div>
         <button id="todayRefreshButton" class="secondary-button" type="button">Refresh</button>
       </div>
-      <div class="focus-strip">
-        <div>
-          <span>Quant bank</span>
-          <strong>${done}/${total}</strong>
-        </div>
-        <div class="focus-progress"><span style="width:${progressWidth}%"></span></div>
-      </div>
-      ${currentQuantCard(true)}
     </section>
     <aside class="today-side">
       <div class="today-widget">
@@ -1322,7 +265,7 @@ function renderToday() {
       </div>
       <div class="today-widget wellness-today-widget skin-today-widget">
         <div class="widget-header">
-          <h3>✨ Skin care</h3>
+          <h3>Skin care</h3>
           <button type="button" data-open-wellness="1">Edit</button>
         </div>
         ${todaySkinRoutines.length ? todaySkinRoutines.map((routine) => `
@@ -1333,203 +276,45 @@ function renderToday() {
               <span>${escapeHtml(routine.time || "Any time")} · ${(routine.steps || []).length} steps</span>
             </div>
           </div>
-        `).join("") : `<p class="muted-copy">No skin routine today. Your face has a day off.</p>`}
+        `).join("") : `<p class="muted-copy">No skin routine today.</p>`}
       </div>
       <div class="today-widget wellness-today-widget gym-today-widget">
         <div class="widget-header">
-          <h3>💪 Gym plan</h3>
+          <h3>Gym plan</h3>
           <button type="button" data-open-gym="1">Open workout</button>
         </div>
         ${todayGymPlans.length ? todayGymPlans.map((plan) => `
-          ${(() => { const session=gymSessionFor(plan.id); const progress=session?gymSessionProgress(session):{done:0,total:(plan.exercises||[]).reduce((sum,e)=>sum+(Number.parseInt(e.sets,10)||1),0)}; return `<div class="today-routine ${session?.status === "completed" ? "complete" : ""}">
+          ${(() => { const session = gymSessionFor(plan.id); const progress = session ? gymSessionProgress(session) : { done: 0, total: (plan.exercises || []).reduce((sum, e) => sum + (Number.parseInt(e.sets, 10) || 1), 0) }; return `<div class="today-routine ${session?.status === "completed" ? "complete" : ""}">
             <button type="button" data-open-gym="1" aria-label="Open workout">${session?.status === "completed" ? "✓" : "›"}</button>
             <div>
               <strong>${escapeHtml(plan.name)}</strong>
               <span>${escapeHtml(plan.time || "Any time")} · ${progress.done}/${progress.total} sets · ${session?.status || "planned"}</span>
             </div>
           </div>`; })()}
-        `).join("") : `<p class="muted-copy">No workout today. Even dumbbells need space.</p>`}
+        `).join("") : `<p class="muted-copy">No workout today.</p>`}
       </div>
       <div class="today-widget focus-today-widget">
-        <div class="widget-header"><h3>◎ Focus</h3><button type="button" data-open-focus="1">Start</button></div>
+        <div class="widget-header"><h3>Focus</h3><button type="button" data-open-focus="1">Start</button></div>
         <div class="today-focus-summary"><strong>${todayFocusMinutes}</strong><span>focused minutes · ${todayFocusSessions.length} sessions</span></div>
         <p class="muted-copy">${todayFocusMinutes ? "Evidence that you showed up." : "Start small. Twenty-five honest minutes counts."}</p>
       </div>
       <div class="today-widget contextual-widget">
-        <div class="widget-header"><h3>🧭 Right now</h3><button type="button" data-open-gym-coach="1">Coach</button></div>
+        <div class="widget-header"><h3>Right now</h3><button type="button" data-open-gym-coach="1">Coach</button></div>
         <p>${escapeHtml(coachMessage)}</p>
-        <small>${state.offlineSavePending?"Working offline · changes will sync automatically":"Synced across your devices"}</small>
-      </div>
-      <div class="today-widget">
-        <div class="widget-header">
-          <h3>Codeforces</h3>
-          <button type="button" data-open-cf-home="1">Tree</button>
-        </div>
-        ${nextCf ? `
-          <button class="today-event" type="button" data-open-cf="${escapeHtml(nextCf.id)}">
-            <strong>${escapeHtml(nextCf.title)}</strong>
-            <span>${escapeHtml(nextCf.topicTitle)} | ${escapeHtml(nextCf.rating)}</span>
-          </button>
-        ` : `<p class="muted-copy">No unlocked Codeforces problem left.</p>`}
-      </div>
-      <div class="today-widget">
-        <div class="widget-header">
-          <h3>Next contest</h3>
-          <button type="button" data-open-contests="1">Radar</button>
-        </div>
-        ${nextContest ? `
-          <button class="today-event" type="button" data-open-contests="1">
-            <strong>${escapeHtml(nextContest.title)}</strong>
-            <span>${escapeHtml(contestStatusText(nextContest))} · ${escapeHtml(nextContest.platform)}</span>
-          </button>
-        ` : `<p class="muted-copy">No upcoming contest found.</p>`}
+        <small>${state.offlineSavePending ? "Working offline · changes will sync automatically" : "Synced across your devices"}</small>
       </div>
     </aside>
   `;
-  $("todayRefreshButton")?.addEventListener("click", loadQuant);
-  wireQuantCurrent();
+  $("todayRefreshButton")?.addEventListener("click", renderToday);
   document.querySelectorAll("[data-open-planner]").forEach((button) => button.addEventListener("click", () => setView("planner")));
   document.querySelectorAll("[data-open-wellness]").forEach((button) => button.addEventListener("click", () => setView("wellness")));
   document.querySelectorAll("[data-open-gym]").forEach((button) => button.addEventListener("click", () => setView("gym")));
   document.querySelectorAll("[data-open-focus]").forEach((button) => button.addEventListener("click", () => setView("focus")));
-  document.querySelectorAll("[data-open-gym-coach]").forEach((button)=>button.addEventListener("click",()=>{state.activeGymMode="coach";setView("gym");}));
+  document.querySelectorAll("[data-open-gym-coach]").forEach((button) => button.addEventListener("click", () => { state.activeGymMode = "coach"; setView("gym"); }));
   document.querySelectorAll("[data-today-skin-complete]").forEach((button) => button.addEventListener("click", () => {
     toggleWellnessCompletion("skinRoutines", button.dataset.todaySkinComplete);
     renderToday();
   }));
-  document.querySelectorAll("[data-open-cf]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setView("tree");
-      selectProblem(button.dataset.openCf);
-    });
-  });
-  document.querySelectorAll("[data-open-cf-home]").forEach((button) => button.addEventListener("click", () => setView("tree")));
-  document.querySelectorAll("[data-open-contests]").forEach((button) => button.addEventListener("click", () => setView("contests")));
-}
-
-function visibleQuantQuestions() {
-  const query = state.quantSearch.trim().toLowerCase();
-  const source = state.quantSource;
-  const status = state.quantStatus;
-  return (state.quant?.questions || []).filter((question) => {
-    if (source !== "all" && question.sourceId !== source) return false;
-    if (status !== "all" && question.status !== status) return false;
-    if (!query) return true;
-    const haystack = [
-      question.title,
-      question.sourceTitle,
-      question.topic,
-      question.difficulty,
-      question.prompt,
-      ...(question.tags || [])
-    ].join(" ").toLowerCase();
-    return haystack.includes(query);
-  });
-}
-
-function renderQuant() {
-  if (!$("quantCurrentPanel")) return;
-  $("quantStatsText").textContent = quantProgressText();
-  $("quantCurrentPanel").innerHTML = currentQuantCard(false);
-  wireQuantCurrent();
-  const visibleQuestions = visibleQuantQuestions();
-  const rows = visibleQuestions.map((question) => `
-    <tr class="quant-row-${escapeHtml(question.status || "todo")} ${state.quantToday?.activeQuestionId===question.id?"quant-active-row":""}">
-      <td><button class="quant-question-picker" type="button" data-choose-quant="${escapeHtml(question.id)}"><strong>Q${escapeHtml(question.number)}</strong> ${escapeHtml(question.title)}<small>${state.quantToday?.activeQuestionId===question.id?"Solving now":"Open and solve"}</small></button></td>
-      <td>${escapeHtml(sourceLabel(question.sourceId))}</td>
-      <td>${escapeHtml(question.topic || "")}</td>
-      <td>${escapeHtml(difficultyLabel(question.difficulty))}</td>
-      <td>
-        <select class="quant-status-editor ${escapeHtml(question.status || "todo")}" data-quant-status-id="${escapeHtml(question.id)}" aria-label="Status for question ${escapeHtml(question.number)}">
-          <option value="todo" ${question.status === "todo" ? "selected" : ""}>Todo</option>
-          <option value="doing" ${question.status === "doing" ? "selected" : ""}>Doing</option>
-          <option value="done" ${question.status === "done" ? "selected" : ""}>Done</option>
-        </select>
-      </td>
-    </tr>
-  `).join("");
-  $("quantRows").innerHTML = rows || `<tr><td colspan="5">No matching quant questions.</td></tr>`;
-  document.querySelectorAll("[data-quant-status-id]").forEach((select) => {
-    select.addEventListener("change", () => updateQuantStatus(select.dataset.quantStatusId, select.value, select));
-  });
-  document.querySelectorAll("[data-choose-quant]").forEach((button)=>button.addEventListener("click",()=>chooseQuantQuestion(button.dataset.chooseQuant)));
-}
-
-async function chooseQuantQuestion(questionId) {
-  const result=await postJson("/api/quant/progress",{id:questionId,status:"doing",activate:true});
-  if(result.today) state.quantToday=result.today;
-  state.quant=await getJson(`/api/quant?ts=${Date.now()}`);
-  renderQuant();
-  $("quantCurrentPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
-}
-
-async function updateQuantStatus(questionId, status, control) {
-  const question = (state.quant?.questions || []).find((item) => item.id === questionId);
-  const previousStatus = question?.status || "todo";
-  if (control) {
-    control.disabled = true;
-    control.classList.add("saving");
-  }
-  try {
-    const result = await postJson("/api/quant/progress", { id: questionId, status });
-    if (question && result.question) Object.assign(question, result.question);
-    if (result.today) state.quantToday = result.today;
-    state.quant = await getJson(`/api/quant?ts=${Date.now()}`);
-    renderToday();
-    renderQuant();
-  } catch (error) {
-    if (question) question.status = previousStatus;
-    if (control) control.value = previousStatus;
-    console.error(error);
-  } finally {
-    if (control?.isConnected) {
-      control.disabled = false;
-      control.classList.remove("saving");
-    }
-  }
-}
-
-function wireQuantCurrent() {
-  const current = state.quantToday?.current;
-  if (!current) return;
-  $("quantUserSolutionInput")?.addEventListener("input", () => updateQuantCurrent({ userSolution: $("quantUserSolutionInput").value }, true));
-  $("quantNotesInput")?.addEventListener("input", () => updateQuantCurrent({ notes: $("quantNotesInput").value }, true));
-  $("quantWorkingButton")?.addEventListener("click", () => updateQuantCurrent({ status: "doing" }));
-  $("quantSolvedButton")?.addEventListener("click", async () => {
-    await updateQuantCurrent({ status: "done" });
-    setView("quant");
-  });
-  $("quantNextButton")?.addEventListener("click", loadQuant);
-}
-
-async function updateQuantCurrent(fields, debounced = false) {
-  const current = state.quantToday?.current;
-  if (!current) return;
-  Object.assign(current, fields);
-  const listQuestion=(state.quant?.questions||[]).find(item=>item.id===current.id);
-  if(listQuestion) Object.assign(listQuestion,fields);
-  const saveState=$("quantAnswerSaveState");
-  if(saveState) saveState.textContent="Saving…";
-  clearTimeout(state.quantSaveTimer);
-  state.quantSaveTimer = setTimeout(async () => {
-    try {
-      const result = await postJson("/api/quant/progress", { id: current.id, ...fields });
-      if (result.question) {
-        Object.assign(current,result.question);
-        if(listQuestion) Object.assign(listQuestion,result.question);
-      }
-      if(result.today) state.quantToday=result.today;
-      if(saveState?.isConnected) saveState.textContent="Saved";
-      if(fields.status) {
-        state.quant=await getJson(`/api/quant?ts=${Date.now()}`);
-        renderToday();
-        renderQuant();
-      }
-    } catch(error) {
-      if(saveState?.isConnected) saveState.textContent="Save failed";
-      console.error(error);
-    }
-  }, debounced ? 450 : 0);
 }
 
 async function loadPersonal() {
@@ -1749,13 +534,11 @@ function renderDailyHistory() {
   const skin = (state.personal.skinRoutines || []).filter((routine) => !(routine.days || []).length || (routine.days || []).map(Number).includes(selectedDay));
   const gym = (state.personal.gymSessions || []).filter((session) => session.date === date);
   const focus = (state.personal.focusSessions || []).filter((session) => sessionDate(session) === date);
-  const quant = (state.quant?.questions || []).filter((question) => String(question.solvedAt || "").slice(0, 10) === date);
   const items = [
     ...events.filter((event)=>event.kind!=="contest").map((item)=>({icon:item.completed?"✓":"□",title:item.title,meta:item.completed?"Schedule completed":date<localIsoDate()?"Schedule missed/incomplete":"Scheduled activity",tone:item.completed?"gym":"focus"})),
     ...skin.map((item) => { const done=(item.completions||[]).includes(date); return { icon: "✨", title: item.name, meta: done ? `${(item.steps || []).length} skincare steps completed` : (date < localIsoDate() ? "Skincare routine missed" : "Skincare routine planned"), tone: done ? "skin" : "missed" }; }),
     ...gym.map((item) => { const p=gymSessionProgress(item); return { icon:"💪", title:item.planName, meta:`${item.status} · ${p.done}/${p.total} sets`,tone:item.status==="absent"?"missed":"gym" }; }),
     ...focus.map((item) => ({ icon:"◎",title:item.label||"Focus session",meta:`${item.minutes} focused minutes`,tone:"focus" })),
-    ...quant.map((item) => ({ icon:"Q",title:item.title,meta:"Quant question solved",tone:"quant" })),
     ...events.filter((event)=>event.kind==="contest").map((item)=>({icon:"🏆",title:item.title,meta:item.completed?"Participated/completed":"Contest on calendar",tone:"contest"}))
   ];
   const reflection = (state.personal.dailyReflections || []).find((item)=>item.date===date);
@@ -1949,8 +732,70 @@ function editGymPlan(id) {
   $("gymPlanNameInput").focus();
 }
 
+function renderWatchHealth() {
+  const panel = $("watchHealthPanel");
+  if (!panel) return;
+  const imports = state.personal?.healthImports || [];
+  if (!imports.length) {
+    panel.innerHTML = `
+      <div class="watch-health-empty">
+        <div class="watch-health-empty-icon">⌚</div>
+        <div>
+          <strong>Connect your Apple Watch</strong>
+          <p>Use the iOS Shortcut below to send your Health data here. Rings, steps, sleep, heart rate — all in one place.</p>
+          <details class="watch-setup-details">
+            <summary>How to set up</summary>
+            <ol>
+              <li>On iPhone, open the <strong>Shortcuts</strong> app</li>
+              <li>Create a new shortcut with these actions:
+                <ul>
+                  <li>Get Health Sample (Steps, Active Energy, Heart Rate, Stand Hours, Sleep Analysis, Workout Minutes)</li>
+                  <li>Get Device Details → Device Name</li>
+                  <li>Get Contents of URL → POST to <code>${location.origin}/api/health-import</code></li>
+                  <li>Set body: JSON with keys <code>steps, activeCalories, heartRate, standHours, sleepHours, workoutMinutes, date, source</code></li>
+                </ul>
+              </li>
+              <li>Add to Automation → run at 9 PM daily</li>
+            </ol>
+          </details>
+        </div>
+      </div>`;
+    return;
+  }
+  const latest = imports[imports.length - 1];
+  const yesterday = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return localIsoDate(d); })();
+  const age = latest.date === localIsoDate() ? "Today" : latest.date === yesterday ? "Yesterday" : latest.date;
+  const rings = [
+    { label: "Steps", value: latest.steps?.toLocaleString() ?? "—", unit: "steps", icon: "⬡", pct: Math.min(100, ((latest.steps || 0) / 10000) * 100) },
+    { label: "Active", value: latest.activeCalories ?? "—", unit: "cal", icon: "◉", pct: Math.min(100, ((latest.activeCalories || 0) / 600) * 100) },
+    { label: "Heart", value: latest.heartRate ?? "—", unit: "bpm", icon: "♡", pct: null },
+    { label: "Stand", value: latest.standHours ?? "—", unit: "hrs", icon: "↑", pct: Math.min(100, ((latest.standHours || 0) / 12) * 100) },
+    { label: "Sleep", value: latest.sleepHours ?? "—", unit: "hrs", icon: "◑", pct: Math.min(100, ((latest.sleepHours || 0) / 8) * 100) },
+    { label: "Workout", value: latest.workoutMinutes ?? "—", unit: "min", icon: "⚡", pct: Math.min(100, ((latest.workoutMinutes || 0) / 30) * 100) },
+  ];
+  panel.innerHTML = `
+    <div class="watch-health-panel-inner">
+      <div class="watch-health-header">
+        <div><span class="section-eyebrow">Apple Watch · ${escapeHtml(age)}</span><h3>Health rings</h3></div>
+        <span class="watch-sync-time">${escapeHtml(latest.source || "Watch")}</span>
+      </div>
+      <div class="watch-rings">
+        ${rings.map((ring) => `
+          <div class="watch-ring-card">
+            <div class="ring-icon">${ring.icon}</div>
+            ${ring.pct !== null ? `<div class="ring-progress"><div class="ring-fill" style="width:${ring.pct.toFixed(0)}%"></div></div>` : ""}
+            <strong>${escapeHtml(String(ring.value))}</strong>
+            <span>${ring.unit}</span>
+            <small>${ring.label}</small>
+          </div>
+        `).join("")}
+      </div>
+    </div>`;
+}
+
 function renderWellness() {
   if (!$("wellnessSummary") || !state.personal) return;
+  renderWatchHealth();
   const skins = state.personal.skinRoutines || [];
   const gyms = state.personal.gymPlans || [];
   const todaySkin = skins.filter((item) => routineRunsToday(item, "skin"));
@@ -2252,7 +1097,7 @@ function renderGymCoach() {
 }
 
 function exportPersonalData() {
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),personal:state.personal,quantProgress:state.progress},null,2)],{type:"application/json"});
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),personal:state.personal},null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download=`life-tracker-${localIsoDate()}.json`;link.click();URL.revokeObjectURL(url);
 }
 
@@ -3400,12 +2245,10 @@ function renderInsights() {
   const weekMinutes = focusMinutesBetween(weekStart, today);
   const sessions = state.personal.focusSessions || [];
   const todayEvents = (state.personal.schedule || []).filter((item) => eventDate(item) === today).length;
-  const completedProblems = state.flat.filter((item) => displayStatus(item.id) === "done").length;
   $("productivitySummary").innerHTML = `
     <div class="insight-summary-card"><span>Today</span><strong>${todayMinutes}<small> min</small></strong><p>Focused time</p></div>
     <div class="insight-summary-card"><span>7 days</span><strong>${weekMinutes}<small> min</small></strong><p>${sessions.filter((session) => sessionDate(session) >= weekStart).length} completed sessions</p></div>
     <div class="insight-summary-card"><span>Today’s plan</span><strong>${todayEvents}</strong><p>Calendar tasks</p></div>
-    <div class="insight-summary-card"><span>Roadmap</span><strong>${completedProblems}</strong><p>Problems completed</p></div>
   `;
 
   const days = Array.from({ length: 7 }, (_, index) => {
@@ -3469,83 +2312,6 @@ function renderInsights() {
   renderFinancialPlanning(month, expenses, total);
 }
 
-function renderSheet() {
-  const statusFilter = $("statusFilter").value;
-  const ratingFilter = $("ratingFilter").value;
-  const rows = visibleItems().filter((item) => {
-    const status = displayStatus(item.id);
-    const statusOk = statusFilter === "all" || statusFilter === status;
-    const ratingOk = ratingFilter === "all" || (ratingFilter === "2000plus" ? item.rating >= 2000 : String(item.rating) === ratingFilter);
-    return statusOk && ratingOk;
-  }).map((item) => {
-    const unlocked = isUnlocked(item.id);
-    const status = displayStatus(item.id);
-    return `
-      <tr class="${unlocked ? "" : "locked"}" data-id="${escapeHtml(item.id)}">
-        <td>${escapeHtml(item.title)}</td>
-        <td>${escapeHtml(item.topicTitle)}</td>
-        <td>${escapeHtml(item.rating)}</td>
-        <td>${escapeHtml(status)}</td>
-        <td>${escapeHtml(prerequisiteText(item))}</td>
-      </tr>
-    `;
-  }).join("");
-
-  $("sheetRows").innerHTML = rows || `<tr><td colspan="5">No matching rows.</td></tr>`;
-  document.querySelectorAll("#sheetRows tr[data-id]").forEach((row) => {
-    row.addEventListener("click", () => {
-      setView("tree");
-      selectProblem(row.dataset.id);
-    });
-  });
-}
-
-function renderStats() {
-  const total = state.flat.length;
-  const done = state.flat.filter((item) => displayStatus(item.id) === "done").length;
-  const doing = state.flat.filter((item) => displayStatus(item.id) === "doing").length;
-  const unlocked = state.flat.filter((item) => isUnlocked(item.id)).length;
-  const deadline = new Date(state.progress.goal?.deadline || "2026-12-31");
-  const today = new Date();
-  const daysLeft = Math.max(0, Math.ceil((deadline - today) / 86400000));
-  const pct = total ? Math.round((done * 100) / total) : 0;
-
-  $("statsPanel").innerHTML = `
-    <div class="stat-box"><strong>${done}/${total}</strong><span>Completed</span></div>
-    <div class="stat-box"><strong>${pct}%</strong><span>Roadmap progress</span></div>
-    <div class="stat-box"><strong>${doing}</strong><span>In progress</span></div>
-    <div class="stat-box"><strong>${unlocked}</strong><span>Unlocked</span></div>
-    <div class="stat-box"><strong>${daysLeft}</strong><span>Days left</span></div>
-    <div class="stat-box"><strong>${state.flat.filter((item) => item.rating >= 1900 && displayStatus(item.id) === "done").length}</strong><span>1900+ solved</span></div>
-    <div class="stat-box"><strong>${state.flat.filter((item) => item.rating >= 2000 && displayStatus(item.id) === "done").length}</strong><span>2000+ solved</span></div>
-    <div class="stat-box"><strong>${state.flat.filter((item) => itemProgress(item.id).comments || itemProgress(item.id).learnings).length}</strong><span>With notes</span></div>
-  `;
-
-  $("topicStats").innerHTML = (state.roadmap.topics || []).map((topic) => {
-    const items = state.flat.filter((item) => item.topicId === topic.id);
-    const topicDone = items.filter((item) => displayStatus(item.id) === "done").length;
-    const topicPct = items.length ? Math.round((topicDone * 100) / items.length) : 0;
-    return `
-      <div class="topic-stat">
-        <h3>${escapeHtml(topic.title)}</h3>
-        <div class="progress-bar"><div class="progress-fill" style="width:${topicPct}%"></div></div>
-        <p>${topicDone}/${items.length} done</p>
-      </div>
-    `;
-  }).join("");
-}
-
-function addBrainXp(amount) {
-  state.brainXp += amount;
-  localStorage.setItem("kumarBrainXp", String(state.brainXp));
-  renderBrainEnergy();
-}
-
-function renderBrainEnergy() {
-  if (!$("brainEnergyScore")) return;
-  $("brainEnergyScore").textContent = `${state.brainXp} XP`;
-  $("brainEnergyBar").style.width = `${Math.min(100, state.brainXp % 101)}%`;
-}
 
 function shuffle(values) {
   const items = [...values];
@@ -3556,191 +2322,8 @@ function shuffle(values) {
   return items;
 }
 
-function resetMemoryGame() {
-  const faces = ["🦖", "👽", "🦄", "🐙", "🤖", "🍕"];
-  state.memoryCards = shuffle([...faces, ...faces]).map((face, index) => ({ id: `card-${Date.now()}-${index}`, face }));
-  state.memoryOpen = [];
-  state.memoryMatched = new Set();
-  state.memoryMoves = 0;
-  state.memoryLocked = false;
-  if ($("memoryMessage")) $("memoryMessage").textContent = "Match the tiny weirdos.";
-  renderMemoryGame();
-}
-
-function flipMemoryCard(cardId) {
-  if (state.memoryLocked || state.memoryOpen.includes(cardId) || state.memoryMatched.has(cardId)) return;
-  state.memoryOpen.push(cardId);
-  renderMemoryGame();
-  if (state.memoryOpen.length < 2) return;
-  state.memoryMoves += 1;
-  const [firstId, secondId] = state.memoryOpen;
-  const first = state.memoryCards.find((card) => card.id === firstId);
-  const second = state.memoryCards.find((card) => card.id === secondId);
-  if (first?.face === second?.face) {
-    state.memoryMatched.add(firstId);
-    state.memoryMatched.add(secondId);
-    state.memoryOpen = [];
-    addBrainXp(5);
-    $("memoryMessage").textContent = state.memoryMatched.size === state.memoryCards.length
-      ? `You found them all in ${state.memoryMoves} moves. Brain = enormous.`
-      : "A match! Your neurons are doing jazz hands.";
-    if (state.memoryMatched.size === state.memoryCards.length) addBrainXp(Math.max(10, 40 - state.memoryMoves));
-    renderMemoryGame();
-    return;
-  }
-  state.memoryLocked = true;
-  $("memoryMessage").textContent = "Nope. The weirdos fooled you.";
-  setTimeout(() => {
-    state.memoryOpen = [];
-    state.memoryLocked = false;
-    renderMemoryGame();
-  }, 720);
-}
-
-function renderMemoryGame() {
-  if (!$("memoryGrid")) return;
-  if (!state.memoryCards.length) {
-    resetMemoryGame();
-    return;
-  }
-  $("memoryMoves").textContent = state.memoryMoves;
-  $("memoryGrid").innerHTML = state.memoryCards.map((card) => {
-    const revealed = state.memoryOpen.includes(card.id) || state.memoryMatched.has(card.id);
-    return `<button class="memory-card ${revealed ? "revealed" : ""} ${state.memoryMatched.has(card.id) ? "matched" : ""}" data-memory-card="${card.id}" type="button" aria-label="${revealed ? card.face : "Hidden card"}"><span class="card-back">?</span><span class="card-face">${card.face}</span></button>`;
-  }).join("");
-  document.querySelectorAll("[data-memory-card]").forEach((button) => {
-    button.addEventListener("click", () => flipMemoryCard(button.dataset.memoryCard));
-  });
-}
-
-function nextMathQuestion() {
-  state.mathRound += 1;
-  if (state.mathRound > 10) {
-    state.mathPlaying = false;
-    $("mathQuestion").textContent = `${state.mathScore}/10`;
-    $("mathProgress").textContent = "Sprint complete";
-    $("mathMessage").textContent = state.mathScore >= 8 ? "Certified number wizard. Very suspicious." : state.mathScore >= 5 ? "Solid! The numbers respect you now." : "A brave battle. Demand a rematch.";
-    $("mathStartButton").textContent = "Play again ↻";
-    $("mathStartButton").classList.remove("hidden");
-    $("mathAnswerInput").disabled = true;
-    addBrainXp(state.mathScore * 3);
-    return;
-  }
-  const mode = Math.floor(Math.random() * 4);
-  let left = 0;
-  let right = 0;
-  let symbol = "+";
-  if (mode === 0) {
-    left = 10 + Math.floor(Math.random() * 90); right = 5 + Math.floor(Math.random() * 50); state.mathAnswer = left + right;
-  } else if (mode === 1) {
-    left = 30 + Math.floor(Math.random() * 120); right = 5 + Math.floor(Math.random() * Math.min(60, left)); symbol = "−"; state.mathAnswer = left - right;
-  } else if (mode === 2) {
-    left = 2 + Math.floor(Math.random() * 18); right = 2 + Math.floor(Math.random() * 12); symbol = "×"; state.mathAnswer = left * right;
-  } else {
-    right = 2 + Math.floor(Math.random() * 10); state.mathAnswer = 2 + Math.floor(Math.random() * 15); left = right * state.mathAnswer; symbol = "÷";
-  }
-  $("mathQuestion").textContent = `${left} ${symbol} ${right}`;
-  $("mathProgress").textContent = `Question ${state.mathRound} of 10`;
-  $("mathAnswerInput").value = "";
-  $("mathAnswerInput").focus();
-}
-
-function startMathGame() {
-  state.mathRound = 0;
-  state.mathScore = 0;
-  state.mathPlaying = true;
-  $("mathScore").textContent = "0";
-  $("mathMessage").textContent = "Go go go! Tiny arithmetic thunder!";
-  $("mathStartButton").classList.add("hidden");
-  $("mathAnswerInput").disabled = false;
-  nextMathQuestion();
-}
-
-function submitMathAnswer(event) {
-  event.preventDefault();
-  if (!state.mathPlaying) return;
-  const answer = Number($("mathAnswerInput").value);
-  if (!Number.isFinite(answer) || $("mathAnswerInput").value === "") return;
-  if (answer === state.mathAnswer) {
-    state.mathScore += 1;
-    $("mathScore").textContent = state.mathScore;
-    $("mathMessage").textContent = shuffle(["Correct. Delicious.", "Boom! Number defeated.", "Yes! Big brain behavior.", "Math surrendered."])[0];
-  } else {
-    $("mathMessage").textContent = `Almost! It was ${state.mathAnswer}. We pretend nobody saw.`;
-  }
-  setTimeout(nextMathQuestion, 380);
-}
-
-function newSequencePuzzle() {
-  const kind = Math.floor(Math.random() * 4);
-  const length = 5;
-  let values = [];
-  if (kind === 0) {
-    const start = 2 + Math.floor(Math.random() * 15);
-    const step = 2 + Math.floor(Math.random() * 8);
-    values = Array.from({ length }, (_, index) => start + index * step);
-  } else if (kind === 1) {
-    const start = 2 + Math.floor(Math.random() * 5);
-    const factor = 2 + Math.floor(Math.random() * 2);
-    values = Array.from({ length }, (_, index) => start * factor ** index);
-  } else if (kind === 2) {
-    const start = 1 + Math.floor(Math.random() * 6);
-    values = Array.from({ length }, (_, index) => start + index * index);
-  } else {
-    const first = 1 + Math.floor(Math.random() * 8);
-    const second = first + 1 + Math.floor(Math.random() * 5);
-    values = [first, second];
-    while (values.length < length) values.push(values.at(-1) + values.at(-2));
-  }
-  state.sequenceAnswer = values.at(-1);
-  const shown = [...values.slice(0, -1), "?"];
-  const offsets = shuffle([-5, -3, -2, 2, 3, 5]);
-  const choices = shuffle([state.sequenceAnswer, state.sequenceAnswer + offsets[0], Math.max(0, state.sequenceAnswer + offsets[1]), state.sequenceAnswer + offsets[2]]);
-  $("sequenceNumbers").innerHTML = shown.map((value) => `<span>${value}</span>`).join("");
-  $("sequenceChoices").innerHTML = choices.map((value) => `<button type="button" data-sequence-choice="${value}">${value}</button>`).join("");
-  $("sequenceMessage").textContent = "Choose the missing number.";
-  document.querySelectorAll("[data-sequence-choice]").forEach((button) => {
-    button.addEventListener("click", () => answerSequence(Number(button.dataset.sequenceChoice), button));
-  });
-}
-
-function answerSequence(value, button) {
-  document.querySelectorAll("[data-sequence-choice]").forEach((choice) => { choice.disabled = true; });
-  if (value === state.sequenceAnswer) {
-    state.sequenceStreak += 1;
-    localStorage.setItem("kumarSequenceStreak", String(state.sequenceStreak));
-    button.classList.add("correct");
-    $("sequenceMessage").textContent = "Pattern obliterated. Nice.";
-    addBrainXp(8);
-  } else {
-    state.sequenceStreak = 0;
-    localStorage.setItem("kumarSequenceStreak", "0");
-    button.classList.add("wrong");
-    document.querySelector(`[data-sequence-choice="${state.sequenceAnswer}"]`)?.classList.add("correct");
-    $("sequenceMessage").textContent = `Sneaky one. The answer was ${state.sequenceAnswer}.`;
-  }
-  $("sequenceScore").textContent = state.sequenceStreak;
-  setTimeout(newSequencePuzzle, 900);
-}
-
-function renderArcade() {
-  if (!$("memoryGrid")) return;
-  renderBrainEnergy();
-  renderMemoryGame();
-  $("mathScore").textContent = state.mathScore;
-  $("sequenceScore").textContent = state.sequenceStreak;
-  if (state.sequenceAnswer === null) newSequencePuzzle();
-}
-
 function renderAll() {
-  renderGoal();
-  renderTopicFilters();
-  renderContestAlerts();
-  renderTree();
-  renderDetail();
   if (state.activeView === "today") renderToday();
-  if (state.activeView === "play") renderArcade();
-  if (state.activeView === "quant") renderQuant();
   if (state.activeView === "planner") renderSchedule();
   if (state.activeView === "gym") renderGymHub();
   if (state.activeView === "wellness") renderWellness();
@@ -3748,29 +2331,15 @@ function renderAll() {
   if (state.activeView === "notes") renderNotes();
   if (state.activeView === "life") renderLife();
   if (state.activeView === "insights") renderInsights();
-  if (state.activeView === "contests") renderContestsView();
-  if (state.activeView === "sheet") renderSheet();
-  if (state.activeView === "stats") renderStats();
 }
 
 function wireEvents() {
   $("todayTab").addEventListener("click", () => setView("today"));
-  $("playTab").addEventListener("click", () => setView("play"));
-  $("quantTab").addEventListener("click", () => setView("quant"));
   $("plannerTab").addEventListener("click", () => setView("planner"));
   $("gymTab").addEventListener("click", () => setView("gym"));
   $("wellnessTab").addEventListener("click", () => setView("wellness"));
   $("focusTab").addEventListener("click", () => setView("focus"));
   $("notesTab").addEventListener("click", () => setView("notes"));
-  $("contestsTab").addEventListener("click", () => setView("contests"));
-  $("treeTab").addEventListener("click", () => setView("tree"));
-  $("sheetTab").addEventListener("click", () => setView("sheet"));
-  $("statsTab").addEventListener("click", () => setView("stats"));
-  $("syncButton").addEventListener("click", syncCodeforces);
-  $("memoryResetButton").addEventListener("click", resetMemoryGame);
-  $("mathStartButton").addEventListener("click", startMathGame);
-  $("mathAnswerForm").addEventListener("submit", submitMathAnswer);
-  $("sequenceNewButton").addEventListener("click", newSequencePuzzle);
   document.querySelectorAll("[data-gym-mode]").forEach((button) => button.addEventListener("click", () => {
     state.activeGymMode = button.dataset.gymMode;
     renderGymHub();
@@ -3789,44 +2358,6 @@ function wireEvents() {
     if (elapsed >= 1) completeFocusSession(elapsed);
   });
   $("focusHubLabelInput").addEventListener("input", saveFocusTimerState);
-  $("cfHandleInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") syncCodeforces();
-  });
-  $("cfHandleInput").addEventListener("input", () => {
-    const saved = state.progress.profile?.codeforcesHandle || "";
-    const current = $("cfHandleInput").value.trim();
-    $("syncStatus").textContent = current && current !== saved ? "Press Sync to update" : "";
-  });
-  $("drawerBackdrop").addEventListener("click", closeProblemDrawer);
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && state.drawerOpen) closeProblemDrawer();
-  });
-  $("searchInput").addEventListener("input", () => {
-    renderTree();
-    renderSheet();
-  });
-  $("fitGraphButton").addEventListener("click", () => {
-    $("roadmapStage").scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  });
-  $("contestNotifyButton").addEventListener("click", enableContestNotifications);
-  $("contestNotifyPanelButton").addEventListener("click", enableContestNotifications);
-  $("contestRefreshButton").addEventListener("click", () => loadContests(true));
-  $("contestRefreshPanelButton").addEventListener("click", () => loadContests(true));
-  $("statusFilter").addEventListener("change", renderSheet);
-  $("ratingFilter").addEventListener("change", renderSheet);
-  $("quantRefreshButton").addEventListener("click", loadQuant);
-  $("quantSearchInput").addEventListener("input", () => {
-    state.quantSearch = $("quantSearchInput").value;
-    renderQuant();
-  });
-  $("quantSourceFilter").addEventListener("change", () => {
-    state.quantSource = $("quantSourceFilter").value;
-    renderQuant();
-  });
-  $("quantStatusFilter").addEventListener("change", () => {
-    state.quantStatus = $("quantStatusFilter").value;
-    renderQuant();
-  });
   $("addScheduleButton").addEventListener("click", saveScheduleEvent);
   $("newScheduleButton").addEventListener("click", () => openScheduleEditor());
   $("closeScheduleEditorButton").addEventListener("click", closeScheduleEditor);
@@ -3929,25 +2460,19 @@ function wireEvents() {
 }
 
 async function init() {
-  loadContestNoticeStore();
   wireEvents();
   document.body.dataset.view = state.activeView;
-  document.body.classList.toggle("code-view", ["tree", "sheet", "stats"].includes(state.activeView));
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/service-worker.js").catch((error) => console.error(error));
   }
-  state.roadmap = await getJson("/api/roadmap");
-  state.progress = await getJson("/api/progress");
-  state.quantToday = await getJson("/api/quant/today");
-  state.quant = await getJson("/api/quant");
   try {
     state.personal = await getJson("/api/personal");
-    localStorage.setItem("kumarPersonalOffline",JSON.stringify(state.personal));
+    localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
   } catch (error) {
-    const cached=localStorage.getItem("kumarPersonalOffline");
-    if(!cached) throw error;
-    state.personal=JSON.parse(cached);
-    state.offlineSavePending=true;
+    const cached = localStorage.getItem("kumarPersonalOffline");
+    if (!cached) throw error;
+    state.personal = JSON.parse(cached);
+    state.offlineSavePending = true;
   }
   ensurePersonalCollections();
   state.selectedNoteId = state.personal.notes?.[0]?.id || null;
@@ -3956,27 +2481,17 @@ async function init() {
   $("incomeDateInput").value = localIsoDate();
   $("healthDateInput").value = localIsoDate();
   restoreFocusTimerState();
-  flattenRoadmap(state.roadmap);
-  state.selectedId = state.flat.find((item) => isUnlocked(item.id) && displayStatus(item.id) !== "done")?.id || state.flat[0]?.id || null;
   renderAll();
   updateYearRunway();
   setView(state.activeView);
   if (initialNewNote && state.activeView === "notes") newNote();
   await loadReminderStatus();
-  await loadContests(false);
-  startContestTimers();
 }
 
 init().catch((error) => {
   console.error(error);
-  const message = "Failed to load tracker data.";
   const todayPanel = $("todayPanel");
   if (todayPanel) {
-    todayPanel.innerHTML = `
-      <section class="today-main">
-        <div class="empty-state">${escapeHtml(message)}</div>
-      </section>
-    `;
+    todayPanel.innerHTML = `<section class="today-main"><div class="empty-state">Failed to load data.</div></section>`;
   }
-  $("problemDetail").innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
 });

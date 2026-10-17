@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CF 2000 Tracker</title>
+    <title>Kumar Life</title>
     <link rel="icon" href="/alert-icon.svg">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#f5b800">
@@ -19,162 +19,24 @@
         <div class="app-brand">
           <span id="yearAppMark" class="brand-mark" aria-hidden="true"><strong>--</strong><small>days</small></span>
           <div>
-            <h1>Kumar Quant</h1>
-            <p id="goalText">1700 -> 2000 by 2026-12-31</p>
+            <h1>Kumar</h1>
           </div>
-        </div>
-        <div class="sync-bar" aria-label="Codeforces sync">
-          <label for="cfHandleInput">Codeforces handle</label>
-          <input id="cfHandleInput" type="text" placeholder="Codeforces handle">
-          <button id="syncButton" type="button">Sync</button>
-          <span id="syncStatus"></span>
         </div>
         <nav class="top-actions" aria-label="App sections">
           <button id="todayTab" class="tab-button active" type="button" data-icon="⌂">Today</button>
-          <button id="playTab" class="tab-button play-tab" type="button" data-icon="☻">Brain Arcade</button>
-          <button id="quantTab" class="tab-button" type="button" data-icon="Q">Quant</button>
           <button id="plannerTab" class="tab-button" type="button" data-icon="□">Schedule</button>
           <button id="gymTab" class="tab-button" type="button" data-icon="◫">Gym</button>
           <button id="wellnessTab" class="tab-button" type="button" data-icon="✦">Wellness</button>
           <button id="focusTab" class="tab-button" type="button" data-icon="◎">Focus</button>
           <button id="notesTab" class="tab-button" type="button" data-icon="≡">Notes</button>
-          <button id="contestsTab" class="tab-button contest-tab" type="button">
-            <span>Contests</span>
-            <span id="contestAlertBadge" class="alert-badge hidden">0</span>
-          </button>
-          <button id="treeTab" class="tab-button" type="button" data-icon="⌘">Tree</button>
-          <button id="sheetTab" class="tab-button" type="button" data-icon="▦">Sheet</button>
-          <button id="statsTab" class="tab-button" type="button" data-icon="↗">Stats</button>
           <a class="tab-button desktop-link" href="/desktop.html" target="_blank" rel="noreferrer">Desktop</a>
         </nav>
       </header>
 
       <main class="layout">
-        <aside class="sidebar">
-          <div class="search-row">
-            <input id="searchInput" type="search" placeholder="Search problems, topics, tags">
-          </div>
-          <div id="topicFilters" class="topic-filters"></div>
-          <div id="treePanel" class="topic-progress-panel"></div>
-        </aside>
-
         <section class="content">
-          <div id="contestEmergencyBanner" class="contest-emergency-banner hidden">
-            <div class="emergency-mark">!</div>
-            <div class="emergency-copy">
-              <strong id="contestEmergencyTitle">Contest alert</strong>
-              <span id="contestEmergencyMeta"></span>
-            </div>
-            <div class="emergency-actions">
-              <button id="contestNotifyButton" class="secondary-button" type="button">Notify</button>
-              <button id="contestRefreshButton" class="secondary-button" type="button">Refresh</button>
-            </div>
-          </div>
-
           <section id="todayView" class="view active">
             <div id="todayPanel" class="today-grid"></div>
-          </section>
-
-          <section id="playView" class="view">
-            <div class="arcade-board">
-              <header class="arcade-hero">
-                <div>
-                  <span class="arcade-sticker">NO BORING ALLOWED</span>
-                  <h2>Brain Arcade <span>🧠</span></h2>
-                  <p>Warm up your memory, bully some numbers, and leave with a slightly more powerful brain.</p>
-                </div>
-                <div class="brain-meter">
-                  <span>Today’s brain energy</span>
-                  <strong id="brainEnergyScore">0 XP</strong>
-                  <div><i id="brainEnergyBar"></i></div>
-                </div>
-              </header>
-
-              <div class="arcade-grid">
-                <section class="game-card memory-game-card">
-                  <div class="game-card-header">
-                    <div><span class="game-number">01</span><h3>Memory Mischief</h3><p>Find every matching pair. No peeking, detective.</p></div>
-                    <div class="game-score"><strong id="memoryMoves">0</strong><span>moves</span></div>
-                  </div>
-                  <div id="memoryGrid" class="memory-grid" aria-label="Memory card game"></div>
-                  <div class="game-footer">
-                    <span id="memoryMessage">Match the tiny weirdos.</span>
-                    <button id="memoryResetButton" class="game-button" type="button">Shuffle chaos ↻</button>
-                  </div>
-                </section>
-
-                <section class="game-card math-game-card">
-                  <div class="game-card-header">
-                    <div><span class="game-number">02</span><h3>Math Mayhem</h3><p>Ten quick questions. Your calculator is on holiday.</p></div>
-                    <div class="game-score"><strong id="mathScore">0</strong><span>points</span></div>
-                  </div>
-                  <div class="math-arena">
-                    <span id="mathProgress">Question 1 of 10</span>
-                    <div id="mathQuestion" class="math-question">Ready?</div>
-                    <form id="mathAnswerForm">
-                      <input id="mathAnswerInput" type="number" inputmode="numeric" placeholder="Your answer" autocomplete="off">
-                      <button class="game-button" type="submit">Fire! →</button>
-                    </form>
-                    <p id="mathMessage">Press start and show those numbers who’s boss.</p>
-                  </div>
-                  <button id="mathStartButton" class="game-button full" type="button">Start 10-question sprint ⚡</button>
-                </section>
-
-                <section class="game-card sequence-game-card">
-                  <div class="game-card-header">
-                    <div><span class="game-number">03</span><h3>What Comes Next?</h3><p>Spot the pattern before the pattern spots you.</p></div>
-                    <div class="game-score"><strong id="sequenceScore">0</strong><span>streak</span></div>
-                  </div>
-                  <div id="sequenceNumbers" class="sequence-numbers"></div>
-                  <div id="sequenceChoices" class="sequence-choices"></div>
-                  <div class="game-footer">
-                    <span id="sequenceMessage">Choose the missing number.</span>
-                    <button id="sequenceNewButton" class="game-button" type="button">New puzzle ✦</button>
-                  </div>
-                </section>
-              </div>
-            </div>
-          </section>
-
-          <section id="quantView" class="view">
-            <div class="quant-board">
-              <div class="quant-board-header">
-                <div>
-                  <h2>Daily Quant</h2>
-                  <p id="quantStatsText">Loading quant bank.</p>
-                </div>
-                <button id="quantRefreshButton" class="secondary-button" type="button">Refresh</button>
-              </div>
-              <div id="quantCurrentPanel"></div>
-              <div class="sheet-toolbar quant-toolbar">
-                <input id="quantSearchInput" type="search" placeholder="Search quant questions">
-                <select id="quantSourceFilter">
-                  <option value="all">All sources</option>
-                  <option value="quant-guide">Quant Guide</option>
-                  <option value="green-book">Green Book</option>
-                </select>
-                <select id="quantStatusFilter">
-                  <option value="all">All statuses</option>
-                  <option value="todo">Todo</option>
-                  <option value="doing">Doing</option>
-                  <option value="done">Done</option>
-                </select>
-              </div>
-              <div class="table-wrap">
-                <table class="sheet-table">
-                  <thead>
-                    <tr>
-                      <th>Question</th>
-                      <th>Source</th>
-                      <th>Topic</th>
-                      <th>Difficulty</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="quantRows"></tbody>
-                </table>
-              </div>
-            </div>
           </section>
 
           <section id="plannerView" class="view">
@@ -291,13 +153,15 @@
                 <div>
                   <span class="section-eyebrow">Daily self-care studio</span>
                   <h2>Feel good. Get stronger.</h2>
-                  <p>Build repeatable routines, follow today’s plan, and let your lock screen keep you on track.</p>
+                  <p>Build repeatable routines, track your Apple Watch rings, and let your lock screen keep you on track.</p>
                 </div>
                 <div class="wellness-hero-actions">
                   <span id="wellnessSaveState" class="save-state"></span>
                   <button id="wellnessEnableRemindersButton" class="primary-link" type="button">Enable reminders</button>
                 </div>
               </header>
+
+              <div id="watchHealthPanel" class="watch-health-panel"></div>
 
               <div id="wellnessSummary" class="wellness-summary"></div>
 
@@ -788,91 +652,9 @@
             </div>
           </section>
 
-          <section id="treeView" class="view">
-            <div class="roadmap-card">
-              <div class="roadmap-header">
-                <div>
-                  <h2 id="roadmapTitle">Roadmap Tree</h2>
-                  <p id="roadmapSubtitle">Solve from top to bottom. Green means done, yellow means waiting.</p>
-                </div>
-                <button id="fitGraphButton" class="secondary-button" type="button">Top</button>
-              </div>
-              <div id="roadmapStage" class="roadmap-stage">
-                <div id="graphCanvas" class="graph-canvas">
-                  <svg id="edgeLayer" class="edge-layer"></svg>
-                  <div id="graphNodes" class="graph-nodes"></div>
-                </div>
-              </div>
-            </div>
-            <div id="problemDetail" class="detail-panel"></div>
-          </section>
-
-          <section id="contestsView" class="view">
-            <div class="contest-board">
-              <div class="contest-board-header">
-                <div>
-                  <h2>Contest Radar</h2>
-                  <p id="contestFeedStatus">Checking upcoming Codeforces and CodeChef contests.</p>
-                </div>
-                <div class="contest-board-actions">
-                  <button id="contestNotifyPanelButton" class="secondary-button" type="button">Notify</button>
-                  <button id="contestRefreshPanelButton" class="secondary-button" type="button">Refresh</button>
-                </div>
-              </div>
-              <div id="contestSummaryCards" class="contest-summary-grid"></div>
-              <div id="contestList" class="contest-list"></div>
-            </div>
-          </section>
-
-          <section id="sheetView" class="view">
-            <div class="sheet-toolbar">
-              <select id="statusFilter">
-                <option value="all">All statuses</option>
-                <option value="todo">Todo</option>
-                <option value="doing">Doing</option>
-                <option value="done">Done</option>
-                <option value="locked">Locked</option>
-              </select>
-              <select id="ratingFilter">
-                <option value="all">All ratings</option>
-                <option value="1600">1600</option>
-                <option value="1700">1700</option>
-                <option value="1800">1800</option>
-                <option value="1900">1900</option>
-                <option value="2000">2000</option>
-                <option value="2100">2100</option>
-                <option value="2200">2200</option>
-                <option value="2000plus">2000+</option>
-              </select>
-            </div>
-            <div class="table-wrap">
-              <table class="sheet-table">
-                <thead>
-                  <tr>
-                    <th>Problem</th>
-                    <th>Topic</th>
-                    <th>Rating</th>
-                    <th>Status</th>
-                    <th>Prerequisite</th>
-                  </tr>
-                </thead>
-                <tbody id="sheetRows"></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section id="statsView" class="view">
-            <div id="statsPanel" class="stats-grid"></div>
-            <div id="topicStats" class="topic-stats"></div>
-          </section>
         </section>
       </main>
     </div>
-
-    <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
-    <aside id="problemDrawer" class="problem-drawer hidden" aria-hidden="true">
-      <div id="drawerContent"></div>
-    </aside>
 
     <script src="/app.js?v=20"></script>
   </body>

@@ -6323,3 +6323,137 @@ body {
   font-size: .72rem;
   font-weight: 700;
 }
+
+/* ── Apple Watch Health Panel ─────────────────────────────────────────── */
+.watch-health-panel {
+  margin: 0 0 20px;
+}
+.watch-health-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  background: #f5f5f0;
+  border-radius: 16px;
+  padding: 22px 20px;
+  border: 1px solid #e8e8e0;
+}
+.watch-health-empty-icon {
+  font-size: 2.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.watch-health-empty strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.watch-health-empty p {
+  font-size: .85rem;
+  color: #555;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.watch-setup-details {
+  font-size: .82rem;
+  color: #444;
+}
+.watch-setup-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #14865c;
+  margin-bottom: 6px;
+}
+.watch-setup-details ol, .watch-setup-details ul {
+  padding-left: 18px;
+  line-height: 1.7;
+}
+.watch-setup-details code {
+  background: #eee;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: .8rem;
+}
+.watch-health-panel-inner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 20px;
+  padding: 22px 20px 18px;
+  color: #fff;
+}
+.watch-health-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.watch-health-header .section-eyebrow {
+  color: rgba(255,255,255,.6);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  display: block;
+  margin-bottom: 2px;
+}
+.watch-health-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+.watch-sync-time {
+  font-size: .75rem;
+  color: rgba(255,255,255,.5);
+  padding-top: 2px;
+}
+.watch-rings {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.watch-ring-card {
+  background: rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 14px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ring-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.ring-progress {
+  height: 4px;
+  background: rgba(255,255,255,.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.ring-fill {
+  height: 100%;
+  background: #f5b800;
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+.watch-ring-card strong {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+.watch-ring-card span {
+  font-size: .7rem;
+  color: rgba(255,255,255,.55);
+  line-height: 1;
+}
+.watch-ring-card small {
+  font-size: .68rem;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+@media (max-width: 480px) {
+  .watch-rings { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .watch-ring-card { padding: 12px 10px 10px; }
+  .watch-ring-card strong { font-size: 1.1rem; }
+}

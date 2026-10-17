@@ -147,7 +147,7 @@
   "debts": [],
   "notificationState": {},
   "pushSubscriptions": [],
-  "updatedAt": "2026-07-25T12:38:25Z",
+  "updatedAt": "2026-10-17T07:27:51Z",
   "skinRoutines": [
     {
       "id": "skin-1784979655085",
@@ -388,10 +388,32 @@
   "customExercises": [],
   "contestCalendar": [],
   "skinProducts": [],
-  "dailyReflections": [],
+  "dailyReflections": [
+    {
+      "id": "reflection-2026-10-02",
+      "date": "2026-10-02",
+      "mood": "great",
+      "text": "",
+      "reconciliation": "",
+      "updatedAt": "2026-10-17T07:27:51.205Z"
+    }
+  ],
   "quantAttemptHistory": [],
   "settings": {
     "humourStyle": "playful",
     "flexibleStreaks": true
-  }
+  },
+  "healthImports": [
+    {
+      "date": "2026-10-17",
+      "steps": 8234,
+      "activeCalories": 420,
+      "heartRate": 68,
+      "standHours": 9,
+      "sleepHours": 7.2,
+      "workoutMinutes": 45,
+      "source": "Apple Watch",
+      "importedAt": "2026-10-17T08:45:54Z"
+    }
+  ]
 }
