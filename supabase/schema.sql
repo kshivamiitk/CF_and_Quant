@@ -230,3 +230,8 @@ end $$;
 
 revoke all on all sequences in schema public from anon;
 grant usage, select on all sequences in schema public to service_role;
+
+-- Health and fitness relational tables are maintained in the ordered migration:
+-- supabase/migrations/202610190001_health_fitness_core.sql
+-- Apply that migration after this compatibility schema before switching core
+-- workout and health reads away from tracker_documents.

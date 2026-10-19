@@ -1,0 +1,28 @@
+name: Wellframe
+options:
+  bundleIdPrefix: com.example
+targets:
+  Wellframe:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Wellframe
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.wellframe
+        TARGETED_DEVICE_FAMILY: "1"
+    info:
+      path: Wellframe/Info.plist
+      properties:
+        CFBundleDisplayName: Wellframe
+        UILaunchScreen: {}
+        NSHealthShareUsageDescription: "Read the activity and heart-rate types you choose so you can review their source and history in Wellframe."
+        APIBaseURL: "https://your-deployment.example"
+        SupabaseURL: "https://your-project.supabase.co"
+        SupabasePublishableKey: "your-publishable-key"
+    entitlements:
+      path: Wellframe/Wellframe.entitlements
+      properties:
+        com.apple.developer.healthkit: true

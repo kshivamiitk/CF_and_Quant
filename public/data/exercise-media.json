@@ -1,0 +1,4366 @@
+{
+  "source": "https://exercise-dataset.com/exercises.json",
+  "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+  "entries": {
+    "CH01": {
+      "exerciseId": "CH01",
+      "providerId": "bench-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Bench Press",
+      "alt": "Barbell Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH01/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4506
+      },
+      "start": {
+        "path": "/media/exercises/CH01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13580
+      },
+      "end": {
+        "path": "/media/exercises/CH01/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13992
+      },
+      "poster": {
+        "path": "/media/exercises/CH01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13580
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH02": {
+      "exerciseId": "CH02",
+      "providerId": "incline-bench-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Incline Barbell Bench Press",
+      "alt": "Incline Barbell Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH02/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4096
+      },
+      "start": {
+        "path": "/media/exercises/CH02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13702
+      },
+      "end": {
+        "path": "/media/exercises/CH02/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13992
+      },
+      "poster": {
+        "path": "/media/exercises/CH02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13702
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH03": {
+      "exerciseId": "CH03",
+      "providerId": "decline-bench-press-barbell",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Decline Barbell Bench Press",
+      "alt": "Decline Barbell Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH03/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2962
+      },
+      "start": {
+        "path": "/media/exercises/CH03/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9828
+      },
+      "end": {
+        "path": "/media/exercises/CH03/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10032
+      },
+      "poster": {
+        "path": "/media/exercises/CH03/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9828
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH04": {
+      "exerciseId": "CH04",
+      "providerId": "db-bench-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Dumbbell Bench Press",
+      "alt": "Dumbbell Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH04/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2694
+      },
+      "start": {
+        "path": "/media/exercises/CH04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8238
+      },
+      "end": {
+        "path": "/media/exercises/CH04/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9020
+      },
+      "poster": {
+        "path": "/media/exercises/CH04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8238
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH07": {
+      "exerciseId": "CH07",
+      "providerId": "smith-machine-bench-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Smith Machine Bench Press",
+      "alt": "Smith Machine Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH07/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5782
+      },
+      "start": {
+        "path": "/media/exercises/CH07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 19762
+      },
+      "end": {
+        "path": "/media/exercises/CH07/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 21858
+      },
+      "poster": {
+        "path": "/media/exercises/CH07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 19762
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH14": {
+      "exerciseId": "CH14",
+      "providerId": "incline-dumbbell-fly",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Incline Dumbbell Fly",
+      "alt": "Incline Dumbbell Fly exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH14/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3326
+      },
+      "start": {
+        "path": "/media/exercises/CH14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10350
+      },
+      "end": {
+        "path": "/media/exercises/CH14/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10790
+      },
+      "poster": {
+        "path": "/media/exercises/CH14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10350
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH24": {
+      "exerciseId": "CH24",
+      "providerId": "deficit-push-ups",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Deficit Push Ups",
+      "alt": "Deficit Push Ups exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH24/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3990
+      },
+      "start": {
+        "path": "/media/exercises/CH24/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11348
+      },
+      "end": {
+        "path": "/media/exercises/CH24/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12174
+      },
+      "poster": {
+        "path": "/media/exercises/CH24/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11348
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH26": {
+      "exerciseId": "CH26",
+      "providerId": "close-grip-push-ups",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Close Grip Push Ups",
+      "alt": "Close Grip Push Ups exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH26/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3830
+      },
+      "start": {
+        "path": "/media/exercises/CH26/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10836
+      },
+      "end": {
+        "path": "/media/exercises/CH26/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9442
+      },
+      "poster": {
+        "path": "/media/exercises/CH26/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10836
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH04": {
+      "exerciseId": "SH04",
+      "providerId": "seated-db-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Seated Dumbbell Shoulder Press",
+      "alt": "Seated Dumbbell Shoulder Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH04/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3358
+      },
+      "start": {
+        "path": "/media/exercises/SH04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10578
+      },
+      "end": {
+        "path": "/media/exercises/SH04/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8806
+      },
+      "poster": {
+        "path": "/media/exercises/SH04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10578
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH02": {
+      "exerciseId": "SH02",
+      "providerId": "seated-barbell-overhead-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Seated Barbell Overhead Press",
+      "alt": "Seated Barbell Overhead Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH02/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3978
+      },
+      "start": {
+        "path": "/media/exercises/SH02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12022
+      },
+      "end": {
+        "path": "/media/exercises/SH02/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11574
+      },
+      "poster": {
+        "path": "/media/exercises/SH02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12022
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH08": {
+      "exerciseId": "SH08",
+      "providerId": "one-arm-dumbbell-shoulder-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "One Arm Dumbbell Shoulder Press",
+      "alt": "One Arm Dumbbell Shoulder Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2744
+      },
+      "start": {
+        "path": "/media/exercises/SH08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7668
+      },
+      "end": {
+        "path": "/media/exercises/SH08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7180
+      },
+      "poster": {
+        "path": "/media/exercises/SH08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7668
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH13": {
+      "exerciseId": "SH13",
+      "providerId": "seated-dumbbell-lateral-raise",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Seated Dumbbell Lateral Raise",
+      "alt": "Seated Dumbbell Lateral Raise exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH13/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4326
+      },
+      "start": {
+        "path": "/media/exercises/SH13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13148
+      },
+      "end": {
+        "path": "/media/exercises/SH13/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12690
+      },
+      "poster": {
+        "path": "/media/exercises/SH13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13148
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK14": {
+      "exerciseId": "BK14",
+      "providerId": "assisted-pull-ups",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Assisted Pull Ups",
+      "alt": "Assisted Pull Ups exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK14/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3670
+      },
+      "start": {
+        "path": "/media/exercises/BK14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13074
+      },
+      "end": {
+        "path": "/media/exercises/BK14/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13944
+      },
+      "poster": {
+        "path": "/media/exercises/BK14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13074
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK31": {
+      "exerciseId": "BK31",
+      "providerId": "deadlift",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Deadlift",
+      "alt": "Barbell Deadlift exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK31/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4326
+      },
+      "start": {
+        "path": "/media/exercises/BK31/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12546
+      },
+      "end": {
+        "path": "/media/exercises/BK31/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9640
+      },
+      "poster": {
+        "path": "/media/exercises/BK31/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12546
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK33": {
+      "exerciseId": "BK33",
+      "providerId": "hex-bar-deadlift",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Hex Bar Deadlift",
+      "alt": "Hex Bar Deadlift exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK33/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3344
+      },
+      "start": {
+        "path": "/media/exercises/BK33/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11042
+      },
+      "end": {
+        "path": "/media/exercises/BK33/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11224
+      },
+      "poster": {
+        "path": "/media/exercises/BK33/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11042
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK15": {
+      "exerciseId": "BK15",
+      "providerId": "barbell-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Bent-Over Barbell Row",
+      "alt": "Bent-Over Barbell Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK15/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4216
+      },
+      "start": {
+        "path": "/media/exercises/BK15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11984
+      },
+      "end": {
+        "path": "/media/exercises/BK15/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11512
+      },
+      "poster": {
+        "path": "/media/exercises/BK15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11984
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "TR01": {
+      "exerciseId": "TR01",
+      "providerId": "close-grip-bench-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Close-Grip Bench Press",
+      "alt": "Close-Grip Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/TR01/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3518
+      },
+      "start": {
+        "path": "/media/exercises/TR01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9990
+      },
+      "end": {
+        "path": "/media/exercises/TR01/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10284
+      },
+      "poster": {
+        "path": "/media/exercises/TR01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9990
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "TR13": {
+      "exerciseId": "TR13",
+      "providerId": "diamond-push-ups",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Diamond Push Ups",
+      "alt": "Diamond Push Ups exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/TR13/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3930
+      },
+      "start": {
+        "path": "/media/exercises/TR13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10432
+      },
+      "end": {
+        "path": "/media/exercises/TR13/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9846
+      },
+      "poster": {
+        "path": "/media/exercises/TR13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10432
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU01": {
+      "exerciseId": "QU01",
+      "providerId": "squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Back Squat",
+      "alt": "Barbell Back Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU01/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3100
+      },
+      "start": {
+        "path": "/media/exercises/QU01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9618
+      },
+      "end": {
+        "path": "/media/exercises/QU01/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11204
+      },
+      "poster": {
+        "path": "/media/exercises/QU01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9618
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU12": {
+      "exerciseId": "QU12",
+      "providerId": "leg-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Leg Press",
+      "alt": "Leg Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU12/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 6240
+      },
+      "start": {
+        "path": "/media/exercises/QU12/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 20938
+      },
+      "end": {
+        "path": "/media/exercises/QU12/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 24468
+      },
+      "poster": {
+        "path": "/media/exercises/QU12/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 20938
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU13": {
+      "exerciseId": "QU13",
+      "providerId": "close-stance-leg-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Close-Stance Leg Press",
+      "alt": "Close-Stance Leg Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU13/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 6844
+      },
+      "start": {
+        "path": "/media/exercises/QU13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 22758
+      },
+      "end": {
+        "path": "/media/exercises/QU13/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 22720
+      },
+      "poster": {
+        "path": "/media/exercises/QU13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 22758
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU14": {
+      "exerciseId": "QU14",
+      "providerId": "wide-stance-leg-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Wide-Stance Leg Press",
+      "alt": "Wide-Stance Leg Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU14/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 6802
+      },
+      "start": {
+        "path": "/media/exercises/QU14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 23322
+      },
+      "end": {
+        "path": "/media/exercises/QU14/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 22284
+      },
+      "poster": {
+        "path": "/media/exercises/QU14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 23322
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CA04": {
+      "exerciseId": "CA04",
+      "providerId": "single-leg-calf-raise",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Single Leg Calf Raise",
+      "alt": "Single Leg Calf Raise exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CA04/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2658
+      },
+      "start": {
+        "path": "/media/exercises/CA04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7934
+      },
+      "end": {
+        "path": "/media/exercises/CA04/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8048
+      },
+      "poster": {
+        "path": "/media/exercises/CA04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7934
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CO03": {
+      "exerciseId": "CO03",
+      "providerId": "toes-to-bar",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Toes to Bar",
+      "alt": "Toes to Bar exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CO03/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2478
+      },
+      "start": {
+        "path": "/media/exercises/CO03/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7414
+      },
+      "end": {
+        "path": "/media/exercises/CO03/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9910
+      },
+      "poster": {
+        "path": "/media/exercises/CO03/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7414
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG01": {
+      "exerciseId": "HG01",
+      "providerId": "romanian-deadlift",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Romanian Deadlift",
+      "alt": "Romanian Deadlift exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG01/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2126
+      },
+      "start": {
+        "path": "/media/exercises/HG01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6544
+      },
+      "end": {
+        "path": "/media/exercises/HG01/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7754
+      },
+      "poster": {
+        "path": "/media/exercises/HG01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6544
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FB01": {
+      "exerciseId": "FB01",
+      "providerId": "deadlift",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Deadlift",
+      "alt": "Barbell Deadlift exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FB01/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4326
+      },
+      "start": {
+        "path": "/media/exercises/FB01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12546
+      },
+      "end": {
+        "path": "/media/exercises/FB01/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9640
+      },
+      "poster": {
+        "path": "/media/exercises/FB01/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12546
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FB02": {
+      "exerciseId": "FB02",
+      "providerId": "squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Back Squat",
+      "alt": "Barbell Back Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FB02/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3100
+      },
+      "start": {
+        "path": "/media/exercises/FB02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9618
+      },
+      "end": {
+        "path": "/media/exercises/FB02/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11204
+      },
+      "poster": {
+        "path": "/media/exercises/FB02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9618
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CO21": {
+      "exerciseId": "CO21",
+      "providerId": "plank",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Plank",
+      "alt": "Plank exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CO21/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3252
+      },
+      "start": {
+        "path": "/media/exercises/CO21/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9336
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/CO21/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9336
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CO22": {
+      "exerciseId": "CO22",
+      "providerId": "side-plank",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Side Plank",
+      "alt": "Side Plank exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "explicit variant/equipment match",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CO22/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2970
+      },
+      "start": {
+        "path": "/media/exercises/CO22/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8974
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/CO22/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8974
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH08": {
+      "exerciseId": "CH08",
+      "providerId": "smith-machine-incline-bench-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Smith Machine Incline Bench Press",
+      "alt": "Smith Machine Incline Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5146
+      },
+      "start": {
+        "path": "/media/exercises/CH08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15536
+      },
+      "end": {
+        "path": "/media/exercises/CH08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15286
+      },
+      "poster": {
+        "path": "/media/exercises/CH08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15536
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH09": {
+      "exerciseId": "CH09",
+      "providerId": "smith-machine-decline-bench-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Smith Machine Decline Bench Press",
+      "alt": "Smith Machine Decline Bench Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH09/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 6862
+      },
+      "start": {
+        "path": "/media/exercises/CH09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 22962
+      },
+      "end": {
+        "path": "/media/exercises/CH09/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 23594
+      },
+      "poster": {
+        "path": "/media/exercises/CH09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 22962
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH10": {
+      "exerciseId": "CH10",
+      "providerId": "chest-press-machine",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Machine Chest Press",
+      "alt": "Machine Chest Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH10/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4138
+      },
+      "start": {
+        "path": "/media/exercises/CH10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12788
+      },
+      "end": {
+        "path": "/media/exercises/CH10/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13440
+      },
+      "poster": {
+        "path": "/media/exercises/CH10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12788
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CH27": {
+      "exerciseId": "CH27",
+      "providerId": "dumbbell-floor-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Dumbbell Floor Press",
+      "alt": "Dumbbell Floor Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CH27/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3060
+      },
+      "start": {
+        "path": "/media/exercises/CH27/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8430
+      },
+      "end": {
+        "path": "/media/exercises/CH27/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9448
+      },
+      "poster": {
+        "path": "/media/exercises/CH27/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8430
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH05": {
+      "exerciseId": "SH05",
+      "providerId": "arnold-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Arnold Press",
+      "alt": "Arnold Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH05/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3668
+      },
+      "start": {
+        "path": "/media/exercises/SH05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10818
+      },
+      "end": {
+        "path": "/media/exercises/SH05/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10270
+      },
+      "poster": {
+        "path": "/media/exercises/SH05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10818
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH06": {
+      "exerciseId": "SH06",
+      "providerId": "machine-shoulder-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Machine Shoulder Press",
+      "alt": "Machine Shoulder Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH06/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5280
+      },
+      "start": {
+        "path": "/media/exercises/SH06/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 17788
+      },
+      "end": {
+        "path": "/media/exercises/SH06/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 17856
+      },
+      "poster": {
+        "path": "/media/exercises/SH06/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 17788
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH07": {
+      "exerciseId": "SH07",
+      "providerId": "smith-machine-shoulder-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Smith Machine Shoulder Press",
+      "alt": "Smith Machine Shoulder Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH07/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4950
+      },
+      "start": {
+        "path": "/media/exercises/SH07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15772
+      },
+      "end": {
+        "path": "/media/exercises/SH07/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 17112
+      },
+      "poster": {
+        "path": "/media/exercises/SH07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15772
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH11": {
+      "exerciseId": "SH11",
+      "providerId": "behind-the-neck-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Behind the Neck Press",
+      "alt": "Behind the Neck Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH11/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3194
+      },
+      "start": {
+        "path": "/media/exercises/SH11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9756
+      },
+      "end": {
+        "path": "/media/exercises/SH11/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9040
+      },
+      "poster": {
+        "path": "/media/exercises/SH11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9756
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH26": {
+      "exerciseId": "SH26",
+      "providerId": "cable-reverse-fly",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Cable Reverse Fly",
+      "alt": "Cable Reverse Fly exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH26/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4912
+      },
+      "start": {
+        "path": "/media/exercises/SH26/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15572
+      },
+      "end": {
+        "path": "/media/exercises/SH26/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 17682
+      },
+      "poster": {
+        "path": "/media/exercises/SH26/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15572
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH30": {
+      "exerciseId": "SH30",
+      "providerId": "upright-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Upright Row",
+      "alt": "Barbell Upright Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH30/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3310
+      },
+      "start": {
+        "path": "/media/exercises/SH30/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9510
+      },
+      "end": {
+        "path": "/media/exercises/SH30/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8920
+      },
+      "poster": {
+        "path": "/media/exercises/SH30/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9510
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "SH31": {
+      "exerciseId": "SH31",
+      "providerId": "cable-upright-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Cable Upright Row",
+      "alt": "Cable Upright Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/SH31/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4764
+      },
+      "start": {
+        "path": "/media/exercises/SH31/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15356
+      },
+      "end": {
+        "path": "/media/exercises/SH31/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12764
+      },
+      "poster": {
+        "path": "/media/exercises/SH31/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15356
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK05": {
+      "exerciseId": "BK05",
+      "providerId": "neutral-grip-pull-ups",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Neutral Grip Pull Ups",
+      "alt": "Neutral Grip Pull Ups exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK05/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2704
+      },
+      "start": {
+        "path": "/media/exercises/BK05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8190
+      },
+      "end": {
+        "path": "/media/exercises/BK05/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8788
+      },
+      "poster": {
+        "path": "/media/exercises/BK05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8190
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK08": {
+      "exerciseId": "BK08",
+      "providerId": "close-grip-lat-pulldown",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Close Grip Lat Pulldown",
+      "alt": "Close Grip Lat Pulldown exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3158
+      },
+      "start": {
+        "path": "/media/exercises/BK08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10674
+      },
+      "end": {
+        "path": "/media/exercises/BK08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10888
+      },
+      "poster": {
+        "path": "/media/exercises/BK08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10674
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK16": {
+      "exerciseId": "BK16",
+      "providerId": "pendlay-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Pendlay Row",
+      "alt": "Pendlay Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK16/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4202
+      },
+      "start": {
+        "path": "/media/exercises/BK16/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12646
+      },
+      "end": {
+        "path": "/media/exercises/BK16/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12124
+      },
+      "poster": {
+        "path": "/media/exercises/BK16/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12646
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK19": {
+      "exerciseId": "BK19",
+      "providerId": "chest-supported-db-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Chest-Supported Dumbbell Row",
+      "alt": "Chest-Supported Dumbbell Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK19/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3854
+      },
+      "start": {
+        "path": "/media/exercises/BK19/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11988
+      },
+      "end": {
+        "path": "/media/exercises/BK19/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12670
+      },
+      "poster": {
+        "path": "/media/exercises/BK19/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11988
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK20": {
+      "exerciseId": "BK20",
+      "providerId": "seated-cable-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Seated Cable Row",
+      "alt": "Seated Cable Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK20/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4488
+      },
+      "start": {
+        "path": "/media/exercises/BK20/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 14660
+      },
+      "end": {
+        "path": "/media/exercises/BK20/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 14880
+      },
+      "poster": {
+        "path": "/media/exercises/BK20/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 14660
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK22": {
+      "exerciseId": "BK22",
+      "providerId": "wide-grip-seated-cable-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Wide Grip Seated Cable Row",
+      "alt": "Wide Grip Seated Cable Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK22/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5410
+      },
+      "start": {
+        "path": "/media/exercises/BK22/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 18330
+      },
+      "end": {
+        "path": "/media/exercises/BK22/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 18502
+      },
+      "poster": {
+        "path": "/media/exercises/BK22/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 18330
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK24": {
+      "exerciseId": "BK24",
+      "providerId": "t-bar-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "T-Bar Row",
+      "alt": "T-Bar Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK24/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3946
+      },
+      "start": {
+        "path": "/media/exercises/BK24/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12950
+      },
+      "end": {
+        "path": "/media/exercises/BK24/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12844
+      },
+      "poster": {
+        "path": "/media/exercises/BK24/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12950
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK27": {
+      "exerciseId": "BK27",
+      "providerId": "chest-supported-machine-row",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Chest-Supported Machine Row",
+      "alt": "Chest-Supported Machine Row exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK27/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5458
+      },
+      "start": {
+        "path": "/media/exercises/BK27/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 16858
+      },
+      "end": {
+        "path": "/media/exercises/BK27/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 16284
+      },
+      "poster": {
+        "path": "/media/exercises/BK27/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 16858
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK32": {
+      "exerciseId": "BK32",
+      "providerId": "sumo-deadlift",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Sumo Deadlift",
+      "alt": "Sumo Deadlift exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK32/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3640
+      },
+      "start": {
+        "path": "/media/exercises/BK32/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10412
+      },
+      "end": {
+        "path": "/media/exercises/BK32/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10528
+      },
+      "poster": {
+        "path": "/media/exercises/BK32/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10412
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BK36": {
+      "exerciseId": "BK36",
+      "providerId": "romanian-deadlift",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Romanian Deadlift",
+      "alt": "Romanian Deadlift exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BK36/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2126
+      },
+      "start": {
+        "path": "/media/exercises/BK36/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6544
+      },
+      "end": {
+        "path": "/media/exercises/BK36/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7754
+      },
+      "poster": {
+        "path": "/media/exercises/BK36/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6544
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI02": {
+      "exerciseId": "BI02",
+      "providerId": "ez-bar-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "EZ-Bar Curl",
+      "alt": "EZ-Bar Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI02/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3558
+      },
+      "start": {
+        "path": "/media/exercises/BI02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10112
+      },
+      "end": {
+        "path": "/media/exercises/BI02/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8332
+      },
+      "poster": {
+        "path": "/media/exercises/BI02/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10112
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI05": {
+      "exerciseId": "BI05",
+      "providerId": "incline-db-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Incline Dumbbell Curl",
+      "alt": "Incline Dumbbell Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI05/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3834
+      },
+      "start": {
+        "path": "/media/exercises/BI05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11316
+      },
+      "end": {
+        "path": "/media/exercises/BI05/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11988
+      },
+      "poster": {
+        "path": "/media/exercises/BI05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11316
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI07": {
+      "exerciseId": "BI07",
+      "providerId": "cross-body-hammer-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Cross Body Hammer Curl",
+      "alt": "Cross Body Hammer Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI07/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2588
+      },
+      "start": {
+        "path": "/media/exercises/BI07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7680
+      },
+      "end": {
+        "path": "/media/exercises/BI07/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7450
+      },
+      "poster": {
+        "path": "/media/exercises/BI07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7680
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI08": {
+      "exerciseId": "BI08",
+      "providerId": "preacher-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Preacher Curl",
+      "alt": "Preacher Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4492
+      },
+      "start": {
+        "path": "/media/exercises/BI08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 14550
+      },
+      "end": {
+        "path": "/media/exercises/BI08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15880
+      },
+      "poster": {
+        "path": "/media/exercises/BI08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 14550
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI09": {
+      "exerciseId": "BI09",
+      "providerId": "machine-preacher-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Machine Preacher Curl",
+      "alt": "Machine Preacher Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI09/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5782
+      },
+      "start": {
+        "path": "/media/exercises/BI09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 18084
+      },
+      "end": {
+        "path": "/media/exercises/BI09/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 17404
+      },
+      "poster": {
+        "path": "/media/exercises/BI09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 18084
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI10": {
+      "exerciseId": "BI10",
+      "providerId": "concentration-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Concentration Curl",
+      "alt": "Concentration Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI10/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4590
+      },
+      "start": {
+        "path": "/media/exercises/BI10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13358
+      },
+      "end": {
+        "path": "/media/exercises/BI10/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13490
+      },
+      "poster": {
+        "path": "/media/exercises/BI10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13358
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI11": {
+      "exerciseId": "BI11",
+      "providerId": "spider-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Spider Curl",
+      "alt": "Spider Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI11/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5072
+      },
+      "start": {
+        "path": "/media/exercises/BI11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15832
+      },
+      "end": {
+        "path": "/media/exercises/BI11/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15360
+      },
+      "poster": {
+        "path": "/media/exercises/BI11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 15832
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI16": {
+      "exerciseId": "BI16",
+      "providerId": "zottman-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Zottman Curl",
+      "alt": "Zottman Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI16/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2880
+      },
+      "start": {
+        "path": "/media/exercises/BI16/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8624
+      },
+      "end": {
+        "path": "/media/exercises/BI16/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8422
+      },
+      "poster": {
+        "path": "/media/exercises/BI16/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8624
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "BI17": {
+      "exerciseId": "BI17",
+      "providerId": "drag-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Drag Curl",
+      "alt": "Drag Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/BI17/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2924
+      },
+      "start": {
+        "path": "/media/exercises/BI17/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8538
+      },
+      "end": {
+        "path": "/media/exercises/BI17/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9550
+      },
+      "poster": {
+        "path": "/media/exercises/BI17/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8538
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "TR15": {
+      "exerciseId": "TR15",
+      "providerId": "machine-triceps-extension",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Machine Triceps Extension",
+      "alt": "Machine Triceps Extension exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/TR15/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 6048
+      },
+      "start": {
+        "path": "/media/exercises/TR15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 20536
+      },
+      "end": {
+        "path": "/media/exercises/TR15/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 19996
+      },
+      "poster": {
+        "path": "/media/exercises/TR15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 20536
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FO08": {
+      "exerciseId": "FO08",
+      "providerId": "wrist-roller",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Wrist Roller",
+      "alt": "Wrist Roller exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FO08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2774
+      },
+      "start": {
+        "path": "/media/exercises/FO08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8216
+      },
+      "end": {
+        "path": "/media/exercises/FO08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8672
+      },
+      "poster": {
+        "path": "/media/exercises/FO08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8216
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU05": {
+      "exerciseId": "QU05",
+      "providerId": "pause-squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Pause Squat",
+      "alt": "Pause Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU05/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3100
+      },
+      "start": {
+        "path": "/media/exercises/QU05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9618
+      },
+      "end": {
+        "path": "/media/exercises/QU05/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11204
+      },
+      "poster": {
+        "path": "/media/exercises/QU05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9618
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU06": {
+      "exerciseId": "QU06",
+      "providerId": "box-squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Box Squat",
+      "alt": "Box Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU06/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3554
+      },
+      "start": {
+        "path": "/media/exercises/QU06/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10510
+      },
+      "end": {
+        "path": "/media/exercises/QU06/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11650
+      },
+      "poster": {
+        "path": "/media/exercises/QU06/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10510
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU07": {
+      "exerciseId": "QU07",
+      "providerId": "zercher-squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Zercher Squat",
+      "alt": "Zercher Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU07/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3508
+      },
+      "start": {
+        "path": "/media/exercises/QU07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9524
+      },
+      "end": {
+        "path": "/media/exercises/QU07/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8958
+      },
+      "poster": {
+        "path": "/media/exercises/QU07/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9524
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU08": {
+      "exerciseId": "QU08",
+      "providerId": "goblet-squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Goblet Squat",
+      "alt": "Goblet Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2530
+      },
+      "start": {
+        "path": "/media/exercises/QU08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7490
+      },
+      "end": {
+        "path": "/media/exercises/QU08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10008
+      },
+      "poster": {
+        "path": "/media/exercises/QU08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7490
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU09": {
+      "exerciseId": "QU09",
+      "providerId": "smith-machine-squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Smith Machine Squat",
+      "alt": "Smith Machine Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU09/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 5046
+      },
+      "start": {
+        "path": "/media/exercises/QU09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 16572
+      },
+      "end": {
+        "path": "/media/exercises/QU09/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 16298
+      },
+      "poster": {
+        "path": "/media/exercises/QU09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 16572
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU10": {
+      "exerciseId": "QU10",
+      "providerId": "hack-squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Hack Squat",
+      "alt": "Hack Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU10/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 6068
+      },
+      "start": {
+        "path": "/media/exercises/QU10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 19890
+      },
+      "end": {
+        "path": "/media/exercises/QU10/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 17458
+      },
+      "poster": {
+        "path": "/media/exercises/QU10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 19890
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "QU15": {
+      "exerciseId": "QU15",
+      "providerId": "bulgarian-split-squat",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Bulgarian Split Squat",
+      "alt": "Bulgarian Split Squat exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/QU15/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3858
+      },
+      "start": {
+        "path": "/media/exercises/QU15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11482
+      },
+      "end": {
+        "path": "/media/exercises/QU15/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11462
+      },
+      "poster": {
+        "path": "/media/exercises/QU15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11482
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG03": {
+      "exerciseId": "HG03",
+      "providerId": "seated-leg-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Seated Leg Curl",
+      "alt": "Seated Leg Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG03/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 6072
+      },
+      "start": {
+        "path": "/media/exercises/HG03/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 19400
+      },
+      "end": {
+        "path": "/media/exercises/HG03/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 20686
+      },
+      "poster": {
+        "path": "/media/exercises/HG03/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 19400
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG04": {
+      "exerciseId": "HG04",
+      "providerId": "leg-curl",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Lying Leg Curl",
+      "alt": "Lying Leg Curl exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG04/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4140
+      },
+      "start": {
+        "path": "/media/exercises/HG04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13202
+      },
+      "end": {
+        "path": "/media/exercises/HG04/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13278
+      },
+      "poster": {
+        "path": "/media/exercises/HG04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13202
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG08": {
+      "exerciseId": "HG08",
+      "providerId": "hip-thrust",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Hip Thrust",
+      "alt": "Barbell Hip Thrust exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3832
+      },
+      "start": {
+        "path": "/media/exercises/HG08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11572
+      },
+      "end": {
+        "path": "/media/exercises/HG08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10266
+      },
+      "poster": {
+        "path": "/media/exercises/HG08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11572
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG09": {
+      "exerciseId": "HG09",
+      "providerId": "dumbbell-hip-thrust",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Dumbbell Hip Thrust",
+      "alt": "Dumbbell Hip Thrust exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG09/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4366
+      },
+      "start": {
+        "path": "/media/exercises/HG09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12134
+      },
+      "end": {
+        "path": "/media/exercises/HG09/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12736
+      },
+      "poster": {
+        "path": "/media/exercises/HG09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12134
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG10": {
+      "exerciseId": "HG10",
+      "providerId": "barbell-glute-bridge",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Glute Bridge",
+      "alt": "Barbell Glute Bridge exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG10/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3642
+      },
+      "start": {
+        "path": "/media/exercises/HG10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12018
+      },
+      "end": {
+        "path": "/media/exercises/HG10/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12986
+      },
+      "poster": {
+        "path": "/media/exercises/HG10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 12018
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG11": {
+      "exerciseId": "HG11",
+      "providerId": "single-leg-glute-bridge",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Single Leg Glute Bridge",
+      "alt": "Single Leg Glute Bridge exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG11/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2670
+      },
+      "start": {
+        "path": "/media/exercises/HG11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7814
+      },
+      "end": {
+        "path": "/media/exercises/HG11/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9096
+      },
+      "poster": {
+        "path": "/media/exercises/HG11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7814
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "HG17": {
+      "exerciseId": "HG17",
+      "providerId": "single-leg-romanian-deadlift",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Single Leg Romanian Deadlift",
+      "alt": "Single Leg Romanian Deadlift exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/HG17/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3084
+      },
+      "start": {
+        "path": "/media/exercises/HG17/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9026
+      },
+      "end": {
+        "path": "/media/exercises/HG17/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6854
+      },
+      "poster": {
+        "path": "/media/exercises/HG17/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9026
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "OL04": {
+      "exerciseId": "OL04",
+      "providerId": "muscle-snatch",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Muscle Snatch",
+      "alt": "Muscle Snatch exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/OL04/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2054
+      },
+      "start": {
+        "path": "/media/exercises/OL04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6226
+      },
+      "end": {
+        "path": "/media/exercises/OL04/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7766
+      },
+      "poster": {
+        "path": "/media/exercises/OL04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6226
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "OL08": {
+      "exerciseId": "OL08",
+      "providerId": "hang-power-clean",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Hang Power Clean",
+      "alt": "Hang Power Clean exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/OL08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2306
+      },
+      "start": {
+        "path": "/media/exercises/OL08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7162
+      },
+      "end": {
+        "path": "/media/exercises/OL08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6156
+      },
+      "poster": {
+        "path": "/media/exercises/OL08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7162
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "OL12": {
+      "exerciseId": "OL12",
+      "providerId": "split-jerk",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Split Jerk",
+      "alt": "Split Jerk exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/OL12/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 1612
+      },
+      "start": {
+        "path": "/media/exercises/OL12/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 4818
+      },
+      "end": {
+        "path": "/media/exercises/OL12/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 5864
+      },
+      "poster": {
+        "path": "/media/exercises/OL12/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 4818
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "OL13": {
+      "exerciseId": "OL13",
+      "providerId": "push-jerk",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Push Jerk",
+      "alt": "Push Jerk exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/OL13/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 1620
+      },
+      "start": {
+        "path": "/media/exercises/OL13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 5030
+      },
+      "end": {
+        "path": "/media/exercises/OL13/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 5578
+      },
+      "poster": {
+        "path": "/media/exercises/OL13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 5030
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "OL14": {
+      "exerciseId": "OL14",
+      "providerId": "push-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Push Press",
+      "alt": "Push Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/OL14/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3810
+      },
+      "start": {
+        "path": "/media/exercises/OL14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11928
+      },
+      "end": {
+        "path": "/media/exercises/OL14/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10800
+      },
+      "poster": {
+        "path": "/media/exercises/OL14/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11928
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "OL15": {
+      "exerciseId": "OL15",
+      "providerId": "dumbbell-clean-and-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Dumbbell Clean and Press",
+      "alt": "Dumbbell Clean and Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/OL15/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2182
+      },
+      "start": {
+        "path": "/media/exercises/OL15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6340
+      },
+      "end": {
+        "path": "/media/exercises/OL15/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7414
+      },
+      "poster": {
+        "path": "/media/exercises/OL15/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 6340
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "OL27": {
+      "exerciseId": "OL27",
+      "providerId": "sled-push",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Sled Push",
+      "alt": "Sled Push exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/OL27/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3440
+      },
+      "start": {
+        "path": "/media/exercises/OL27/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10174
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/OL27/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10174
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FB04": {
+      "exerciseId": "FB04",
+      "providerId": "ohp",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Barbell Overhead Press",
+      "alt": "Barbell Overhead Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FB04/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3004
+      },
+      "start": {
+        "path": "/media/exercises/FB04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8994
+      },
+      "end": {
+        "path": "/media/exercises/FB04/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8808
+      },
+      "poster": {
+        "path": "/media/exercises/FB04/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8994
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FB05": {
+      "exerciseId": "FB05",
+      "providerId": "push-press",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Push Press",
+      "alt": "Push Press exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FB05/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3810
+      },
+      "start": {
+        "path": "/media/exercises/FB05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11928
+      },
+      "end": {
+        "path": "/media/exercises/FB05/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 10800
+      },
+      "poster": {
+        "path": "/media/exercises/FB05/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11928
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FB10": {
+      "exerciseId": "FB10",
+      "providerId": "weighted-dips",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Weighted Dips",
+      "alt": "Weighted Dips exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FB10/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3144
+      },
+      "start": {
+        "path": "/media/exercises/FB10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9982
+      },
+      "end": {
+        "path": "/media/exercises/FB10/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9572
+      },
+      "poster": {
+        "path": "/media/exercises/FB10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9982
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FB12": {
+      "exerciseId": "FB12",
+      "providerId": "snatch",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Snatch",
+      "alt": "Snatch exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FB12/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2850
+      },
+      "start": {
+        "path": "/media/exercises/FB12/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9088
+      },
+      "end": {
+        "path": "/media/exercises/FB12/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9314
+      },
+      "poster": {
+        "path": "/media/exercises/FB12/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9088
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "FB13": {
+      "exerciseId": "FB13",
+      "providerId": "kettlebell-swing",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Kettlebell Swing",
+      "alt": "Kettlebell Swing exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/FB13/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2796
+      },
+      "start": {
+        "path": "/media/exercises/FB13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8126
+      },
+      "end": {
+        "path": "/media/exercises/FB13/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7402
+      },
+      "poster": {
+        "path": "/media/exercises/FB13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8126
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CO08": {
+      "exerciseId": "CO08",
+      "providerId": "reverse-crunches",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Reverse Crunches",
+      "alt": "Reverse Crunches exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CO08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3024
+      },
+      "start": {
+        "path": "/media/exercises/CO08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8624
+      },
+      "end": {
+        "path": "/media/exercises/CO08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9712
+      },
+      "poster": {
+        "path": "/media/exercises/CO08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8624
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CO24": {
+      "exerciseId": "CO24",
+      "providerId": "hollow-body-hold",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Hollow Body Hold",
+      "alt": "Hollow Body Hold exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CO24/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3172
+      },
+      "start": {
+        "path": "/media/exercises/CO24/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9700
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/CO24/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9700
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CO28": {
+      "exerciseId": "CO28",
+      "providerId": "mountain-climbers",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Mountain Climbers",
+      "alt": "Mountain Climbers exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CO28/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3270
+      },
+      "start": {
+        "path": "/media/exercises/CO28/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8674
+      },
+      "end": {
+        "path": "/media/exercises/CO28/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9086
+      },
+      "poster": {
+        "path": "/media/exercises/CO28/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8674
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD08": {
+      "exerciseId": "CD08",
+      "providerId": "rowing-machine",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Rowing Machine",
+      "alt": "Rowing Machine exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD08/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3444
+      },
+      "start": {
+        "path": "/media/exercises/CD08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11202
+      },
+      "end": {
+        "path": "/media/exercises/CD08/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11710
+      },
+      "poster": {
+        "path": "/media/exercises/CD08/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11202
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD10": {
+      "exerciseId": "CD10",
+      "providerId": "elliptical-trainer",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Elliptical Trainer",
+      "alt": "Elliptical Trainer exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD10/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 4340
+      },
+      "start": {
+        "path": "/media/exercises/CD10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13990
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/CD10/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 13990
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD11": {
+      "exerciseId": "CD11",
+      "providerId": "ski-erg",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "SkiErg",
+      "alt": "SkiErg exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD11/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3706
+      },
+      "start": {
+        "path": "/media/exercises/CD11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11978
+      },
+      "end": {
+        "path": "/media/exercises/CD11/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11966
+      },
+      "poster": {
+        "path": "/media/exercises/CD11/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11978
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD13": {
+      "exerciseId": "CD13",
+      "providerId": "jump-rope",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Jump Rope",
+      "alt": "Jump Rope exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD13/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3302
+      },
+      "start": {
+        "path": "/media/exercises/CD13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9694
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/CD13/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9694
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD20": {
+      "exerciseId": "CD20",
+      "providerId": "mountain-climbers",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Mountain Climbers",
+      "alt": "Mountain Climbers exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD20/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3270
+      },
+      "start": {
+        "path": "/media/exercises/CD20/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8674
+      },
+      "end": {
+        "path": "/media/exercises/CD20/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 9086
+      },
+      "poster": {
+        "path": "/media/exercises/CD20/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8674
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD21": {
+      "exerciseId": "CD21",
+      "providerId": "high-knees",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "High Knees",
+      "alt": "High Knees exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD21/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2386
+      },
+      "start": {
+        "path": "/media/exercises/CD21/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7106
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/CD21/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7106
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD22": {
+      "exerciseId": "CD22",
+      "providerId": "jumping-jacks",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Jumping Jacks",
+      "alt": "Jumping Jacks exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD22/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2740
+      },
+      "start": {
+        "path": "/media/exercises/CD22/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8526
+      },
+      "end": {
+        "path": "/media/exercises/CD22/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8834
+      },
+      "poster": {
+        "path": "/media/exercises/CD22/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8526
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "CD33": {
+      "exerciseId": "CD33",
+      "providerId": "battle-ropes",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Battle Ropes",
+      "alt": "Battle Ropes exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/CD33/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 3970
+      },
+      "start": {
+        "path": "/media/exercises/CD33/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11588
+      },
+      "end": null,
+      "poster": {
+        "path": "/media/exercises/CD33/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 11588
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "NX06": {
+      "exerciseId": "NX06",
+      "providerId": "scapular-pull-ups",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Scapular Pull Ups",
+      "alt": "Scapular Pull Ups exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/NX06/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2780
+      },
+      "start": {
+        "path": "/media/exercises/NX06/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8558
+      },
+      "end": {
+        "path": "/media/exercises/NX06/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7744
+      },
+      "poster": {
+        "path": "/media/exercises/NX06/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8558
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    },
+    "RC09": {
+      "exerciseId": "RC09",
+      "providerId": "scapular-pull-ups",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "mediaType": "still",
+      "sourceName": "Scapular Pull Ups",
+      "alt": "Scapular Pull Ups exercise illustration",
+      "creator": "RepDB",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display",
+      "retrievedAt": "2026-10-19",
+      "sourceIndexSha256": "947fbf730c805b66f4ff2de4341ff1a82fca8e9937b22fa98109440ba2ac1300",
+      "mappingStatus": "unique normalized exact name",
+      "rightsReview": "free-tier in-app use with attribution",
+      "formReview": "external technique review pending",
+      "thumb": {
+        "path": "/media/exercises/RC09/thumb.webp",
+        "width": 220,
+        "height": 220,
+        "bytes": 2780
+      },
+      "start": {
+        "path": "/media/exercises/RC09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8558
+      },
+      "end": {
+        "path": "/media/exercises/RC09/end.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 7744
+      },
+      "poster": {
+        "path": "/media/exercises/RC09/start.webp",
+        "width": 512,
+        "height": 512,
+        "bytes": 8558
+      },
+      "demoMp4": null,
+      "demoWebm": null
+    }
+  }
+}

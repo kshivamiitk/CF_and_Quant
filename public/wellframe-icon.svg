@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Wellframe">
+  <rect width="1024" height="1024" rx="228" fill="#075f5b"/>
+  <path d="M164 302 292 724 510 411 731 724 860 302" fill="none" stroke="#f5f7f9" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="860" cy="302" r="47" fill="#e3a43e"/>
+</svg>

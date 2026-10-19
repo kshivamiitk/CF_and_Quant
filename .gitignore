@@ -1,3 +1,10 @@
 .vercel
 .env*
 *env
+.DS_Store
+__pycache__/
+*.pyc
+server.log
+supabase/.temp/
+data/local-users/
+data/personal.json

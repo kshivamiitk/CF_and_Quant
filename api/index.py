@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlparse, parse_qs
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
@@ -16,6 +16,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import server as tracker  # noqa: E402
+from api.auth import authenticate_request, is_legacy_owner  # noqa: E402
+from api.consumer import handle as consumer_handle  # noqa: E402
+from api.account import delete_account  # noqa: E402
 
 
 ORIGINAL_READ_JSON = tracker.read_json
@@ -550,10 +553,12 @@ def text_response(text: str, status=200):
 
 
 def is_authorized(path: str, headers: dict) -> bool:
-    return True
+    return authenticate_request(headers) is not None
 
 
 def read_body_json(body: bytes):
+    if len(body) > 1024 * 1024:
+        raise ValueError("Request too large")
     if not body:
         return {}
     return json.loads(body.decode("utf-8"))
@@ -564,10 +569,28 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
     parsed = urlparse(raw_path)
     path = parsed.path
 
-    if path != "/api/push/dispatch" and not is_authorized(raw_path, headers):
-        return json_response({"error": "Private token required"}, 401)
+    if path not in {"/api/push/dispatch", "/api/auth/config"} and not is_authorized(raw_path, headers):
+        return json_response({"error": "Authentication required"}, 401)
+    claims = authenticate_request(headers) if path not in {"/api/push/dispatch", "/api/auth/config"} else None
+    if path == "/api/consumer":
+        try:
+            offset = int(parse_qs(parsed.query).get("offset", ["0"])[0])
+        except ValueError:
+            return json_response({"error": "Invalid page offset"}, 400)
+        kind = parse_qs(parsed.query).get("kind", [None])[0]
+        status, result = consumer_handle(method, body, claims, headers.get("authorization", headers.get("Authorization", "")), offset, kind)
+        return json_response(result, status)
+    if path == "/api/account" and method == "DELETE":
+        status, result = delete_account(body, claims, headers.get("authorization", headers.get("Authorization", "")))
+        return json_response(result, status)
+    if path in {"/api/personal", "/api/health-import", "/api/push/config", "/api/push/subscribe", "/api/push/test"} and not is_legacy_owner(claims):
+        return json_response({"error": "Legacy workspace is private"}, 403)
 
     if method == "GET":
+        if path == "/api/auth/config":
+            return json_response({"url": os.environ.get("SUPABASE_URL", ""), "publishableKey": os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")})
+        if path == "/api/auth/me":
+            return json_response({"legacyOwner": is_legacy_owner(claims), "userId": claims["sub"]})
         if path == "/api/personal":
             return json_response(tracker.public_personal(tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())))
         if path == "/api/push/config":
@@ -589,11 +612,15 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
             payload = read_body_json(body)
         except json.JSONDecodeError:
             return json_response({"error": "Invalid JSON"}, 400)
+        except ValueError as exc:
+            return json_response({"error": str(exc)}, 413)
 
         if path == "/api/health-import":
             import datetime as _dt
             existing = tracker.read_json(tracker.PERSONAL_PATH, tracker.default_personal())
             imports = existing.get("healthImports", [])
+            source = str(payload.get("source") or "Shortcut").strip()[:120]
+            source_sample_id = str(payload.get("sourceSampleId") or f"{source}:{payload.get('date') or _dt.date.today().isoformat()}").strip()[:200]
             entry = {
                 "date": payload.get("date") or _dt.date.today().isoformat(),
                 "steps": payload.get("steps"),
@@ -602,12 +629,14 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
                 "standHours": payload.get("standHours"),
                 "sleepHours": payload.get("sleepHours"),
                 "workoutMinutes": payload.get("workoutMinutes"),
-                "source": payload.get("source", "Apple Watch"),
+                "source": source,
+                "sourceSampleId": source_sample_id,
+                "metadata": payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {},
                 "importedAt": tracker.isoformat_utc(tracker.utc_now()),
             }
-            imports = [i for i in imports if i.get("date") != entry["date"]]
+            imports = [i for i in imports if i.get("sourceSampleId") != source_sample_id]
             imports.append(entry)
-            existing["healthImports"] = imports[-90:]
+            existing["healthImports"] = imports
             tracker.write_json(tracker.PERSONAL_PATH, existing)
             return json_response({"ok": True, "entry": entry})
 
@@ -645,7 +674,7 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
             existing["expenses"] = payload.get("expenses", existing.get("expenses", []))
             existing["incomes"] = payload.get("incomes", existing.get("incomes", []))
             existing["focusSessions"] = payload.get("focusSessions", existing.get("focusSessions", []))
-            for field in ("skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
+            for field in ("skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "gymExerciseSessions", "gymExerciseFavorites", "contestCalendar", "skinProducts", "dailyReflections", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
                           "accounts", "budgets", "bills", "savingsGoals", "debts"):
                 existing[field] = payload.get(field, existing.get(field, []))
             existing["settings"] = payload.get("settings", existing.get("settings", {}))
@@ -677,3 +706,8 @@ class handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", "0"))
         body = self.rfile.read(length)
         self._send(api_route("POST", self.path, self._headers_dict(), body))
+
+    def do_DELETE(self):
+        length = int(self.headers.get("Content-Length", "0"))
+        body = self.rfile.read(length)
+        self._send(api_route("DELETE", self.path, self._headers_dict(), body))

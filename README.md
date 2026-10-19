@@ -1,4 +1,18 @@
-# Kumar Quant Tracker
+# Wellframe consumer health slice + Kumar Quant legacy workspace
+
+The default app is a five-destination health experience (Today, Train, Trends, Care, You). Train includes the original 370-ID exercise catalog, account-owned favorites, custom exercises and simple saved routines, grouped workout sets, a rest timer, finish review, and a small licensed still-image batch. Manual workouts, water and care are account scoped; the previous Kumar planner/notes/quant workspace remains available only to the configured legacy owner from You. See [corrective pass](docs/WELLFRAME_REVIEW_PASS.md), [feature matrix](docs/FITNESS_FEATURE_PRESERVATION.md), and [consumer release status](docs/CONSUMER_RELEASE_STATUS.md). Native companion source exists, but HealthKit/Health Connect sync has not been built or verified on devices; app-store releases are not complete.
+
+Local setup:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python server.py --port 8765
+```
+
+Back up the Supabase project, apply `supabase/schema.sql` and then both ordered migrations in `supabase/migrations/` before using consumer records with a real Supabase account. Local development can use `ALLOW_LOCAL_DEV_AUTH=1` and a disposable `CONSUMER_LOCAL_DATA_DIR`; `CONSUMER_LOCAL_MODE=1` makes even authenticated localhost accounts use local files instead of Supabase, and must never be deployed. For tests, install Playwright and a Chromium browser, then run `.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` and `.venv/bin/python -m unittest tests.browser_smoke -v`. The optional media importer requires Pillow (`.venv/bin/python -m pip install Pillow`); see [media sources](docs/EXERCISE_MEDIA_SOURCES.md). The remainder of this README describes the original legacy workspace and some historical deployment paths; the consumer release status takes precedence where they differ.
+
+## Legacy workspace
 
 Private quant interview, Codeforces, schedule, and notes tracker for Kumar Shivam.
 
@@ -85,23 +99,11 @@ apps, so the app also shows the live countdown inside the header icon mark.
 
 ## Private phone access
 
-For access from your phone on the same network, run on all interfaces with a private token:
-
-```bash
-python3 server.py --host 0.0.0.0 --port 8765 --token "choose-a-long-private-token"
-```
-
-Find your Mac's local IP address, then open this once on the phone:
-
-```text
-http://YOUR_MAC_IP:8765/?token=choose-a-long-private-token
-```
-
-The app stores the token in the browser and sends it with API requests. Without `--token`, do not expose the server outside your own machine.
+Use the HTTPS Vercel deployment with Supabase email sign-in for phone access. The older `--token` argument is not the consumer API authentication mechanism; do not expose the local development bypass on a network interface.
 
 ## Apple distribution
 
-This repo is now an installable private web app, not a submitted native iOS binary. To distribute through Apple, wrap this frontend/backend model in a native iOS shell or hosted service, then use one of Apple's private distribution routes:
+This repository has an installable web app, not a submitted native iOS binary. HealthKit and Apple Watch access require a native companion; see [the current setup status](docs/APPLE_HEALTHKIT_SETUP.md). Possible future distribution routes include:
 
 - Unlisted App Distribution: https://developer.apple.com/support/unlisted-app-distribution/
 - Custom Apps with Apple Business/School Manager: https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/set-distribution-methods/
@@ -109,75 +111,9 @@ This repo is now an installable private web app, not a submitted native iOS bina
 
 ## Deploy on Vercel
 
-The project is Vercel-friendly now:
+Use [the current Vercel deployment guide](docs/VERCEL_DEPLOYMENT.md). Supabase is required for authenticated consumer records in production. The old Upstash/token-only instructions were removed because they no longer describe the app's security boundary.
 
-- `public/` is served as the static PWA frontend.
-- `api/index.py` is the Vercel Python Function for all `/api/...` routes.
-- `vercel.json` rewrites `/api/*` to that function.
-- Mutable state uses Upstash Redis over REST when these env vars are configured:
-  - `UPSTASH_REDIS_REST_URL`
-  - `UPSTASH_REDIS_REST_TOKEN`
-  - `TRACKER_STORAGE_PREFIX`
-
-Without Upstash env vars, the API falls back to local JSON files. That is useful locally, but not reliable for production Vercel persistence.
-
-### 1. Create storage
-
-In Vercel:
-
-1. Open your Vercel dashboard.
-2. Create or open the project.
-3. Go to Storage/Marketplace.
-4. Add Upstash Redis.
-5. Copy the REST URL and REST token into project environment variables:
-
-```text
-UPSTASH_REDIS_REST_URL
-UPSTASH_REDIS_REST_TOKEN
-TRACKER_STORAGE_PREFIX=kumar_quant
-REQUIRE_TRACKER_TOKEN=0
-```
-
-Token auth is disabled by default for easier iPhone use. If you later want token auth, set `REQUIRE_TRACKER_TOKEN=1` and add `TRACKER_PRIVATE_TOKEN`.
-
-### 2. Deploy
-
-From this folder:
-
-```bash
-npm i -g vercel
-vercel login
-vercel
-```
-
-For production:
-
-```bash
-vercel --prod
-```
-
-### 3. Open the app
-
-Open the production URL:
-
-```text
-https://YOUR-PROJECT.vercel.app/
-```
-
-If you enabled token auth with `REQUIRE_TRACKER_TOKEN=1`, open it once as `https://YOUR-PROJECT.vercel.app/?token=YOUR_TRACKER_PRIVATE_TOKEN`.
-
-### 4. Install on iPhone
-
-1. Open the Vercel URL in Safari on iPhone.
-2. Confirm the app loads.
-3. Tap Share.
-4. Tap Add to Home Screen.
-5. Name it `Kumar Quant`.
-6. Tap Add.
-
-After that it opens like an app from your Home Screen.
-
-### 5. Enable calendar reminders
+### Legacy calendar reminders
 
 The Home Screen app supports Web Push on iOS 16.4 or later. Generate one VAPID
 key pair:
@@ -189,8 +125,11 @@ npx web-push generate-vapid-keys --json
 Add these Production environment variables in Vercel:
 
 - `SUPABASE_URL` from Supabase Project Settings
-- `SUPABASE_ANON_KEY` (or the newer publishable key)
-- `SUPABASE_OWNER_ID=kumar-shivam`
+- `SUPABASE_PUBLISHABLE_KEY` for browser sign-in
+- `SUPABASE_SERVICE_ROLE_KEY` or server-only Supabase secret in Vercel
+- `SUPABASE_OWNER_USER_ID` set to the private Supabase Auth user's UUID
+- `SUPABASE_AUTH_ISSUER=https://YOUR-PROJECT.supabase.co/auth/v1`
+- `SUPABASE_AUTH_AUDIENCE=authenticated`
 
 - `APP_BASE_URL=https://YOUR-PROJECT.vercel.app`
 - `VAPID_PUBLIC_KEY` from the generated public key
@@ -201,9 +140,11 @@ Add these Production environment variables in Vercel:
 - `APP_TIMEZONE=Asia/Kolkata` (optional; this is the default)
 
 Before the first Supabase-backed deployment, open the Supabase SQL Editor and
-run [`supabase/schema.sql`](supabase/schema.sql). Supabase becomes the primary
-store; existing Redis/local data is imported automatically when a Supabase
-document does not exist, and remains available as a temporary fallback.
+run [`supabase/schema.sql`](supabase/schema.sql), followed by the ordered
+migrations in [`supabase/migrations/`](supabase/migrations/). Production API
+requests require Supabase Auth; local-only bypass is controlled by
+`ALLOW_LOCAL_DEV_AUTH=1` and must never be enabled in Vercel. See the focused
+guides in [`docs/`](docs/).
 
 Redeploy, launch the installed iPhone app, open Calendar, and tap **Enable
 reminders**. The app creates one QStash minute schedule and sends a test

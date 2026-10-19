@@ -1,0 +1,904 @@
+{
+  "credits": [
+    {
+      "exerciseId": "CH01",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH02",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH03",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH04",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH07",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH14",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH24",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH26",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH04",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH02",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH13",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK14",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK31",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK33",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK15",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "TR01",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "TR13",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU01",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU12",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU13",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU14",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CA04",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CO03",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG01",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FB01",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FB02",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CO21",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CO22",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH09",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH10",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CH27",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH05",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH06",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH07",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH11",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH26",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH30",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "SH31",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK05",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK16",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK19",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK20",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK22",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK24",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK27",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK32",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BK36",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI02",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI05",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI07",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI09",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI10",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI11",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI16",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "BI17",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "TR15",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FO08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU05",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU06",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU07",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU09",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU10",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "QU15",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG03",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG04",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG09",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG10",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG11",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "HG17",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "OL04",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "OL08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "OL12",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "OL13",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "OL14",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "OL15",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "OL27",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FB04",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FB05",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FB10",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FB12",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "FB13",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CO08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CO24",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CO28",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD08",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD10",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD11",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD13",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD20",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD21",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD22",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "CD33",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "NX06",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    },
+    {
+      "exerciseId": "RC09",
+      "creator": "RepDB",
+      "sourcePage": "https://exercise-dataset.com/exercises.json",
+      "license": "RepDB Free Exercise Dataset License",
+      "licenseUrl": "https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md",
+      "requiredCredit": "Exercise data by RepDB (repdb.co)",
+      "changes": "Resized and recompressed WebP for app display"
+    }
+  ]
+}

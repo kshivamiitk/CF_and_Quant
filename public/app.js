@@ -20,7 +20,21 @@ const state = {
   editingGymPlanId: null,
   activeGymMode: "today",
   offlineSavePending: false,
-  gymDraftExercises: []
+  gymDraftExercises: [],
+  exerciseSearch: "",
+  exerciseCategory: "all",
+  exerciseMode: "all",
+  exerciseFavoritesOnly: false,
+  activeExerciseId: null,
+  exercisePanel: "library",
+  exerciseDraftSessionId: null,
+  exerciseDraftSets: [],
+  exerciseRange: "30",
+  exerciseStartDate: "",
+  exerciseEndDate: "",
+  exerciseIncludeWarmups: false,
+  exerciseLoadAggregation: "highest",
+  exerciseDurationAggregation: "best"
 };
 
 const $ = (id) => document.getElementById(id);
@@ -38,7 +52,7 @@ if (/^\d{4}-\d{2}-\d{2}$/.test(initialDate || "")) state.selectedScheduleDate = 
 if (initialParams.has("token") || initialView || initialNewNote) window.history.replaceState({}, document.title, window.location.pathname);
 
 function authHeaders(extra = {}) {
-  return extra;
+  return window.CFAuth?.headers(extra) || extra;
 }
 
 function escapeHtml(value) {
@@ -52,7 +66,7 @@ function escapeHtml(value) {
 
 async function getJson(url) {
   const response = await fetch(url, { cache: "no-store", headers: authHeaders() });
-  if (!response.ok) throw new Error(`GET ${url} failed`);
+  if (!response.ok) { const error = new Error(`GET ${url} failed`); error.status = response.status; throw error; }
   return response.json();
 }
 
@@ -62,7 +76,7 @@ async function postJson(url, payload) {
     headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(payload)
   });
-  if (!response.ok) throw new Error(`POST ${url} failed`);
+  if (!response.ok) { const error = new Error(`POST ${url} failed`); error.status = response.status; throw error; }
   return response.json();
 }
 
@@ -107,7 +121,7 @@ function updateYearRunway() {
   const days = daysRemainingInYear();
   const mark = $("yearAppMark");
   if (mark) mark.innerHTML = `<strong>${days}</strong><small>days</small>`;
-  document.title = `${days} days left`;
+  if (!document.body.classList.contains("consumer-mode")) document.title = `${days} days left`;
   const card = $("yearCountdownCard");
   if (card) {
     const year = new Date().getFullYear();
@@ -124,7 +138,7 @@ function updateYearRunway() {
     navigator.setAppBadge(days).catch(() => {});
   }
   const favicon = document.querySelector("link[rel='icon']");
-  if (favicon) {
+  if (favicon && !document.body.classList.contains("consumer-mode")) {
     const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#f5b800"/><text x="32" y="38" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="25" font-weight="800" fill="#241a00">${days}</text><text x="32" y="51" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="7" font-weight="800" fill="#6b4d00">DAYS</text></svg>`;
     favicon.href = `data:image/svg+xml,${encodeURIComponent(iconSvg)}`;
   }
@@ -140,7 +154,7 @@ function localIsoDate(date = new Date()) {
 const personalCollectionFields = [
   "schedule", "notes", "skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "expenses", "incomes", "focusSessions", "tasks", "goals",
   "habits", "weeklyReviews", "healthLogs", "careerItems", "documents", "accounts", "budgets",
-  "bills", "savingsGoals", "debts"
+  "bills", "savingsGoals", "debts", "gymExerciseSessions", "gymExerciseFavorites"
 ];
 
 function ensurePersonalCollections() {
@@ -320,12 +334,8 @@ function renderToday() {
 async function loadPersonal() {
   try {
     state.personal = await getJson(`/api/personal?ts=${Date.now()}`);
-    localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
   } catch (error) {
-    const cached = localStorage.getItem("kumarPersonalOffline");
-    if (!cached) throw error;
-    state.personal = JSON.parse(cached);
-    state.offlineSavePending = true;
+    throw error;
   }
   ensurePersonalCollections();
   state.selectedScheduleDate ||= localIsoDate();
@@ -339,7 +349,6 @@ async function loadPersonal() {
 }
 
 function savePersonal(debounced = true, rerender = true) {
-  localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
   const saveState = $("personalSaveState");
   const notesState = $("notesSaveState");
   const wellnessState = $("wellnessSaveState");
@@ -352,7 +361,6 @@ function savePersonal(debounced = true, rerender = true) {
       const result = await postJson("/api/personal", state.personal);
       if (result.personal) state.personal = result.personal;
       state.offlineSavePending = false;
-      localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
       if (saveState) saveState.textContent = "Saved";
       if (notesState) notesState.textContent = "Saved";
       if (wellnessState) wellnessState.textContent = "Saved";
@@ -1103,6 +1111,8 @@ function exportPersonalData() {
 
 function renderGymHub() {
   if (!$("gymHubContent") || !state.personal) return;
+  window.wireExerciseTracker?.();
+  window.renderExerciseTracker?.();
   const now = new Date();
   $("gymTodayWeekday").textContent = now.toLocaleDateString([], { weekday: "long" });
   $("gymTodayDate").textContent = now.toLocaleDateString([], { day: "numeric", month: "short" });
@@ -2460,19 +2470,24 @@ function wireEvents() {
 }
 
 async function init() {
-  wireEvents();
   document.body.dataset.view = state.activeView;
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/service-worker.js").catch((error) => console.error(error));
   }
   try {
+    await window.CFAuth?.restore();
+    if (window.CFAuth?.isRecovering()) return;
+    const account = await getJson("/api/auth/me");
+    window.CFAuth?.hideLogin();
+    document.body.classList.remove("booting");
+    document.body.classList.add("consumer-mode");
+    await window.CFConsumer.start(account);
+    if (!account.legacyOwner) return;
+    wireEvents();
     state.personal = await getJson("/api/personal");
-    localStorage.setItem("kumarPersonalOffline", JSON.stringify(state.personal));
   } catch (error) {
-    const cached = localStorage.getItem("kumarPersonalOffline");
-    if (!cached) throw error;
-    state.personal = JSON.parse(cached);
-    state.offlineSavePending = true;
+    if (error.status === 401) { window.CFAuth?.showLogin(); return; }
+    throw error;
   }
   ensurePersonalCollections();
   state.selectedNoteId = state.personal.notes?.[0]?.id || null;

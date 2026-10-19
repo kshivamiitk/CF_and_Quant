@@ -1,40 +1,27 @@
 {
-  "name": "Kumar Life",
-  "short_name": "Kumar",
+  "name": "Wellframe",
+  "short_name": "Wellframe",
   "id": "/",
-  "description": "Personal life tracker — schedule, gym, wellness, focus, notes.",
+  "description": "Your workouts, daily care, and health trends in one place.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f7f7f2",
-  "theme_color": "#f5b800",
-  "categories": ["productivity", "health", "finance"],
+  "background_color": "#f5f7f9",
+  "theme_color": "#087f78",
+  "categories": ["health", "fitness"],
   "shortcuts": [
     {
       "name": "Today",
       "short_name": "Today",
       "url": "/?view=today"
     },
-    {
-      "name": "Gym",
-      "short_name": "Gym",
-      "url": "/?view=gym"
-    },
-    {
-      "name": "Wellness",
-      "short_name": "Wellness",
-      "url": "/?view=wellness"
-    },
-    {
-      "name": "New note",
-      "short_name": "Note",
-      "url": "/?view=notes&new=1"
-    }
+    { "name": "Train", "short_name": "Train", "url": "/?tab=train" },
+    { "name": "Care", "short_name": "Care", "url": "/?tab=care" }
   ],
   "icons": [
     {
-      "src": "/cf2000_tracker_icon_1024.png",
+      "src": "/wellframe-icon.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"

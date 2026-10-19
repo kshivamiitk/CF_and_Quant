@@ -8,8 +8,12 @@ import mimetypes
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import quote, unquote, urlencode, urlparse
+from urllib.parse import quote, unquote, urlencode, urlparse, parse_qs
 from urllib.request import Request, urlopen
+
+from api.auth import authenticate_request, is_legacy_owner
+from api.consumer import handle as consumer_handle
+from api.account import delete_account
 
 
 ROOT = Path(__file__).resolve().parent
@@ -19,8 +23,31 @@ PERSONAL_PATH = DATA / "personal.json"
 OWNER_NAME = "Kumar Shivam"
 
 
+def load_local_env() -> None:
+    """Load local .env values without overriding explicitly supplied variables."""
+    env_path = ROOT / ".env"
+    if not env_path.exists():
+        return
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+load_local_env()
+
+
 def supabase_configured() -> bool:
     return bool(os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY"))
+
+
+def production_mode() -> bool:
+    return os.environ.get("VERCEL") == "1" or os.environ.get("APP_ENV", "").lower() == "production"
 
 
 def supabase_request(method: str, path: str, payload=None):
@@ -79,7 +106,11 @@ def read_json(path: Path, default):
         try:
             return supabase_read_json(path, default)
         except Exception as exc:
+            if production_mode():
+                raise RuntimeError("Primary database read failed") from exc
             print(f"Supabase read failed; using local storage: {exc}")
+    elif production_mode() and supabase_document_key(path):
+        raise RuntimeError("Primary database is not configured")
     if not path.exists():
         return default
     with path.open("r", encoding="utf-8") as file:
@@ -92,7 +123,11 @@ def write_json(path: Path, payload) -> None:
             if supabase_write_json(path, payload):
                 return
         except Exception as exc:
+            if production_mode():
+                raise RuntimeError("Primary database write failed") from exc
             print(f"Supabase write failed; using local storage: {exc}")
+    elif production_mode() and supabase_document_key(path):
+        raise RuntimeError("Primary database is not configured")
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     with tmp.open("w", encoding="utf-8") as file:
@@ -147,6 +182,8 @@ def default_personal():
         "gymPlans": [],
         "gymSessions": [],
         "customExercises": [],
+        "gymExerciseSessions": [],
+        "gymExerciseFavorites": [],
         "contestCalendar": [],
         "skinProducts": [],
         "dailyReflections": [],
@@ -183,6 +220,8 @@ def public_personal(personal):
         "gymPlans": personal.get("gymPlans", []),
         "gymSessions": personal.get("gymSessions", []),
         "customExercises": personal.get("customExercises", []),
+        "gymExerciseSessions": personal.get("gymExerciseSessions", []),
+        "gymExerciseFavorites": personal.get("gymExerciseFavorites", []),
         "contestCalendar": personal.get("contestCalendar", []),
         "skinProducts": personal.get("skinProducts", []),
         "dailyReflections": personal.get("dailyReflections", []),
@@ -235,21 +274,30 @@ class TrackerHandler(BaseHTTPRequestHandler):
         return getattr(self.server, "private_token", "") or ""
 
     def is_authorized(self) -> bool:
-        return True
+        return authenticate_request({key.lower(): value for key, value in self.headers.items()}) is not None
 
     def require_api_auth(self) -> bool:
         if self.is_authorized():
             return True
-        self.send_json({"error": "Private token required"}, 401)
+        self.send_json({"error": "Authentication required"}, 401)
         return False
 
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
 
-        if path.startswith("/api/") and not self.require_api_auth():
+        if path.startswith("/api/") and path != "/api/auth/config" and not self.require_api_auth():
             return
 
+        if path == "/api/auth/config":
+            return self.send_json({"url": os.environ.get("SUPABASE_URL", ""), "publishableKey": os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")})
+        if path == "/api/auth/me":
+            claims = authenticate_request(dict(self.headers.items()))
+            return self.send_json({"legacyOwner": is_legacy_owner(claims), "userId": claims["sub"]})
+        if path == "/api/consumer":
+            return self.handle_consumer("GET")
+        if path in {"/api/personal", "/api/push/config"} and not is_legacy_owner(authenticate_request(dict(self.headers.items()))):
+            return self.send_json({"error": "Legacy workspace is private"}, 403)
         if path == "/api/personal":
             return self.send_json(public_personal(read_json(PERSONAL_PATH, default_personal())))
         if path == "/api/push/config":
@@ -271,12 +319,18 @@ class TrackerHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/consumer":
+            return self.handle_consumer("POST")
         if parsed.path not in {"/api/personal", "/api/health-import"}:
             return self.send_text("Not found\n", 404)
         if not self.require_api_auth():
             return
+        if not is_legacy_owner(authenticate_request(dict(self.headers.items()))):
+            return self.send_json({"error": "Legacy workspace is private"}, 403)
 
         length = int(self.headers.get("Content-Length", "0"))
+        if length > 1024 * 1024:
+            return self.send_json({"error": "Request too large"}, 413)
         raw = self.rfile.read(length)
         try:
             payload = json.loads(raw.decode("utf-8"))
@@ -286,6 +340,8 @@ class TrackerHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/health-import":
             existing = read_json(PERSONAL_PATH, default_personal())
             imports = existing.get("healthImports", [])
+            source = str(payload.get("source") or "Shortcut").strip()[:120]
+            source_sample_id = str(payload.get("sourceSampleId") or f"{source}:{payload.get('date') or dt.date.today().isoformat()}").strip()[:200]
             entry = {
                 "date": payload.get("date") or dt.date.today().isoformat(),
                 "steps": payload.get("steps"),
@@ -294,13 +350,13 @@ class TrackerHandler(BaseHTTPRequestHandler):
                 "standHours": payload.get("standHours"),
                 "sleepHours": payload.get("sleepHours"),
                 "workoutMinutes": payload.get("workoutMinutes"),
-                "source": payload.get("source", "Apple Watch"),
+                "source": source,
+                "sourceSampleId": source_sample_id,
+                "metadata": payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {},
                 "importedAt": isoformat_utc(utc_now()),
             }
-            # Replace today's entry if it exists
-            imports = [i for i in imports if i.get("date") != entry["date"]]
+            imports = [i for i in imports if i.get("sourceSampleId") != source_sample_id]
             imports.append(entry)
-            imports = imports[-90:]  # keep 90 days
             existing["healthImports"] = imports
             write_json(PERSONAL_PATH, existing)
             return self.send_json({"ok": True, "entry": entry})
@@ -315,7 +371,7 @@ class TrackerHandler(BaseHTTPRequestHandler):
             existing["expenses"] = payload.get("expenses", existing.get("expenses", []))
             existing["incomes"] = payload.get("incomes", existing.get("incomes", []))
             existing["focusSessions"] = payload.get("focusSessions", existing.get("focusSessions", []))
-            for field in ("skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "contestCalendar", "skinProducts", "dailyReflections", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
+            for field in ("skinRoutines", "skinStepLogs", "gymPlans", "gymSessions", "customExercises", "gymExerciseSessions", "gymExerciseFavorites", "contestCalendar", "skinProducts", "dailyReflections", "tasks", "goals", "habits", "weeklyReviews", "healthLogs", "careerItems", "documents",
                           "accounts", "budgets", "bills", "savingsGoals", "debts"):
                 existing[field] = payload.get(field, existing.get(field, []))
             existing["settings"] = payload.get("settings", existing.get("settings", {}))
@@ -323,6 +379,36 @@ class TrackerHandler(BaseHTTPRequestHandler):
             existing["version"] = 4
             write_json(PERSONAL_PATH, existing)
             return self.send_json({"ok": True, "personal": public_personal(existing)})
+
+    def do_DELETE(self):
+        if urlparse(self.path).path == "/api/consumer":
+            return self.handle_consumer("DELETE")
+        if urlparse(self.path).path == "/api/account":
+            claims = authenticate_request(dict(self.headers.items()))
+            if not claims:
+                return self.send_json({"error": "Authentication required"}, 401)
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 1024:
+                return self.send_json({"error": "Request too large"}, 413)
+            status, result = delete_account(self.rfile.read(length), claims, self.headers.get("Authorization", ""))
+            return self.send_json(result, status)
+        return self.send_text("Not found\n", 404)
+
+    def handle_consumer(self, method: str):
+        claims = authenticate_request(dict(self.headers.items()))
+        if not claims:
+            return self.send_json({"error": "Authentication required"}, 401)
+        length = int(self.headers.get("Content-Length", "0")) if method != "GET" else 0
+        if length > 128 * 1024:
+            return self.send_json({"error": "Request too large"}, 413)
+        body = self.rfile.read(length) if length else b""
+        try:
+            offset = int(parse_qs(urlparse(self.path).query).get("offset", ["0"])[0])
+        except ValueError:
+            return self.send_json({"error": "Invalid page offset"}, 400)
+        kind = parse_qs(urlparse(self.path).query).get("kind", [None])[0]
+        status, result = consumer_handle(method, body, claims, self.headers.get("Authorization", ""), offset, kind)
+        return self.send_json(result, status)
 
     def serve_file(self, path: Path):
         if not path.exists() or not path.is_file():
