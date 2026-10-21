@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import quote, urlparse, parse_qs
+from urllib.parse import quote, urlparse, parse_qs, parse_qsl, urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
@@ -564,8 +565,22 @@ def read_body_json(body: bytes):
     return json.loads(body.decode("utf-8"))
 
 
+def original_api_path(raw_path: str) -> str:
+    """Restore the route carried through Vercel's catch-all function rewrite."""
+    parsed = urlparse(raw_path)
+    if parsed.path != "/api/index.py":
+        return raw_path
+    pairs = parse_qsl(parsed.query, keep_blank_values=True)
+    routes = [value for key, value in pairs if key == "__wellframe_route"]
+    if len(routes) != 1 or not re.fullmatch(r"[a-z0-9_-]+(?:/[a-z0-9_-]+)*", routes[0]):
+        return raw_path
+    query = urlencode([(key, value) for key, value in pairs if key != "__wellframe_route"])
+    return "/api/" + routes[0] + ("?" + query if query else "")
+
+
 def api_route(method: str, raw_path: str, headers: dict | None = None, body: bytes = b""):
     headers = headers or {}
+    raw_path = original_api_path(raw_path)
     parsed = urlparse(raw_path)
     path = parsed.path
 
