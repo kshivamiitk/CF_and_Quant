@@ -25,6 +25,84 @@
       "title": "How to do a Plank",
       "publisher": "National Academy of Sports Medicine",
       "variant": "Forearm front plank"
+    },
+    "CH22": {
+      "videoId": "WDIpL0pjun0",
+      "title": "How to do a Push-Up | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Standard bodyweight push-up"
+    },
+    "BK02": {
+      "videoId": "9yVGh3XbJ34",
+      "title": "How to do a Pull-Up | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Bodyweight pull-up"
+    },
+    "BK31": {
+      "videoId": "Z6gcRfPNcZo",
+      "title": "How to Do a Barbell Deadlift | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Conventional barbell deadlift"
+    },
+    "FB01": {
+      "videoId": "Z6gcRfPNcZo",
+      "title": "How to Do a Barbell Deadlift | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Conventional barbell deadlift"
+    },
+    "QU01": {
+      "videoId": "-bJIpOq-LWk",
+      "title": "How to do a Barbell Back Squat",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Barbell back squat"
+    },
+    "FB02": {
+      "videoId": "-bJIpOq-LWk",
+      "title": "How to do a Barbell Back Squat",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Barbell back squat"
+    },
+    "CH02": {
+      "videoId": "BjGLs6KGWUc",
+      "title": "How to do a Incline Barbell Bench Press | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Incline barbell bench press"
+    },
+    "CO22": {
+      "videoId": "ZpBJIRLGEgg",
+      "title": "How to do a Side Plank",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Side plank"
+    },
+    "BI01": {
+      "videoId": "pQfJR-sSIvA",
+      "title": "How to Do a Barbell Bicep Curl | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Straight-bar barbell curl"
+    },
+    "CO26": {
+      "videoId": "bxn9FBrt4-A",
+      "title": "How to do a Dead Bug | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Dead bug"
+    },
+    "HG03": {
+      "videoId": "_2Kd0d-JEUM",
+      "title": "How to do a Seated Leg Curl | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Seated leg curl machine"
+    },
+    "QU12": {
+      "videoId": "cDGOn-yfKJA",
+      "title": "How to do a Leg Press | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Standard leg press"
+    },
+    "SH27": {
+      "videoId": "eTCBSFlCJ_s",
+      "title": "How to do a Face Pull | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Cable face pull"
     }
   }
 }

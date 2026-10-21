@@ -1,4 +1,4 @@
-const CACHE_NAME = "wellframe-v26";
+const CACHE_NAME = "wellframe-v29";
 const MEDIA_CACHE = "wellframe-media-v1";
 const ASSETS = [
   "/",
@@ -10,7 +10,7 @@ const ASSETS = [
   "/exercise-media.js",
   "/data/exercise-media.json?v=25",
   "/data/media-credits.json?v=25",
-  "/data/exercise-videos.json?v=26",
+  "/data/exercise-videos.json?v=29",
   "/media/exercises/CH01/thumb.webp",
   "/media/exercises/QU01/thumb.webp",
   "/media/exercises/BK31/thumb.webp",
@@ -86,7 +86,7 @@ self.addEventListener("push", (event) => {
   const work = [
     self.registration.showNotification(title, {
       body: payload.body || "It is time for your scheduled work.",
-      icon: "/cf2000_tracker_icon_1024.png",
+      icon: ["/?tab=care", "/?tab=train"].includes(payload.url) ? "/wellframe-icon.png" : "/cf2000_tracker_icon_1024.png",
       badge: "/alert-icon.svg",
       tag: payload.tag || "kumar-quant-reminder",
       renotify: true,
@@ -101,7 +101,8 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = new URL(event.notification.data?.url || "/?view=planner", self.location.origin).href;
+  const requestedUrl = new URL(event.notification.data?.url || "/?view=planner", self.location.origin);
+  const targetUrl = requestedUrl.origin === self.location.origin ? requestedUrl.href : self.location.origin + "/";
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
       const existing = windows.find((client) => client.url.startsWith(self.location.origin));

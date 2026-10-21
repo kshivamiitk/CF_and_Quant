@@ -25,6 +25,8 @@ class ExerciseVideoManifestTests(unittest.TestCase):
         self.assertEqual(videos["CH01"]["variant"], "Flat barbell bench press")
         self.assertEqual(videos["CO21"]["variant"], "Forearm front plank")
         self.assertEqual(videos["BK36"]["videoId"], videos["HG01"]["videoId"])
+        self.assertEqual(len(videos), 17)
+        self.assertEqual(len({video["videoId"] for video in videos.values()}), 14)
 
 
 if __name__ == "__main__":

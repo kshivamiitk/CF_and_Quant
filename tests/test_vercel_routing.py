@@ -45,6 +45,14 @@ class VercelRoutingTests(unittest.TestCase):
                     401,
                 )
 
+    def test_consumer_dispatch_requires_secret_and_subscription_requires_user(self):
+        with patch.dict("os.environ", {"REMINDER_DISPATCH_SECRET": "test-secret"}):
+            self.assertEqual(api_route("POST", "/api/index.py?__wellframe_route=consumer-push%2Fdispatch")["status"], 401)
+            with patch("api.index.consumer_push.dispatch", return_value={"sent": 0, "due": 0}):
+                response = api_route("POST", "/api/index.py?__wellframe_route=consumer-push%2Fdispatch", {"x-reminder-secret": "test-secret"})
+            self.assertEqual(response["status"], 200)
+        self.assertEqual(api_route("POST", "/api/index.py?__wellframe_route=consumer-push%2Fsubscribe")["status"], 401)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,6 +20,7 @@ import server as tracker  # noqa: E402
 from api.auth import authenticate_request, is_legacy_owner  # noqa: E402
 from api.consumer import handle as consumer_handle  # noqa: E402
 from api.account import delete_account  # noqa: E402
+from api import consumer_push  # noqa: E402
 
 
 ORIGINAL_READ_JSON = tracker.read_json
@@ -156,7 +157,7 @@ def send_push(subscription: dict, payload: dict) -> bool:
         from pywebpush import WebPushException, webpush
     except ImportError as exc:
         raise RuntimeError("pywebpush is not installed") from exc
-    private_key = os.environ.get("VAPID_PRIVATE_KEY", "").replace("\\n", "\n")
+    private_key = consumer_push.vapid_private_key()
     try:
         webpush(
             subscription_info=subscription,
@@ -584,9 +585,36 @@ def api_route(method: str, raw_path: str, headers: dict | None = None, body: byt
     parsed = urlparse(raw_path)
     path = parsed.path
 
-    if path not in {"/api/push/dispatch", "/api/auth/config"} and not is_authorized(raw_path, headers):
+    if path not in {"/api/push/dispatch", "/api/consumer-push/dispatch", "/api/auth/config"} and not is_authorized(raw_path, headers):
         return json_response({"error": "Authentication required"}, 401)
-    claims = authenticate_request(headers) if path not in {"/api/push/dispatch", "/api/auth/config"} else None
+    claims = authenticate_request(headers) if path not in {"/api/push/dispatch", "/api/consumer-push/dispatch", "/api/auth/config"} else None
+    if path == "/api/consumer-push/dispatch" and method == "POST":
+        expected = os.environ.get("REMINDER_DISPATCH_SECRET", "")
+        supplied = headers.get("x-reminder-secret") or headers.get("X-Reminder-Secret") or ""
+        if not expected or supplied != expected:
+            return json_response({"error": "Unauthorized reminder dispatch"}, 401)
+        try:
+            return json_response(consumer_push.dispatch())
+        except Exception:
+            return json_response({"error": "Reminder dispatch failed"}, 500)
+    if path == "/api/consumer-push/config" and method == "GET":
+        return json_response(consumer_push.config())
+    if path in {"/api/consumer-push/subscribe", "/api/consumer-push/unsubscribe", "/api/consumer-push/status", "/api/consumer-push/test"} and method == "POST":
+        try:
+            payload = read_body_json(body)
+            if path.endswith("/subscribe"):
+                result = consumer_push.subscribe(claims, payload)
+            elif path.endswith("/unsubscribe"):
+                result = consumer_push.unsubscribe(claims, payload)
+            elif path.endswith("/status"):
+                result = consumer_push.status(claims, payload)
+            else:
+                result = consumer_push.send_test(claims, payload)
+            return json_response(result)
+        except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+            return json_response({"error": str(exc)}, 400)
+        except Exception:
+            return json_response({"error": "Reminder service unavailable. Check server configuration and migration."}, 503)
     if path == "/api/consumer":
         try:
             offset = int(parse_qs(parsed.query).get("offset", ["0"])[0])

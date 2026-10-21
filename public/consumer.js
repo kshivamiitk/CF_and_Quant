@@ -1,7 +1,7 @@
 /* Wellframe consumer surface. Every displayed health value comes from saved records. */
 (function () {
   const $ = (id) => document.getElementById(id);
-  const state = { records: [], tab: "today", trainPage: "overview", query: "", category: "", shown: 30, detailId: null, exerciseRange: "90", selected: new Set(), account: null, pending: [], activeId: null, finishId: null, finishing: false, editCareId: null, waterOpen: false, timer: null, range: 7, trendExerciseId: "", development: false, loading: false, scroll: {}, writeLocks: new Map() };
+  const state = { records: [], tab: "today", trainPage: "overview", query: "", category: "", shown: 30, detailId: null, exerciseRange: "90", selected: new Set(), account: null, pending: [], activeId: null, finishId: null, finishing: false, editCareId: null, waterOpen: false, timer: null, range: 7, trendExerciseId: "", development: false, loading: false, scroll: {}, writeLocks: new Map(), reminderConfig: null, reminderSubscribed: false };
   const esc = (value) => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
   const now = () => new Date().toISOString();
   const dateKey = (value) => { const date = new Date(value); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; };
@@ -15,6 +15,48 @@
   const displayWeight = (kg) => profile().unit === "imperial" ? Math.round(Number(kg || 0) * 2.2046226218 * 10) / 10 : Number(kg || 0);
   const canonicalWeight = (value) => profile().unit === "imperial" ? Math.round(Number(value || 0) / 2.2046226218 * 1000) / 1000 : Number(value || 0);
   const favorites = () => new Set(rows("favorite").map((row) => row.payload.exerciseId));
+  const installedApp = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const iosNeedsInstall = () => /iPhone|iPad|iPod/.test(navigator.userAgent) && !installedApp();
+  const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  const pushKey = (value) => Uint8Array.from(atob((value + "=".repeat((4 - value.length % 4) % 4)).replaceAll("-", "+").replaceAll("_", "/")), (letter) => letter.charCodeAt(0));
+  const samePushKey = (subscription, key) => {
+    const current = subscription?.options?.applicationServerKey;
+    const desired = pushKey(key);
+    const bytes = current ? new Uint8Array(current) : null;
+    return Boolean(bytes && bytes.length === desired.length && bytes.every((value, index) => value === desired[index]));
+  };
+  async function refreshReminderState() {
+    try {
+      state.reminderConfig = await api("GET", null, "/api/consumer-push/config");
+      const registration = state.reminderConfig.configured && pushSupported() ? await navigator.serviceWorker.getRegistration("/") : null;
+      const subscription = await registration?.pushManager.getSubscription();
+      state.reminderSubscribed = subscription ? Boolean((await api("POST", { subscription: subscription.toJSON() }, "/api/consumer-push/status")).subscribed) : false;
+    } catch { state.reminderConfig = { configured: false, message: "Reminder status could not be checked." }; state.reminderSubscribed = false; }
+    if (state.tab === "care" || state.tab === "you") render();
+  }
+  async function disableReminders() {
+    if (!pushSupported()) return;
+    const registration = await navigator.serviceWorker.getRegistration("/");
+    const subscription = await registration?.pushManager.getSubscription();
+    if (subscription) {
+      try { await api("POST", { subscription: subscription.toJSON() }, "/api/consumer-push/unsubscribe"); }
+      catch (error) { await subscription.unsubscribe(); throw error; }
+    }
+    state.reminderSubscribed = false;
+  }
+  function reminderPanel() {
+    const permission = pushSupported() ? Notification.permission : "unsupported";
+    const config = state.reminderConfig;
+    const ready = config?.configured && permission === "granted" && state.reminderSubscribed;
+    const message = !pushSupported() ? "This browser does not support background Web Push."
+      : permission === "denied" ? "Notifications are blocked. Allow them in your device's app settings, then return here."
+      : !config ? "Checking reminder availability…"
+      : !config.configured ? config.message
+      : iosNeedsInstall() ? "On iPhone, add Wellframe to your Home Screen, open that icon, then enable reminders here."
+      : ready ? "Care and optional workout reminders are on for this device. They follow the times you choose."
+      : "Choose Enable reminders to receive care and optional workout nudges when this app is closed.";
+    return `<section class="wf-section wf-reminder-panel"><div class="wf-section-head"><div><span class="wf-kicker">REMINDERS</span><h3>Stay on track</h3></div><span>${ready ? "On for this device" : "Off or unavailable"}</span></div><p>${esc(message)}</p><p class="wf-note">Opt-in only. Lock-screen messages do not name medicines or supplements. Delivery depends on your device settings and network; do not rely on this for critical doses.</p><div class="wf-actions">${state.reminderSubscribed ? `${ready ? `<button data-action="test-reminders" class="wf-secondary">Send a test</button>` : ""}<button data-action="disable-reminders" class="wf-secondary">Turn off care/workout reminders</button>` : `<button data-action="enable-reminders" class="wf-secondary" ${!config?.configured || permission === "denied" || !pushSupported() || iosNeedsInstall() ? "disabled" : ""}>Enable reminders</button>`}</div></section>`;
+  }
   function catalogArtwork(item) {
     const palette = [["#d9f4ef", "#086f68"], ["#e4e8ff", "#514ca3"], ["#fff0df", "#a05c21"], ["#e1f0fa", "#28658b"]];
     const seed = [...item.id].reduce((sum, letter) => sum + letter.charCodeAt(0), 0);
@@ -277,7 +319,7 @@
     const doneToday = scheduled.filter((item) => logs.some((log) => log.payload.itemId === item.record_id && dateKey(log.occurred_at) === today()));
     const due = `<section class="wf-section"><div class="wf-section-head"><div><span class="wf-kicker">TODAY</span><h3>Due today</h3></div><span>${Math.max(0, scheduled.length - doneToday.length)} open · ${doneToday.length} checked in</span></div><p>${scheduled.length ? "These times are your own schedule. Open an item below to record what happened." : "No scheduled items. As-needed items remain available below."}</p></section>`;
     const editing = state.records.find((row) => row.record_id === state.editCareId);
-    const form = `<section class="wf-section"><span class="wf-kicker">${editing ? "EDIT ITEM" : "ADD AN ITEM"}</span><h3>${editing ? "Update your item" : "What would you like to track?"}</h3><form id="wfCareForm" class="wf-form-grid"><label>Name<input name="name" required maxlength="100" value="${esc(editing?.payload.name || "")}" placeholder="Your item name"></label><label>Type<select name="type"><option value="supplement" ${editing?.payload.type !== "medicine" ? "selected" : ""}>Supplement</option><option value="medicine" ${editing?.payload.type === "medicine" ? "selected" : ""}>Medicine</option></select></label><label>Daily time (optional)<input name="time" type="time" value="${esc(editing?.payload.times?.[0] || "")}"></label><label class="wf-wide">Your instructions<textarea name="instructions" maxlength="500" placeholder="Only your own directions; no dose suggestions">${esc(editing?.payload.instructions || "")}</textarea></label><button class="wf-primary" type="submit">${editing ? "Save changes" : "Add item"}</button>${editing ? `<button class="wf-secondary" data-action="cancel-care-edit" type="button">Cancel</button>` : ""}</form><p class="wf-note">This is a personal log, not medical advice. Browser reminders are not scheduled here.</p></section>`;
+    const form = `<section class="wf-section"><span class="wf-kicker">${editing ? "EDIT ITEM" : "ADD AN ITEM"}</span><h3>${editing ? "Update your item" : "What would you like to track?"}</h3><form id="wfCareForm" class="wf-form-grid"><label>Name<input name="name" required maxlength="100" value="${esc(editing?.payload.name || "")}" placeholder="Your item name"></label><label>Type<select name="type"><option value="supplement" ${editing?.payload.type !== "medicine" ? "selected" : ""}>Supplement</option><option value="medicine" ${editing?.payload.type === "medicine" ? "selected" : ""}>Medicine</option></select></label><label>Daily time (optional)<input name="time" type="time" value="${esc(editing?.payload.times?.[0] || "")}"></label><label class="wf-wide">Your instructions<textarea name="instructions" maxlength="500" placeholder="Only your own directions; no dose suggestions">${esc(editing?.payload.instructions || "")}</textarea></label><button class="wf-primary" type="submit">${editing ? "Save changes" : "Add item"}</button>${editing ? `<button class="wf-secondary" data-action="cancel-care-edit" type="button">Cancel</button>` : ""}</form><p class="wf-note">Times are used for optional device reminders. This is a personal log, not medical advice.</p></section>`;
     const list = items.length ? `<div class="wf-list">${items.map((item) => {
       const last = logs.find((log) => log.payload.itemId === item.record_id && dateKey(log.occurred_at) === today());
       return `<article><div><strong>${esc(item.payload.name)}</strong><small>${esc(item.payload.type)} · ${item.payload.times?.length ? `Daily ${esc(item.payload.times.join(", "))}` : "As needed"}${item.payload.paused ? " · Paused" : ""}</small>${item.payload.instructions ? `<p>${esc(item.payload.instructions)}</p>` : ""}${last ? `<small>Today: ${esc(last.payload.status)} at ${new Date(last.occurred_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</small>` : ""}</div><div class="wf-item-actions"><button data-action="log-care" data-id="${item.record_id}" class="wf-inline">Log taken</button><button data-action="skip-care" data-id="${item.record_id}" class="wf-inline">Skip</button>${last ? `<button data-action="undo-care" data-id="${last.record_id}" class="wf-inline">Undo</button>` : ""}<button data-action="edit-care" data-id="${item.record_id}" class="wf-inline">Edit</button><button data-action="pause-care" data-id="${item.record_id}" class="wf-inline">${item.payload.paused ? "Resume" : "Pause"}</button><button data-action="delete-care" data-id="${item.record_id}" class="wf-inline">Remove</button></div></article>`;
@@ -286,7 +328,7 @@
       const item = items.find((row) => row.record_id === log.payload.itemId);
       return `<article><div><strong>${esc(item?.payload.name || "Removed item")}</strong><small>${shortDate(log.occurred_at)} · ${new Date(log.occurred_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} · ${esc(log.payload.status)} · User-entered</small></div></article>`;
     }).join("")}</div></section>` : "";
-    return `<div class="wf-heading"><div><span class="wf-kicker">CARE</span><h2>A quiet checklist.</h2><p>Your own instructions and check-ins, in one place.</p></div></div>${due}${form}<section class="wf-section"><h3>My items</h3>${list}</section>${history}`;
+    return `<div class="wf-heading"><div><span class="wf-kicker">CARE</span><h2>A quiet checklist.</h2><p>Your own instructions and check-ins, in one place.</p></div></div>${reminderPanel()}${due}${form}<section class="wf-section"><h3>My items</h3>${list}</section>${history}`;
   }
   function youView() {
     const p = profile();
@@ -334,6 +376,9 @@
     bar.hidden = !active || (state.tab === "train" && state.trainPage === "overview");
     if (active) bar.innerHTML = `<span><strong>Workout in progress</strong> · ${esc(active.payload.title)} · ${active.payload.sets.filter((set) => set.complete).length} sets done</span><button class="wf-inline" data-action="resume">Resume</button>`;
     tickRest();
+    if (state.tab === "you") {
+      $("wfProfileForm")?.querySelector('button[type="submit"]')?.insertAdjacentHTML("beforebegin", `<label class="wf-wide">Daily workout reminder (optional)<input name="workoutReminderTime" type="time" value="${esc(profile().workoutReminderTime || "")}"></label><p class="wf-note wf-wide">Set a time if you want a daily training nudge. It stops once you complete or start a workout that day. Enable device notifications from Care to receive it while the app is closed.</p>`);
+    }
     if (state.tab === "you" && !state.account.legacyOwner && !state.development) {
       $("consumerContent").insertAdjacentHTML("beforeend", `<section class="wf-section"><h3>Delete account</h3><p>This permanently deletes your account and the health records stored under it. Export first if you need a copy.</p><form id="wfDeleteForm" class="wf-form-grid"><label class="wf-wide">Type DELETE MY ACCOUNT<input name="confirm" autocomplete="off" required></label><button type="submit" class="wf-secondary">Delete my account</button></form></section>`);
     }
@@ -353,6 +398,31 @@
   }
   async function action(button) {
     const name = button.dataset.action;
+    if (name === "enable-reminders") {
+      if (!state.reminderConfig?.configured || !pushSupported()) { status("Background reminders are not available yet.", "error"); return; }
+      // iOS requires the permission prompt to be initiated directly by this tap.
+      const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+      if (permission !== "granted") { render(); return; }
+      const registration = await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+      if (subscription && !samePushKey(subscription, state.reminderConfig.publicKey)) { await subscription.unsubscribe(); subscription = null; }
+      if (!subscription) subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: pushKey(state.reminderConfig.publicKey) });
+      await api("POST", { subscription: subscription.toJSON() }, "/api/consumer-push/subscribe");
+      state.reminderSubscribed = true;
+      status("Care and workout reminders enabled on this device."); render();
+      return;
+    }
+    if (name === "disable-reminders") {
+      await disableReminders(); status("Care and workout reminders turned off on this device."); render(); return;
+    }
+    if (name === "test-reminders") {
+      const registration = await navigator.serviceWorker.getRegistration("/");
+      const subscription = await registration?.pushManager.getSubscription();
+      if (!subscription) { status("This device no longer has a push subscription. Enable reminders again.", "error"); return; }
+      await api("POST", { subscription: subscription.toJSON() }, "/api/consumer-push/test");
+      status("Test notification sent. Check your device's notification settings if it does not appear.");
+      return;
+    }
     if (name === "play-form-video") {
       const stage = button.closest(".wf-video-stage");
       const videoId = stage?.dataset.videoId;
@@ -556,7 +626,7 @@
         }
         if (form.id === "wfProfileForm") {
           const existing = rows("profile")[0];
-          await save("profile", { displayName: form.elements.displayName.value, unit: form.elements.unit.value, interests: [form.elements.interest.value], timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC" }, existing?.record_id, existing?.occurred_at);
+          await save("profile", { displayName: form.elements.displayName.value, unit: form.elements.unit.value, interests: [form.elements.interest.value], timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC", workoutReminderTime: form.elements.workoutReminderTime.value }, existing?.record_id, existing?.occurred_at);
         }
         if (form.id === "wfCustomExerciseForm") {
           await save("custom_exercise", { name: form.elements.name.value, mode: form.elements.mode.value, category: "Custom" });
@@ -633,12 +703,13 @@
       savePending();
     } catch (error) { status(`Offline view: ${error.message}`, "pending"); }
     await flushPending();
-    select("today");
+    select(["care", "train"].includes(new URLSearchParams(location.search).get("tab")) ? new URLSearchParams(location.search).get("tab") : "today");
+    refreshReminderState();
   }
   function clearLocal() {
     if (!state.account) return;
     localStorage.removeItem(pendingKey());
     localStorage.removeItem(snapshotKey());
   }
-  window.CFConsumer = { start, select, clearLocal, hasPending: () => state.pending.length > 0 };
+  window.CFConsumer = { start, select, clearLocal, disableReminders, hasPending: () => state.pending.length > 0 };
 }());

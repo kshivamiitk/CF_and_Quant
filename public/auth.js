@@ -110,6 +110,7 @@
   }
   async function signOut() {
     if (window.CFConsumer?.hasPending?.() && !confirm("Some changes are not synced. Signing out will discard them from this browser. Continue?")) return;
+    await window.CFConsumer?.disableReminders?.().catch(() => {});
     if (session?.access_token) supabase("logout", {}).catch(() => {});
     window.CFConsumer?.clearLocal?.();
     Object.keys(sessionStorage).filter((key) => key.startsWith("wf_pending_")).forEach((key) => sessionStorage.removeItem(key));

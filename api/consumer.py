@@ -58,8 +58,12 @@ def validate(kind: str, payload: dict) -> dict:
         interests = payload.get("interests", [])
         if not isinstance(interests, list) or len(interests) > 4 or any(x not in {"Strength", "Cardio", "General fitness", "Daily wellness"} for x in interests):
             raise ValueError("Invalid interests")
+        workout_time = payload.get("workoutReminderTime", "")
+        if not isinstance(workout_time, str) or (workout_time and not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", workout_time)):
+            raise ValueError("Invalid workout reminder time")
         return {"displayName": _text(payload.get("displayName", ""), 80), "interests": interests,
-                "timezone": _text(payload.get("timezone", "UTC"), 80), "unit": payload.get("unit") if payload.get("unit") in {"metric", "imperial"} else "metric"}
+                "timezone": _text(payload.get("timezone", "UTC"), 80), "unit": payload.get("unit") if payload.get("unit") in {"metric", "imperial"} else "metric",
+                "workoutReminderTime": workout_time}
     if kind == "water":
         return {"amountMl": _number(payload.get("amountMl"), 1, 5000), "source": "manual"}
     if kind == "favorite":

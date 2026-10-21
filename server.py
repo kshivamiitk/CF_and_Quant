@@ -296,6 +296,9 @@ class TrackerHandler(BaseHTTPRequestHandler):
             return self.send_json({"legacyOwner": is_legacy_owner(claims), "userId": claims["sub"]})
         if path == "/api/consumer":
             return self.handle_consumer("GET")
+        if path == "/api/consumer-push/config":
+            from api.consumer_push import config
+            return self.send_json(config())
         if path in {"/api/personal", "/api/push/config"} and not is_legacy_owner(authenticate_request(dict(self.headers.items()))):
             return self.send_json({"error": "Legacy workspace is private"}, 403)
         if path == "/api/personal":
@@ -321,6 +324,29 @@ class TrackerHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == "/api/consumer":
             return self.handle_consumer("POST")
+        if parsed.path in {"/api/consumer-push/subscribe", "/api/consumer-push/unsubscribe", "/api/consumer-push/status", "/api/consumer-push/test"}:
+            if not self.require_api_auth():
+                return
+            from api.consumer_push import subscribe, unsubscribe, status, send_test
+            claims = authenticate_request(dict(self.headers.items()))
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 8192:
+                return self.send_json({"error": "Request too large"}, 413)
+            try:
+                payload = json.loads(self.rfile.read(length) or b"{}")
+                if parsed.path.endswith("/subscribe"):
+                    result = subscribe(claims, payload)
+                elif parsed.path.endswith("/unsubscribe"):
+                    result = unsubscribe(claims, payload)
+                elif parsed.path.endswith("/status"):
+                    result = status(claims, payload)
+                else:
+                    result = send_test(claims, payload)
+                return self.send_json(result)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+                return self.send_json({"error": str(exc)}, 400)
+            except Exception:
+                return self.send_json({"error": "Reminder service unavailable. Check server configuration and migration."}, 503)
         if parsed.path not in {"/api/personal", "/api/health-import"}:
             return self.send_text("Not found\n", 404)
         if not self.require_api_auth():

@@ -8,7 +8,7 @@
       const [manifest, creditData, videoData] = await Promise.all([
         fetch("/data/exercise-media.json?v=25", { cache: "force-cache" }).then((response) => response.json()),
         fetch("/data/media-credits.json?v=25", { cache: "force-cache" }).then((response) => response.json()),
-        fetch("/data/exercise-videos.json?v=26", { cache: "force-cache" }).then((response) => response.json()).catch(() => ({ entries: {} }))
+        fetch("/data/exercise-videos.json?v=29", { cache: "force-cache" }).then((response) => response.json()).catch(() => ({ entries: {} }))
       ]);
       entries = manifest.entries || {};
       credits = creditData.credits || [];
