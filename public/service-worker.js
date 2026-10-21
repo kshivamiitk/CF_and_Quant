@@ -1,4 +1,4 @@
-const CACHE_NAME = "wellframe-v25";
+const CACHE_NAME = "wellframe-v26";
 const MEDIA_CACHE = "wellframe-media-v1";
 const ASSETS = [
   "/",
@@ -10,6 +10,7 @@ const ASSETS = [
   "/exercise-media.js",
   "/data/exercise-media.json?v=25",
   "/data/media-credits.json?v=25",
+  "/data/exercise-videos.json?v=26",
   "/media/exercises/CH01/thumb.webp",
   "/media/exercises/QU01/thumb.webp",
   "/media/exercises/BK31/thumb.webp",
@@ -37,6 +38,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin) return;
   if (requestUrl.pathname.startsWith("/api/")) return;
   if (requestUrl.pathname.startsWith("/media/exercises/")) {
     if (!requestUrl.pathname.endsWith(".webp")) return;

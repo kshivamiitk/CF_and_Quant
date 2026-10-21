@@ -1,0 +1,30 @@
+{
+  "reviewedOn": "2026-10-21",
+  "reviewScope": "Title, publisher and exercise-variant match only; technique and continued availability are not certified.",
+  "entries": {
+    "CH01": {
+      "videoId": "CayG6UYqL8g",
+      "title": "How to do a Barbell Bench Press | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Flat barbell bench press"
+    },
+    "BK36": {
+      "videoId": "xgusDooVfKU",
+      "title": "How to do a Romanian Deadlift (Barbell) | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Barbell Romanian deadlift"
+    },
+    "HG01": {
+      "videoId": "xgusDooVfKU",
+      "title": "How to do a Romanian Deadlift (Barbell) | Proper Form & Technique | NASM",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Barbell Romanian deadlift"
+    },
+    "CO21": {
+      "videoId": "xhk1JkbF2lg",
+      "title": "How to do a Plank",
+      "publisher": "National Academy of Sports Medicine",
+      "variant": "Forearm front plank"
+    }
+  }
+}
